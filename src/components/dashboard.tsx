@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Metrics, LogEntry } from '@/lib/types';
 import Header from '@/components/header';
 import MetricCard from '@/components/metric-card';
@@ -19,6 +19,9 @@ export default function Dashboard() {
   const [chartData, setChartData] = useState<{ time: string; temp?: number; traffic?: number }[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isAttackMode, setAttackMode] = useState(false);
+  const isAttackModeRef = useRef(isAttackMode);
+  isAttackModeRef.current = isAttackMode;
+  
   const [activeThreats, setActiveThreats] = useState(0);
   const [showThreatAlert, setShowThreatAlert] = useState(false);
   const { toast } = useToast();
@@ -69,11 +72,9 @@ export default function Dashboard() {
     
     if (newMetrics.status === 'CRITICAL') {
         setActiveThreats(prev => prev + 1);
-        if(!showThreatAlert) {
-            setShowThreatAlert(true);
-        }
+        setShowThreatAlert(true);
     }
-  }, [showThreatAlert]);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,6 +82,12 @@ export default function Dashboard() {
         const response = await fetch('/api/metrics');
         if (!response.ok) throw new Error('Network response was not ok');
         const data: Metrics = await response.json();
+
+        if (!isAttackModeRef.current && data.status === 'CRITICAL') {
+          // It's a stray response from before the mode was switched. Ignore it.
+          return;
+        }
+
         processNewMetrics(data);
       } catch (error) {
         console.error('Failed to fetch metrics:', error);

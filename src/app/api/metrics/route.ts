@@ -6,7 +6,6 @@ const getRandomNumber = (min: number, max: number) => Math.random() * (max - min
 
 const generateNormalData = (): Metrics => {
   const temp = getRandomNumber(40, 60);
-  const isSecure = Math.random() > 0.05; // 95% chance of being secure
   const normalIPs = [
     '192.168.1.10',
     '192.168.1.12',
@@ -24,9 +23,9 @@ const generateNormalData = (): Metrics => {
     },
     network_traffic: sourceIp,
     traffic_volume: parseFloat(getRandomNumber(50, 200).toFixed(2)),
-    status: isSecure ? 'SECURE' : 'CRITICAL',
-    anomaly_score: isSecure ? parseFloat(getRandomNumber(0.05, 0.2).toFixed(2)) : parseFloat(getRandomNumber(0.7, 0.8).toFixed(2)),
-    log_entry: isSecure ? 'Status check OK' : `Unusual reading: temp ${temp.toFixed(1)}°C`,
+    status: 'SECURE',
+    anomaly_score: parseFloat(getRandomNumber(0.05, 0.2).toFixed(2)),
+    log_entry: 'Status check OK',
   };
 };
 
