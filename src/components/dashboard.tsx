@@ -10,6 +10,7 @@ import AuditLog from '@/components/audit-log';
 import ThreatAlertDialog from '@/components/threat-alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldAlert, Gauge, Thermometer, Waves, Activity } from 'lucide-react';
+import type { ThreatMitigationAlertInput } from '@/ai/flows/threat-mitigation-alert';
 
 /**
  * The maximum number of data points to display on the charts.
@@ -176,10 +177,16 @@ export default function Dashboard() {
   const aiConfidence = metrics ? `${(100 - metrics.anomaly_score * 100).toFixed(1)}%` : 'N/A';
 
   // Prepare the data to be sent to the AI for analysis, removing unnecessary fields.
-  const threatDataForAI = metrics ? {
-      ...metrics,
-      traffic_volume: undefined, 
-  } : null;
+  const threatDataForAI: ThreatMitigationAlertInput | null = metrics
+    ? {
+        timestamp: metrics.timestamp,
+        metrics: metrics.metrics,
+        network_traffic: metrics.network_traffic,
+        status: metrics.status,
+        anomaly_score: metrics.anomaly_score,
+        log_entry: metrics.log_entry,
+      }
+    : null;
 
   return (
     <div className="flex h-screen w-full flex-col bg-background font-body">
