@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Metrics, LogEntry } from '@/lib/types';
 import Header from '@/components/header';
 import MetricCard from '@/components/metric-card';
@@ -13,6 +13,7 @@ import { ShieldCheck, ShieldAlert, Gauge, Thermometer, Waves, Activity } from 'l
 
 const MAX_CHART_POINTS = 60;
 const MAX_LOG_ENTRIES = 100;
+const ALERT_COOLDOWN_MS = 5000; // 5 seconds
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
@@ -22,7 +23,14 @@ export default function Dashboard() {
   
   const [activeThreats, setActiveThreats] = useState(0);
   const [showThreatAlert, setShowThreatAlert] = useState(false);
+  const [alertCooldown, setAlertCooldown] = useState(false);
   const { toast } = useToast();
+
+  const showThreatAlertRef = useRef(showThreatAlert);
+  showThreatAlertRef.current = showThreatAlert;
+
+  const alertCooldownRef = useRef(alertCooldown);
+  alertCooldownRef.current = alertCooldown;
 
   const handleAttackModeChange = (checked: boolean) => {
     setAttackMode(checked);
@@ -58,7 +66,7 @@ export default function Dashboard() {
 
     setLogs((prev) => [newLog, ...prev].slice(0, MAX_LOG_ENTRIES));
     
-    if (newMetrics.status === 'CRITICAL') {
+    if (newMetrics.status === 'CRITICAL' && !showThreatAlertRef.current && !alertCooldownRef.current) {
         setActiveThreats(prev => prev + 1);
         setShowThreatAlert(true);
     }
@@ -100,6 +108,17 @@ export default function Dashboard() {
         title: 'Export Started',
         description: 'Your forensic data is being downloaded.',
       });
+  };
+
+  const handleAlertOpenChange = (isOpen: boolean) => {
+    setShowThreatAlert(isOpen);
+    if (!isOpen) {
+      // When dialog is closed, start a cooldown period.
+      setAlertCooldown(true);
+      setTimeout(() => {
+        setAlertCooldown(false);
+      }, ALERT_COOLDOWN_MS);
+    }
   };
 
   const systemStatus = metrics?.status || 'UNKNOWN';
@@ -169,7 +188,7 @@ export default function Dashboard() {
       </main>
       <ThreatAlertDialog 
         open={showThreatAlert} 
-        onOpenChange={setShowThreatAlert}
+        onOpenChange={handleAlertOpenChange}
         threatData={threatDataForAI}
       />
     </div>
