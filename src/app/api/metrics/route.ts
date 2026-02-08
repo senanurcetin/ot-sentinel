@@ -1,8 +1,19 @@
 import type { Metrics } from '@/lib/types';
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Generates a random number within a specified range.
+ * @param min - The minimum value.
+ * @param max - The maximum value.
+ * @returns A random number between min and max.
+ */
 const getRandomNumber = (min: number, max: number) => Math.random() * (max - min) + min;
 
+/**
+ * Generates a set of normal, "SECURE" system metrics.
+ * These values represent the system operating under normal conditions.
+ * @returns A Metrics object with normal data.
+ */
 const generateNormalData = (): Metrics => {
   const temp = getRandomNumber(40, 60);
   const normalIPs = [
@@ -28,6 +39,11 @@ const generateNormalData = (): Metrics => {
   };
 };
 
+/**
+ * Generates a set of anomalous, "CRITICAL" system metrics.
+ * These values represent the system under a simulated attack or fault condition.
+ * @returns A Metrics object with anomaly data.
+ */
 const generateAnomalyData = (): Metrics => {
   const temp = getRandomNumber(100, 150);
   const suspiciousIPs = [
@@ -53,6 +69,12 @@ const generateAnomalyData = (): Metrics => {
   };
 };
 
+/**
+ * API route handler for GET requests.
+ * It determines whether to generate normal or anomaly data based on the 'attack' query parameter.
+ * @param req - The Next.js API request object.
+ * @returns A NextResponse object containing the generated metrics data in JSON format.
+ */
 export async function GET(req: NextRequest) {
   try {
     const isAttack = req.nextUrl.searchParams.get('attack') === 'true';

@@ -11,27 +11,54 @@ import ThreatAlertDialog from '@/components/threat-alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldAlert, Gauge, Thermometer, Waves, Activity } from 'lucide-react';
 
+/**
+ * The maximum number of data points to display on the charts.
+ */
 const MAX_CHART_POINTS = 60;
+
+/**
+ * The maximum number of log entries to store and display.
+ */
 const MAX_LOG_ENTRIES = 100;
+
+/**
+ * The cooldown period in milliseconds before showing another threat alert.
+ */
 const ALERT_COOLDOWN_MS = 5000;
 
+/**
+ * The main dashboard component for the OT-Sentinel application.
+ * It orchestrates data fetching, state management, and renders all sub-components.
+ */
 export default function Dashboard() {
+  // Core state for the latest metrics received from the API
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  // State for time-series data for the analytics charts
   const [chartData, setChartData] = useState<{ time: string; temp?: number; traffic?: number }[]>([]);
+  // State for the audit log entries
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  // State to control the "Simulate Attack" mode
   const [isAttackMode, setAttackMode] = useState(false);
   
+  // State to track the number of threats detected in the current session
   const [activeThreats, setActiveThreats] = useState(0);
+  // State to control the visibility of the threat alert dialog
   const [showThreatAlert, setShowThreatAlert] = useState(false);
+  // State to manage the cooldown period for showing alerts
   const [alertCooldown, setAlertCooldown] = useState(false);
   const { toast } = useToast();
 
+  // Refs to get the current value of state within callbacks without causing re-renders
   const showThreatAlertRef = useRef(showThreatAlert);
   showThreatAlertRef.current = showThreatAlert;
 
   const alertCooldownRef = useRef(alertCooldown);
   alertCooldownRef.current = alertCooldown;
 
+  /**
+   * Toggles the attack simulation mode on and off.
+   * @param checked - The new state of the attack mode switch.
+   */
   const handleAttackModeChange = (checked: boolean) => {
     setAttackMode(checked);
     toast({
@@ -39,16 +66,24 @@ export default function Dashboard() {
       description: `The system is now ${checked ? 'simulating an attack' : 'in normal operation'}.`,
       variant: checked ? 'destructive' : 'default',
     });
+    // Reset threat count when attack mode is disabled
     if (!checked) {
       setActiveThreats(0);
     }
   };
   
+  /**
+   * Processes new metrics data received from the API.
+   * Updates chart data, logs, and triggers threat alerts if necessary.
+   * This function is memoized with useCallback to prevent unnecessary re-creations.
+   * @param newMetrics - The latest metrics data object.
+   */
   const processNewMetrics = useCallback((newMetrics: Metrics) => {
     setMetrics(newMetrics);
 
+    // Update chart data, keeping it within MAX_CHART_POINTS
     setChartData((prev) => [
-      ...prev.slice(prev.length > MAX_CHART_POINTS ? 1 : 0),
+      ...prev.slice(prev.length >= MAX_CHART_POINTS ? 1 : 0),
       {
         time: newMetrics.timestamp,
         temp: newMetrics.metrics.temp,
@@ -56,6 +91,7 @@ export default function Dashboard() {
       },
     ]);
 
+    // Create and prepend a new log entry, keeping the list within MAX_LOG_ENTRIES
     const newLog: LogEntry = {
       id: newMetrics.timestamp + Math.random(),
       timestamp: newMetrics.timestamp,
@@ -66,12 +102,17 @@ export default function Dashboard() {
 
     setLogs((prev) => [newLog, ...prev].slice(0, MAX_LOG_ENTRIES));
     
+    // Trigger a threat alert if a critical event occurs and we're not in a cooldown period.
     if (newMetrics.status === 'CRITICAL' && !showThreatAlertRef.current && !alertCooldownRef.current) {
         setActiveThreats(prev => prev + 1);
         setShowThreatAlert(true);
     }
   }, []);
 
+  /**
+   * Sets up an interval to fetch metrics data from the API every second.
+   * The attack mode status is passed as a query parameter to the API.
+   */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -85,9 +126,13 @@ export default function Dashboard() {
     };
 
     const intervalId = setInterval(fetchData, 1000);
+    // Cleanup function to clear the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, [processNewMetrics, isAttackMode]);
 
+  /**
+   * Exports the current audit log data to a CSV file.
+   */
   const exportData = () => {
     const header = "timestamp,status,source_ip,payload\n";
     const csv = logs
@@ -110,8 +155,14 @@ export default function Dashboard() {
       });
   };
 
+  /**
+   * Handles the opening and closing of the threat alert dialog.
+   * When the dialog is closed, it initiates a cooldown period.
+   * @param isOpen - The new state of the dialog.
+   */
   const handleAlertOpenChange = (isOpen: boolean) => {
     setShowThreatAlert(isOpen);
+    // When the dialog is closed, start the cooldown
     if (!isOpen) {
       setAlertCooldown(true);
       setTimeout(() => {
@@ -120,9 +171,11 @@ export default function Dashboard() {
     }
   };
 
+  // Derived state for system status and AI confidence score
   const systemStatus = metrics?.status || 'UNKNOWN';
   const aiConfidence = metrics ? `${(100 - metrics.anomaly_score * 100).toFixed(1)}%` : 'N/A';
 
+  // Prepare the data to be sent to the AI for analysis, removing unnecessary fields.
   const threatDataForAI = metrics ? {
       ...metrics,
       traffic_volume: undefined, 
