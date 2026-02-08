@@ -34,8 +34,8 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <CardTitle className="text-base font-semibold">Real-time Analytics</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="h-48">
-          <h3 className="mb-2 text-sm font-medium text-slate-600">Temperature (°C)</h3>
+        <div className="h-64">
+          <h3 className="mb-2 text-sm font-medium text-muted-foreground">Temperature (°C)</h3>
           <ChartContainer config={chartConfig} className="h-full w-full">
             <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: -10 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -69,8 +69,8 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
             </LineChart>
           </ChartContainer>
         </div>
-        <div className="h-48">
-          <h3 className="mb-2 text-sm font-medium text-slate-600">Network Traffic (KB/s)</h3>
+        <div className="h-64">
+          <h3 className="mb-2 text-sm font-medium text-muted-foreground">Network Traffic (KB/s)</h3>
           <ChartContainer config={chartConfig} className="h-full w-full">
             <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: -10 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />

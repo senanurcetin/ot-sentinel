@@ -34,6 +34,7 @@ export default function Dashboard() {
 
   const handleAttackModeChange = (checked: boolean) => {
     setAttackMode(checked);
+    fetch(`/api/attack/${checked ? 'on' : 'off'}`, { method: 'POST' });
     toast({
       title: `Attack Simulation ${checked ? 'Enabled' : 'Disabled'}`,
       description: `The system is now ${checked ? 'simulating an attack' : 'in normal operation'}.`,
@@ -131,20 +132,20 @@ export default function Dashboard() {
   } : null;
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-slate-50 font-body">
+    <div className="flex h-screen w-full flex-col bg-background font-body">
       <Header 
         isAttackMode={isAttackMode} 
         onAttackModeChange={handleAttackModeChange} 
         onExport={exportData}
       />
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl space-y-6">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <div className="mx-auto w-full space-y-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <MetricCard
               title="System Status"
               value={systemStatus}
               icon={systemStatus === 'SECURE' ? ShieldCheck : ShieldAlert}
-              valueClassName={systemStatus === 'SECURE' ? 'text-emerald-600' : 'text-rose-600'}
+              valueClassName={systemStatus === 'SECURE' ? 'text-emerald-500' : 'text-rose-500'}
               description={systemStatus === 'SECURE' ? 'All systems nominal' : 'Anomaly detected!'}
               className="xl:col-span-2"
             />
@@ -152,13 +153,13 @@ export default function Dashboard() {
               title="Temperature"
               value={`${metrics?.metrics.temp.toFixed(1) ?? 'N/A'} °C`}
               icon={Thermometer}
-              valueClassName={metrics && metrics.metrics.temp > 80 ? 'text-rose-600' : 'text-slate-900'}
+              valueClassName={metrics && metrics.metrics.temp > 80 ? 'text-rose-500' : 'text-foreground'}
             />
             <MetricCard
               title="Vibration"
               value={`${metrics?.metrics.vibration.toFixed(3) ?? 'N/A'} g`}
               icon={Waves}
-               valueClassName={metrics && metrics.metrics.vibration > 0.5 ? 'text-rose-600' : 'text-slate-900'}
+               valueClassName={metrics && metrics.metrics.vibration > 0.5 ? 'text-rose-500' : 'text-foreground'}
             />
             <MetricCard
               title="AI Confidence"

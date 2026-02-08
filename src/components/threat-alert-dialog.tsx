@@ -56,18 +56,18 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-2xl text-rose-600">
+          <AlertDialogTitle className="flex items-center gap-2 text-2xl text-rose-500">
             <AlertTriangle className="h-8 w-8" />
             CRITICAL THREAT DETECTED
           </AlertDialogTitle>
-          <AlertDialogDescription className="pt-2 text-base text-slate-600">
+          <AlertDialogDescription className="pt-2 text-base text-muted-foreground">
             A high-priority anomaly has been identified by the AI engine. Immediate attention is required.
           </AlertDialogDescription>
         </AlertDialogHeader>
         
         <div className="my-4 space-y-6">
           <div className="space-y-3">
-             <h3 className="flex items-center gap-2 font-semibold text-slate-800">
+             <h3 className="flex items-center gap-2 font-semibold text-foreground">
                 <Activity className="h-5 w-5 text-primary" />
                 Threat Summary
             </h3>
@@ -77,11 +77,11 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
                     <Skeleton className="h-4 w-3/4" />
                 </div>
             ) : (
-                <p className="text-slate-700 bg-slate-100 p-3 rounded-md">{result?.summary}</p>
+                <p className="text-muted-foreground bg-muted p-3 rounded-md">{result?.summary}</p>
             )}
           </div>
           <div className="space-y-3">
-             <h3 className="flex items-center gap-2 font-semibold text-slate-800">
+             <h3 className="flex items-center gap-2 font-semibold text-foreground">
                 <ListChecks className="h-5 w-5 text-primary" />
                 Suggested Mitigation Actions
             </h3>
@@ -95,8 +95,8 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
                 <ul className="space-y-2">
                     {result?.suggestedActions.map((action, index) => (
                         <li key={index} className="flex items-start gap-3">
-                            <ShieldCheck className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
-                            <span className="text-slate-700">{action}</span>
+                            <ShieldCheck className="h-5 w-5 text-emerald-500 mt-0.5 shrink-0" />
+                            <span className="text-muted-foreground">{action}</span>
                         </li>
                     ))}
                 </ul>
@@ -107,7 +107,7 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
         <AlertDialogFooter>
           <AlertDialogAction 
             onClick={() => onOpenChange(false)} 
-            className="bg-primary hover:bg-primary/90"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             Acknowledge & Close
           </AlertDialogAction>

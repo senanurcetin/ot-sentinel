@@ -14,10 +14,10 @@ type HeaderProps = {
 
 export default function Header({ isAttackMode, onAttackModeChange, onExport }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-4 shadow-sm sm:px-6 lg:px-8">
       <div className="flex items-center gap-3">
         <LogoIcon className="h-7 w-7 text-primary" />
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
           OT-Sentinel
         </h1>
       </div>
@@ -36,7 +36,7 @@ export default function Header({ isAttackMode, onAttackModeChange, onExport }: H
           <Label
             htmlFor="attack-mode"
             className={`font-medium ${
-              isAttackMode ? 'text-rose-600' : 'text-slate-700'
+              isAttackMode ? 'text-rose-500' : 'text-muted-foreground'
             }`}
           >
             Simulate Attack

@@ -22,12 +22,12 @@ export default function AuditLog({ logs }: AuditLogProps) {
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold">Audit Log</CardTitle>
-        <span className="text-xs text-slate-500">Showing last {logs.length} events</span>
+        <span className="text-xs text-muted-foreground">Showing last {logs.length} events</span>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-72 w-full">
+        <ScrollArea className="h-96 w-full">
           <Table>
-            <TableHeader className='sticky top-0 bg-white'>
+            <TableHeader className='sticky top-0 bg-card'>
               <TableRow>
                 <TableHead className="w-[180px]">Timestamp</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
@@ -44,11 +44,6 @@ export default function AuditLog({ logs }: AuditLogProps) {
                   <TableCell>
                     <Badge
                       variant={log.status === 'CRITICAL' ? 'destructive' : 'secondary'}
-                      className={
-                        log.status === 'CRITICAL'
-                          ? 'bg-rose-50 text-rose-600'
-                          : 'bg-emerald-50 text-emerald-700'
-                      }
                     >
                       {log.status}
                     </Badge>

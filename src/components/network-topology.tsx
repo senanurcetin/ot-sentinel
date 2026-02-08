@@ -11,8 +11,8 @@ type NetworkTopologyProps = {
 export default function NetworkTopology({ status }: NetworkTopologyProps) {
   const isAttack = status === 'CRITICAL';
 
-  const connectionColor = isAttack ? 'stroke-rose-500' : 'stroke-slate-300';
-  const iconColor = 'text-slate-600';
+  const connectionColor = isAttack ? 'stroke-rose-500' : 'stroke-border';
+  const iconColor = 'text-muted-foreground';
   const attackIconColor = 'text-rose-500';
 
   return (
@@ -27,31 +27,31 @@ export default function NetworkTopology({ status }: NetworkTopologyProps) {
             <foreignObject x="-16" y="-16" width="32" height="32">
               <Globe className={cn(iconColor, isAttack && attackIconColor)} size={32} />
             </foreignObject>
-            <text x="0" y="35" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-slate-700">Internet</text>
+            <text x="0" y="35" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-muted-foreground">Internet</text>
           </g>
           <g transform="translate(120, 75)">
             <foreignObject x="-16" y="-16" width="32" height="32">
               <Shield className={cn(iconColor, isAttack && attackIconColor)} size={32} />
             </foreignObject>
-            <text x="0" y="35" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-slate-700">Firewall</text>
+            <text x="0" y="35" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-muted-foreground">Firewall</text>
           </g>
           <g transform="translate(200, 75)">
             <foreignObject x="-16" y="-16" width="32" height="32">
               <Router className={cn(iconColor, isAttack && attackIconColor)} size={32} />
             </foreignObject>
-            <text x="0" y="35" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-slate-700">Gateway</text>
+            <text x="0" y="35" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-muted-foreground">Gateway</text>
           </g>
           <g transform="translate(280, 45)">
             <foreignObject x="-12" y="-12" width="24" height="24">
               <Server className={cn(iconColor)} size={24} />
             </foreignObject>
-            <text x="0" y="30" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-slate-700">PLC 1</text>
+            <text x="0" y="30" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-muted-foreground">PLC 1</text>
           </g>
            <g transform="translate(280, 105)">
             <foreignObject x="-12" y="-12" width="24" height="24">
               <Server className={cn(iconColor)} size={24} />
             </foreignObject>
-            <text x="0" y="30" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-slate-700">PLC 2</text>
+            <text x="0" y="30" textAnchor="middle" fontSize="12" fill="currentColor" className="font-sans text-muted-foreground">PLC 2</text>
           </g>
           
           {/* Connections */}
