@@ -45,10 +45,6 @@ export default function Dashboard() {
   };
   
   const processNewMetrics = useCallback((newMetrics: Metrics) => {
-    if (!isAttackMode && newMetrics.status === 'CRITICAL') {
-      return;
-    }
-    
     setMetrics(newMetrics);
 
     setChartData((prev) => [
@@ -74,7 +70,7 @@ export default function Dashboard() {
         setActiveThreats(prev => prev + 1);
         setShowThreatAlert(true);
     }
-  }, [isAttackMode]);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
