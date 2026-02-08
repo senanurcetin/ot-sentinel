@@ -37,7 +37,7 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <div className="h-64">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Temperature (°C)</h3>
           <ChartContainer config={chartConfig} className="h-full w-full">
-            <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: -10 }}>
+            <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
                 dataKey="time"
@@ -72,7 +72,7 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <div className="h-64">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Network Traffic (KB/s)</h3>
           <ChartContainer config={chartConfig} className="h-full w-full">
-            <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: -10 }}>
+            <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
                 dataKey="time"
