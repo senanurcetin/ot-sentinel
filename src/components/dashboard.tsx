@@ -34,7 +34,6 @@ export default function Dashboard() {
 
   const handleAttackModeChange = (checked: boolean) => {
     setAttackMode(checked);
-    fetch(`/api/attack/${checked ? 'on' : 'off'}`, { method: 'POST' });
     toast({
       title: `Attack Simulation ${checked ? 'Enabled' : 'Disabled'}`,
       description: `The system is now ${checked ? 'simulating an attack' : 'in normal operation'}.`,
@@ -46,6 +45,12 @@ export default function Dashboard() {
   };
   
   const processNewMetrics = useCallback((newMetrics: Metrics) => {
+    // If attack mode is off, but we receive a CRITICAL metric, ignore it.
+    // This prevents the UI from showing an attack right after the user turned it off.
+    if (!isAttackMode && newMetrics.status === 'CRITICAL') {
+      return;
+    }
+    
     setMetrics(newMetrics);
 
     setChartData((prev) => [
@@ -71,7 +76,7 @@ export default function Dashboard() {
         setActiveThreats(prev => prev + 1);
         setShowThreatAlert(true);
     }
-  }, []);
+  }, [isAttackMode]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -195,3 +200,5 @@ export default function Dashboard() {
     </div>
   );
 }
+
+    
