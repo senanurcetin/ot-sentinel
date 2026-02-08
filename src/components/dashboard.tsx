@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Metrics, LogEntry } from '@/lib/types';
 import Header from '@/components/header';
 import MetricCard from '@/components/metric-card';
@@ -19,32 +19,20 @@ export default function Dashboard() {
   const [chartData, setChartData] = useState<{ time: string; temp?: number; traffic?: number }[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isAttackMode, setAttackMode] = useState(false);
-  const isAttackModeRef = useRef(isAttackMode);
-  isAttackModeRef.current = isAttackMode;
   
   const [activeThreats, setActiveThreats] = useState(0);
   const [showThreatAlert, setShowThreatAlert] = useState(false);
   const { toast } = useToast();
 
-  const handleAttackModeChange = async (checked: boolean) => {
+  const handleAttackModeChange = (checked: boolean) => {
     setAttackMode(checked);
-    try {
-      await fetch(`/api/attack/${checked ? 'on' : 'off'}`, { method: 'POST' });
-      toast({
-        title: `Attack Simulation ${checked ? 'Enabled' : 'Disabled'}`,
-        description: `The system is now ${checked ? 'simulating an attack' : 'in normal operation'}.`,
-        variant: checked ? 'destructive' : 'default',
-      });
-      if (!checked) {
-        setActiveThreats(0); // Reset threats when turning off simulation
-      }
-    } catch (error) {
-      console.error('Failed to toggle attack mode:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update attack simulation status.',
-        variant: 'destructive',
-      });
+    toast({
+      title: `Attack Simulation ${checked ? 'Enabled' : 'Disabled'}`,
+      description: `The system is now ${checked ? 'simulating an attack' : 'in normal operation'}.`,
+      variant: checked ? 'destructive' : 'default',
+    });
+    if (!checked) {
+      setActiveThreats(0); // Reset threats when turning off simulation
     }
   };
   
@@ -79,20 +67,9 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/metrics');
+        const response = await fetch(`/api/metrics?attack=${isAttackMode}`);
         if (!response.ok) throw new Error('Network response was not ok');
         const data: Metrics = await response.json();
-
-        // If attack mode is off, ignore any stray CRITICAL metrics from a late response.
-        if (!isAttackModeRef.current && data.status === 'CRITICAL') {
-          return;
-        }
-
-        // If attack mode is on, ignore any stray SECURE metrics from a late response.
-        if (isAttackModeRef.current && data.status === 'SECURE') {
-          return;
-        }
-
         processNewMetrics(data);
       } catch (error) {
         console.error('Failed to fetch metrics:', error);
@@ -101,7 +78,7 @@ export default function Dashboard() {
 
     const intervalId = setInterval(fetchData, 1000);
     return () => clearInterval(intervalId);
-  }, [processNewMetrics]);
+  }, [processNewMetrics, isAttackMode]);
 
   const exportData = () => {
     const header = "timestamp,status,source_ip,payload\n";

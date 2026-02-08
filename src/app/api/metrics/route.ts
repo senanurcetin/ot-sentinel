@@ -1,6 +1,5 @@
-import { attackMode } from '@/lib/simulation-state';
 import type { Metrics } from '@/lib/types';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const getRandomNumber = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -54,9 +53,10 @@ const generateAnomalyData = (): Metrics => {
   };
 };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const data = attackMode ? generateAnomalyData() : generateNormalData();
+    const isAttack = req.nextUrl.searchParams.get('attack') === 'true';
+    const data = isAttack ? generateAnomalyData() : generateNormalData();
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to generate metrics' }, { status: 500 });
