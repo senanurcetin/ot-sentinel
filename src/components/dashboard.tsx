@@ -83,8 +83,13 @@ export default function Dashboard() {
         if (!response.ok) throw new Error('Network response was not ok');
         const data: Metrics = await response.json();
 
+        // If attack mode is off, ignore any stray CRITICAL metrics from a late response.
         if (!isAttackModeRef.current && data.status === 'CRITICAL') {
-          // It's a stray response from before the mode was switched. Ignore it.
+          return;
+        }
+
+        // If attack mode is on, ignore any stray SECURE metrics from a late response.
+        if (isAttackModeRef.current && data.status === 'SECURE') {
           return;
         }
 
