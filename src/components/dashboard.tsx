@@ -13,7 +13,7 @@ import { ShieldCheck, ShieldAlert, Gauge, Thermometer, Waves, Activity } from 'l
 
 const MAX_CHART_POINTS = 60;
 const MAX_LOG_ENTRIES = 100;
-const ALERT_COOLDOWN_MS = 5000; // 5 seconds
+const ALERT_COOLDOWN_MS = 5000;
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
@@ -40,13 +40,11 @@ export default function Dashboard() {
       variant: checked ? 'destructive' : 'default',
     });
     if (!checked) {
-      setActiveThreats(0); // Reset threats when turning off simulation
+      setActiveThreats(0);
     }
   };
   
   const processNewMetrics = useCallback((newMetrics: Metrics) => {
-    // If attack mode is off, but we receive a CRITICAL metric, ignore it.
-    // This prevents the UI from showing an attack right after the user turned it off.
     if (!isAttackMode && newMetrics.status === 'CRITICAL') {
       return;
     }
@@ -119,7 +117,6 @@ export default function Dashboard() {
   const handleAlertOpenChange = (isOpen: boolean) => {
     setShowThreatAlert(isOpen);
     if (!isOpen) {
-      // When dialog is closed, start a cooldown period.
       setAlertCooldown(true);
       setTimeout(() => {
         setAlertCooldown(false);
@@ -132,7 +129,6 @@ export default function Dashboard() {
 
   const threatDataForAI = metrics ? {
       ...metrics,
-      // The AI flow doesn't know about traffic_volume, so we exclude it.
       traffic_volume: undefined, 
   } : null;
 
