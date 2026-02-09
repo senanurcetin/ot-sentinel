@@ -3,7 +3,7 @@
 OT-Sentinel is a sophisticated, real-time dashboard for monitoring the security of Operational Technology (OT) and industrial control systems. It leverages generative AI to analyze system metrics, detect anomalies, and provide actionable threat mitigation advice.
 
 
-![OT-Sentinel Dashboard]<img width="2557" height="1270" alt="Ekran görüntüsü 2026-02-09 022113" src="https://github.com/user-attachments/assets/160b1ec4-267f-4084-b599-971810920d0e" />
+<img width="2557" height="1270" alt="Ekran görüntüsü 2026-02-09 022113" src="https://github.com/user-attachments/assets/160b1ec4-267f-4084-b599-971810920d0e" />
 
 ## Core Features
 
