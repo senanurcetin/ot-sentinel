@@ -1,6 +1,10 @@
 'use client';
 
-import { generateThreatMitigationAlert, ThreatMitigationAlertInput, ThreatMitigationAlertOutput } from '@/ai/flows/threat-mitigation-alert';
+import { generateThreatMitigationAlert } from '@/ai/flows/threat-mitigation-alert';
+import type {
+  ThreatMitigationAlertInput,
+  ThreatMitigationAlertOutput,
+} from '@/lib/types';
 import {
   AlertDialog,
   AlertDialogContent,

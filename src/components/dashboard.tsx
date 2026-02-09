@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Metrics, LogEntry } from '@/lib/types';
+import type { Metrics, LogEntry, ThreatMitigationAlertInput } from '@/lib/types';
 import Header from '@/components/header';
 import MetricCard from '@/components/metric-card';
 import NetworkTopology from '@/components/network-topology';
@@ -10,7 +10,6 @@ import AuditLog from '@/components/audit-log';
 import ThreatAlertDialog from '@/components/threat-alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldAlert, Gauge, Thermometer, Waves, Activity } from 'lucide-react';
-import type { ThreatMitigationAlertInput } from '@/ai/flows/threat-mitigation-alert';
 import ForensicReportDialog from './forensic-report-dialog';
 
 /**
