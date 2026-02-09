@@ -53,3 +53,35 @@ npm run dev
 Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
 
 The main application logic can be found in `src/app/page.tsx` and the primary UI component is `src/components/dashboard.tsx`. The AI flow for threat analysis is located at `src/ai/flows/threat-mitigation-alert.ts`.
+
+## Pushing to GitHub
+
+To upload your project to a new GitHub repository, you can follow these steps in your terminal. Make sure you have `git` installed on your system.
+
+1.  **Initialize a new Git repository:**
+    ```bash
+    git init -b main
+    ```
+
+2.  **Add all files to the staging area:**
+    ```bash
+    git add .
+    ```
+
+3.  **Create your first commit:**
+    ```bash
+    git commit -m "Initial commit: Build OT-Sentinel dashboard with AI-powered threat analysis"
+    ```
+
+4.  **Add your remote GitHub repository:**
+    (Replace the URL with your own repository URL)
+    ```bash
+    git remote add origin https://github.com/senanurcetin/ot-sentinel.git
+    ```
+
+5.  **Push your code to GitHub:**
+    ```bash
+    git push -u origin main
+    ```
+
+After these steps, your project will be live on your GitHub repository.
