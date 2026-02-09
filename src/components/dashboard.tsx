@@ -11,6 +11,7 @@ import ThreatAlertDialog from '@/components/threat-alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldAlert, Gauge, Thermometer, Waves, Activity } from 'lucide-react';
 import type { ThreatMitigationAlertInput } from '@/ai/flows/threat-mitigation-alert';
+import ForensicReportDialog from './forensic-report-dialog';
 
 /**
  * The maximum number of data points to display on the charts.
@@ -45,6 +46,7 @@ export default function Dashboard() {
   const [activeThreats, setActiveThreats] = useState(0);
   // State to control the visibility of the threat alert dialog
   const [showThreatAlert, setShowThreatAlert] = useState(false);
+  const [showForensicReport, setShowForensicReport] = useState(false);
   // State to manage the cooldown period for showing alerts
   const [alertCooldown, setAlertCooldown] = useState(false);
   const { toast } = useToast();
@@ -132,31 +134,6 @@ export default function Dashboard() {
   }, [processNewMetrics, isAttackMode]);
 
   /**
-   * Exports the current audit log data to a CSV file.
-   */
-  const exportData = () => {
-    const header = "timestamp,status,source_ip,payload\n";
-    const csv = logs
-        .map(l => `"${l.timestamp}","${l.status}","${l.sourceIp}","${l.payload.replace(/"/g, '""')}"`)
-        .join('\n');
-    const blob = new Blob([header + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `otsentinel_forensic_data_${new Date().toISOString()}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-     toast({
-        title: 'Export Started',
-        description: 'Your forensic data is being downloaded.',
-      });
-  };
-
-  /**
    * Handles the opening and closing of the threat alert dialog.
    * When the dialog is closed, it initiates a cooldown period.
    * @param isOpen - The new state of the dialog.
@@ -193,7 +170,7 @@ export default function Dashboard() {
       <Header 
         isAttackMode={isAttackMode} 
         onAttackModeChange={handleAttackModeChange} 
-        onExport={exportData}
+        onShowReport={() => setShowForensicReport(true)}
       />
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
         <div className="mx-auto w-full space-y-6">
@@ -248,6 +225,11 @@ export default function Dashboard() {
         open={showThreatAlert} 
         onOpenChange={handleAlertOpenChange}
         threatData={threatDataForAI}
+      />
+      <ForensicReportDialog
+        open={showForensicReport}
+        onOpenChange={setShowForensicReport}
+        logs={logs}
       />
     </div>
   );

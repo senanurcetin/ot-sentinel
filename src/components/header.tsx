@@ -4,15 +4,15 @@ import { LogoIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Download } from 'lucide-react';
+import { BarChart2 } from 'lucide-react';
 
 type HeaderProps = {
   isAttackMode: boolean;
   onAttackModeChange: (checked: boolean) => void;
-  onExport: () => void;
+  onShowReport: () => void;
 };
 
-export default function Header({ isAttackMode, onAttackModeChange, onExport }: HeaderProps) {
+export default function Header({ isAttackMode, onAttackModeChange, onShowReport }: HeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-4 shadow-sm sm:px-6 lg:px-8">
       <div className="flex items-center gap-3">
@@ -22,9 +22,9 @@ export default function Header({ isAttackMode, onAttackModeChange, onExport }: H
         </h1>
       </div>
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={onExport}>
-          <Download className="mr-2 h-4 w-4" />
-          Export Forensic Data
+        <Button variant="outline" size="sm" onClick={onShowReport}>
+          <BarChart2 className="mr-2 h-4 w-4" />
+          View Report
         </Button>
         <div className="flex items-center space-x-2">
           <Switch
