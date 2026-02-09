@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import type { LogEntry } from '@/lib/types';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useMemo } from 'react';
-import { FileSearch, AlertCircle, CheckCircle, List } from 'lucide-react';
+import { FileSearch, AlertCircle, CheckCircle, List, Download } from 'lucide-react';
 
 type ForensicReportDialogProps = {
   open: boolean;
@@ -56,6 +56,43 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
       topAttacker,
     };
   }, [logs]);
+
+  const handleDownloadCsv = () => {
+    if (!logs || logs.length === 0) {
+      return;
+    }
+
+    const headers = ['Timestamp', 'Status', 'Source IP', 'Payload'];
+    
+    const csvRows = logs.map(log => {
+      const row = [
+        new Date(log.timestamp).toISOString(),
+        log.status,
+        log.sourceIp,
+        log.payload,
+      ];
+      return row
+        .map(field => {
+          const stringField = String(field ?? '').replace(/"/g, '""');
+          return `"${stringField}"`;
+        })
+        .join(',');
+    });
+
+    const csvString = [headers.join(','), ...csvRows].join('\n');
+    
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `otsentinel-forensic-report-${new Date().toISOString()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -186,6 +223,10 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
           </div>
         </div>
         <DialogFooter className="pt-4 border-t">
+          <Button variant="outline" onClick={handleDownloadCsv}>
+            <Download className="mr-2 h-4 w-4" />
+            Download Report
+          </Button>
           <Button onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
