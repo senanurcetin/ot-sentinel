@@ -2,6 +2,9 @@ import { render, screen } from '@testing-library/react'
 import Home from './page'
 import '@testing-library/jest-dom'
 
+jest.mock('@/components/threat-alert-dialog', () => () => null)
+jest.mock('@/components/forensic-report-dialog', () => () => null)
+
 // The dashboard component makes API calls in a useEffect and uses browser APIs not available in JSDOM.
 // We can mock some of the browser APIs it uses to prevent errors.
 beforeAll(() => {

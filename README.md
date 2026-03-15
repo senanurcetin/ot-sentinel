@@ -4,6 +4,8 @@ OT-Sentinel is a documentation-first industrial cybersecurity dashboard that vis
 
 ![OT-Sentinel interface](https://github.com/user-attachments/assets/160b1ec4-267f-4084-b599-971810920d0e)
 
+Demo playlist: [Industrial product walkthroughs](https://www.youtube.com/playlist?list=PLrq0FHTSXQwNzN53_XymhtNHvWP-0z1-H)
+
 ## Why this project exists
 
 Plant teams often have monitoring signals, but they still lack a clear operator-facing workflow for interpreting anomalies, understanding severity, and documenting mitigation actions. OT-Sentinel demonstrates how a modern web interface can bridge cyber monitoring, simulated incidents, and explainable operational response.
@@ -52,6 +54,7 @@ The app runs on `http://localhost:9002`.
 ## Quality checks
 
 ```bash
+npm test
 npm run typecheck
 npm run build
 ```
