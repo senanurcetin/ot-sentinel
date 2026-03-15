@@ -4,7 +4,7 @@ OT-Sentinel is a documentation-first industrial cybersecurity dashboard that vis
 
 ![OT-Sentinel interface](https://github.com/user-attachments/assets/160b1ec4-267f-4084-b599-971810920d0e)
 
-Demo playlist: [Industrial product walkthroughs](https://www.youtube.com/playlist?list=PLrq0FHTSXQwNzN53_XymhtNHvWP-0z1-H)
+Demo: [YouTube walkthrough](https://www.youtube.com/watch?v=KcpTW0QM0FM)
 
 ## Why this project exists
 
