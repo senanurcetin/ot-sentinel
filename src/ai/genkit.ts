@@ -19,11 +19,4 @@ export const ai = genkit({
   // Using 'gemini-1.5-flash-latest' ensures access to the most recent stable version of the Flash model,
   // balancing performance, cost, and cutting-edge capabilities.
   model: 'gemini-1.5-flash-latest',
-  // Set to true to stream responses from the AI model, which can improve perceived performance.
-  stream: false,
-  // Enable a local development UI for debugging and inspecting Genkit flows.
-  // Run `genkit start` to use this.
-  enableDevUI: true,
-  // Log level for Genkit's operational output.
-  logLevel: 'info',
 });

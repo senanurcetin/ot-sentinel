@@ -1,88 +1,72 @@
-# OT-Sentinel: Industrial Cybersecurity Dashboard
+# OT-Sentinel
 
-OT-Sentinel is a sophisticated, real-time dashboard for monitoring the security of Operational Technology (OT) and industrial control systems. It leverages generative AI to analyze system metrics, detect anomalies, and provide actionable threat mitigation advice.
+OT-Sentinel is a documentation-first industrial cybersecurity dashboard that visualizes OT telemetry, simulates incident scenarios, and uses AI-assisted workflows to explain threats in operator-friendly language.
 
+![OT-Sentinel interface](https://github.com/user-attachments/assets/160b1ec4-267f-4084-b599-971810920d0e)
 
-<img width="2557" height="1270" alt="Ekran görüntüsü 2026-02-09 022113" src="https://github.com/user-attachments/assets/160b1ec4-267f-4084-b599-971810920d0e" />
+## Why this project exists
 
-## Core Features
+Plant teams often have monitoring signals, but they still lack a clear operator-facing workflow for interpreting anomalies, understanding severity, and documenting mitigation actions. OT-Sentinel demonstrates how a modern web interface can bridge cyber monitoring, simulated incidents, and explainable operational response.
 
-- **Real-time Monitoring**: Continuously tracks key system metrics like temperature, pressure, vibration, and network traffic.
-- **AI-Powered Threat Detection**: Utilizes a generative AI model to analyze incoming data, identify anomalies, and assess the system's security status with a confidence score.
-- **Attack Simulation**: Includes a "Simulate Attack" mode to test the system's response to critical threat scenarios and for demonstration purposes.
-- **Instant Threat Mitigation**: When a threat is detected, an AI-powered alert dialog immediately provides a summary of the threat and suggests concrete mitigation steps.
-- **In-App Forensic Reporting**: Provides a detailed, interactive forensic report with summary statistics, event distribution charts, and a filterable audit log.
-- **Data Export**: Allows users to export the full audit log from the forensic report as a CSV file for offline analysis.
-- **Modern & Responsive UI**: Built with Next.js, ShadCN, and Tailwind CSS for a sleek, dark-themed, and responsive user experience.
+## What it does
 
-## Tech Stack
+- Streams industrial telemetry such as temperature, pressure, vibration, and traffic indicators.
+- Uses Genkit and Gemini to classify anomalies and generate mitigation guidance.
+- Supports attack simulation for demo and training scenarios.
+- Generates a forensic summary with charts and exportable audit data.
+- Includes Jest-based UI tests and a baseline GitHub Actions workflow.
 
-- **Frontend**: Next.js (App Router), React, TypeScript
-- **UI**: ShadCN UI, Tailwind CSS, Recharts
-- **Generative AI**: Google Gemini via Genkit
-- **Testing**: Jest, React Testing Library
-- **CI/CD**: GitHub Actions
+## Architecture snapshot
 
-## Environment Setup
+- **Frontend:** Next.js App Router, React 19, TypeScript
+- **AI runtime:** Genkit with Google Gemini
+- **Visualization:** ShadCN UI, Tailwind CSS, Recharts
+- **Testing:** Jest and React Testing Library
+- **Deployment target:** Vercel or any Node-compatible host
 
-Before running the application, you need to set up your environment variables. The application uses Genkit and the Google Gemini model, which requires an API key.
+## Local setup
 
-1.  **Create an environment file:** In the root of the project, create a new file named `.env`. You can do this by copying the example file:
-    ```bash
-    cp .env.example .env
-    ```
-2.  **Get an API Key:** Obtain a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-3.  **Set the API Key:** Open your new `.env` file and replace `YOUR_API_KEY_HERE` with the key you obtained.
-    ```
-    GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxx
-    ```
+### Prerequisites
 
-## Getting Started
+- Node.js 20+
+- npm
+- A Google AI Studio API key
 
-First, install the dependencies:
+### Install
 
 ```bash
 npm install
+cp .env.example .env
 ```
 
-Then, run the development server:
+Update `.env` with your Gemini API key.
+
+### Run
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
+The app runs on `http://localhost:9002`.
 
-The main application logic can be found in `src/app/page.tsx` and the primary UI component is `src/components/dashboard.tsx`. The AI flow for threat analysis is located at `src/ai/flows/threat-mitigation-alert.ts`.
+## Quality checks
 
-## Pushing to GitHub
+```bash
+npm run typecheck
+npm run build
+```
 
-To upload your project to a new GitHub repository, you can follow these steps in your terminal. Make sure you have `git` installed on your system.
+## Repository highlights
 
-1.  **Initialize a new Git repository:**
-    ```bash
-    git init -b main
-    ```
+- `src/components/dashboard.tsx` contains the main monitoring surface.
+- `src/ai/flows/threat-mitigation-alert.ts` contains the anomaly-to-guidance workflow.
+- `src/app/page.test.tsx` covers the main page interaction path.
+- `docs/blueprint.md` captures the product blueprint.
 
-2.  **Add all files to the staging area:**
-    ```bash
-    git add .
-    ```
+## Portfolio note
 
-3.  **Create your first commit:**
-    ```bash
-    git commit -m "Initial commit: Build OT-Sentinel dashboard with AI-powered threat analysis"
-    ```
+This repository is intended as an Industrial AI and OT security portfolio piece. It focuses on system design, operator workflows, and explainable incident response rather than production-grade backend integrations.
 
-4.  **Add your remote GitHub repository:**
-    (Replace the URL with your own repository URL)
-    ```bash
-    git remote add origin https://github.com/senanurcetin/ot-sentinel.git
-    ```
+## License
 
-5.  **Push your code to GitHub:**
-    ```bash
-    git push -u origin main
-    ```
-
-After these steps, your project will be live on your GitHub repository.
+MIT

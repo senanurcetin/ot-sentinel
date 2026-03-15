@@ -12,7 +12,8 @@ const config: Config = {
   testEnvironment: 'jest-environment-jsdom',
   // Add more setup options before each test is run
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-   moduleNameMapper: {
+  transformIgnorePatterns: ['/node_modules/(?!(lucide-react)/)'],
+  moduleNameMapper: {
     // Handle module aliases
     '^@/(.*)$': '<rootDir>/src/$1',
   },
