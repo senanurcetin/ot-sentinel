@@ -6,6 +6,8 @@ OT-Sentinel is a documentation-first industrial cybersecurity dashboard that vis
 
 Demo: [YouTube walkthrough](https://www.youtube.com/watch?v=KcpTW0QM0FM)
 
+Portfolio role: `archive proof`
+
 ## Why this project exists
 
 Plant teams often have monitoring signals, but they still lack a clear operator-facing workflow for interpreting anomalies, understanding severity, and documenting mitigation actions. OT-Sentinel demonstrates how a modern web interface can bridge cyber monitoring, simulated incidents, and explainable operational response.
@@ -68,7 +70,7 @@ npm run build
 
 ## Portfolio note
 
-This repository is intended as an Industrial AI and OT security portfolio piece. It focuses on system design, operator workflows, and explainable incident response rather than production-grade backend integrations.
+This repository is intended as archive proof for Industrial AI and OT-security workflow thinking. It focuses on system design, operator workflows, and explainable incident response rather than production-grade backend integrations.
 
 ## License
 

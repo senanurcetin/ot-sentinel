@@ -38,3 +38,5 @@ yarn-error.log*
 
 # genkit
 .genkit/cache
+.idx/
+.vscode/
