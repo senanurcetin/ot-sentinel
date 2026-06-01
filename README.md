@@ -8,6 +8,10 @@ Demo: [YouTube walkthrough](https://www.youtube.com/watch?v=KcpTW0QM0FM)
 
 Portfolio role: `archive proof`
 
+## Why it sits in supporting evidence
+
+OT-Sentinel is useful for domain breadth and operator-facing OT workflow thinking, but it is not one of the three primary Data + AI case studies. The strongest public portfolio path still starts with `Ops-Copilot`, then moves to `visual-qc-project` and `smart-factory-app`.
+
 ## Why this project exists
 
 Plant teams often have monitoring signals, but they still lack a clear operator-facing workflow for interpreting anomalies, understanding severity, and documenting mitigation actions. OT-Sentinel demonstrates how a modern web interface can bridge cyber monitoring, simulated incidents, and explainable operational response.
