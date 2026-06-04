@@ -22,7 +22,9 @@ beforeAll(() => {
         network_traffic: '192.168.1.10',
         traffic_volume: 100,
         status: 'SECURE',
-        anomaly_score: 0.1,
+        anomaly_score: 0.05,
+        risk_score: 0,
+        per_sensor_contributions: [],
         log_entry: 'Status check OK',
       }),
     })

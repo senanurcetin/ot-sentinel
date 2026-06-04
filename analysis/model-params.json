@@ -1,0 +1,152 @@
+{
+  "_description": "OT anomaly detection model parameters derived from Isolation Forest training on simulated normal operating telemetry. Consumed by src/lib/anomaly-scorer.ts.",
+  "training_config": {
+    "n_normal_samples": 5000,
+    "contamination": 0.05,
+    "sensors": [
+      "temp",
+      "pressure",
+      "vibration"
+    ],
+    "sensor_order": [
+      "temp",
+      "pressure",
+      "vibration"
+    ]
+  },
+  "sensor_stats": {
+    "temp": {
+      "mean": 49.9337,
+      "std": 3.3312,
+      "min_observed": 37.8386,
+      "max_observed": 61.5135,
+      "p1": 42.1851,
+      "p99": 57.9156,
+      "z_threshold_warning": 2.0,
+      "z_threshold_critical": 3.0
+    },
+    "pressure": {
+      "mean": 1009.9982,
+      "std": 3.3758,
+      "min_observed": 996.6667,
+      "max_observed": 1023.3333,
+      "p1": 1002.0409,
+      "p99": 1017.8193,
+      "z_threshold_warning": 2.0,
+      "z_threshold_critical": 3.0
+    },
+    "vibration": {
+      "mean": 0.0549,
+      "std": 0.015,
+      "min_observed": -0.0033,
+      "max_observed": 0.115,
+      "p1": 0.0209,
+      "p99": 0.0899,
+      "z_threshold_warning": 2.0,
+      "z_threshold_critical": 3.0
+    }
+  },
+  "sensor_weights": {
+    "temp": 0.4,
+    "pressure": 0.3,
+    "vibration": 0.3
+  },
+  "isolation_forest_thresholds": {
+    "threshold_warning_p95": 0.5647,
+    "threshold_critical_p99": 0.6108,
+    "mean_normal_score": 0.4562,
+    "std_normal_score": 0.0542
+  },
+  "correlation_matrix": {
+    "sensors": [
+      "temp",
+      "pressure",
+      "vibration"
+    ],
+    "matrix": [
+      [
+        1.0,
+        -0.0336,
+        -0.017
+      ],
+      [
+        -0.0336,
+        1.0,
+        0.0147
+      ],
+      [
+        -0.017,
+        0.0147,
+        1.0
+      ]
+    ]
+  },
+  "risk_score_formula": {
+    "description": "risk_score = round(min(100, 100 * (1 - exp(-0.25 * composite_z))))",
+    "composite_z": "weighted average of per-sensor |z-scores| using sensor_weights",
+    "status_threshold": {
+      "CRITICAL": "risk_score >= 50",
+      "SECURE": "risk_score < 50"
+    },
+    "examples": [
+      {
+        "z_score": 0.0,
+        "composite_risk_score": 0,
+        "status": "SECURE"
+      },
+      {
+        "z_score": 1.0,
+        "composite_risk_score": 22,
+        "status": "SECURE"
+      },
+      {
+        "z_score": 2.0,
+        "composite_risk_score": 39,
+        "status": "SECURE"
+      },
+      {
+        "z_score": 3.0,
+        "composite_risk_score": 53,
+        "status": "CRITICAL"
+      },
+      {
+        "z_score": 4.0,
+        "composite_risk_score": 63,
+        "status": "CRITICAL"
+      },
+      {
+        "z_score": 5.0,
+        "composite_risk_score": 71,
+        "status": "CRITICAL"
+      }
+    ]
+  },
+  "normal_operating_envelope": {
+    "temp": {
+      "min": 40.0,
+      "max": 60.0
+    },
+    "pressure": {
+      "min": 1000.0,
+      "max": 1020.0
+    },
+    "vibration": {
+      "min": 0.01,
+      "max": 0.1
+    }
+  },
+  "attack_envelope_reference": {
+    "temp": {
+      "min": 100.0,
+      "max": 150.0
+    },
+    "pressure": {
+      "min": 1100.0,
+      "max": 1200.0
+    },
+    "vibration": {
+      "min": 0.8,
+      "max": 2.5
+    }
+  }
+}

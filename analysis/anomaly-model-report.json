@@ -1,0 +1,62 @@
+{
+  "title": "OT Anomaly Detection Model Training Report",
+  "training_summary": {
+    "model": "IsolationForest (n_estimators=200, contamination=0.05)",
+    "training_samples": 5000,
+    "sensor_count": 3
+  },
+  "sensor_statistics": {
+    "temp": {
+      "mean": 49.9337,
+      "std": 3.3312,
+      "min_observed": 37.8386,
+      "max_observed": 61.5135,
+      "p1": 42.1851,
+      "p99": 57.9156,
+      "z_threshold_warning": 2.0,
+      "z_threshold_critical": 3.0
+    },
+    "pressure": {
+      "mean": 1009.9982,
+      "std": 3.3758,
+      "min_observed": 996.6667,
+      "max_observed": 1023.3333,
+      "p1": 1002.0409,
+      "p99": 1017.8193,
+      "z_threshold_warning": 2.0,
+      "z_threshold_critical": 3.0
+    },
+    "vibration": {
+      "mean": 0.0549,
+      "std": 0.015,
+      "min_observed": -0.0033,
+      "max_observed": 0.115,
+      "p1": 0.0209,
+      "p99": 0.0899,
+      "z_threshold_warning": 2.0,
+      "z_threshold_critical": 3.0
+    }
+  },
+  "isolation_forest_thresholds": {
+    "threshold_warning_p95": 0.5647,
+    "threshold_critical_p99": 0.6108,
+    "mean_normal_score": 0.4562,
+    "std_normal_score": 0.0542
+  },
+  "validation_results": {
+    "held_out_normal_samples": 500,
+    "attack_samples": 500,
+    "true_positives": 500,
+    "false_positives": 10,
+    "true_negatives": 490,
+    "false_negatives": 0,
+    "precision_at_p99": 0.9804,
+    "recall_at_p99": 1.0,
+    "f1_at_p99": 0.9901,
+    "mean_attack_score": 0.7506,
+    "mean_normal_score": 0.4564,
+    "separation_ratio": 1.6446
+  },
+  "interpretation": "Separation ratio 1.64x means attack samples score 1.64x higher than normal samples on average. Precision at p99 threshold: 98.0%, Recall: 100.0%.",
+  "deployment_note": "The sensor_stats block is exported to anomaly-scorer.ts for z-score computation. The hard-coded random ranges in route.ts are replaced by the scorer's output."
+}

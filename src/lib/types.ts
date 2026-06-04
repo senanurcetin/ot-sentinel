@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+export type SensorContribution = {
+  sensor: string;
+  z_score: number;
+  contribution_pct: number;
+  status: 'normal' | 'warning' | 'critical';
+};
+
 export type Metrics = {
   timestamp: string;
   metrics: {
@@ -11,6 +18,8 @@ export type Metrics = {
   traffic_volume: number;
   status: 'SECURE' | 'CRITICAL';
   anomaly_score: number;
+  risk_score: number;
+  per_sensor_contributions: SensorContribution[];
   log_entry: string;
 };
 
