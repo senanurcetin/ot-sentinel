@@ -40,3 +40,10 @@ yarn-error.log*
 .genkit/cache
 .idx/
 .vscode/
+
+# python / analysis
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+analysis/data/
+analysis/artifacts/synthetic-smoke/

@@ -24,6 +24,12 @@ Plant teams often have monitoring signals, but they still lack a clear operator-
 - Generates a forensic summary with charts and exportable audit data.
 - Includes Jest tests, ESLint, a Docker image, and GitHub Actions for CI, CodeQL and dependency audit.
 
+## Case study (in progress)
+
+`analysis/` contains a reproducible attack-detection comparison on the public BATADAL SCADA
+benchmark. The pipeline and its tests are in place; **it has not been run on the real dataset yet,
+so this repository publishes no detection metrics.** See [`analysis/README.md`](analysis/README.md).
+
 ## Architecture snapshot
 
 - **Frontend:** Next.js App Router, React 19, TypeScript

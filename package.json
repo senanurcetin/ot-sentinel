@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "case-study:refresh": "python3 analysis/run_batadal_case_study.py",
+    "analysis:test": "cd analysis && python3 -m pytest"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
