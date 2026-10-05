@@ -19,10 +19,10 @@ Plant teams often have monitoring signals, but they still lack a clear operator-
 ## What it does
 
 - Streams industrial telemetry such as temperature, pressure, vibration, and traffic indicators.
-- Uses Genkit and Gemini to classify anomalies and generate mitigation guidance.
+- Scores each telemetry sample against a statistical baseline; Genkit and Gemini then explain the detection and suggest mitigations (the LLM does not decide whether an anomaly exists).
 - Supports attack simulation for demo and training scenarios.
 - Generates a forensic summary with charts and exportable audit data.
-- Includes Jest-based UI tests and a baseline GitHub Actions workflow.
+- Includes Jest tests, ESLint, a Docker image, and GitHub Actions for CI, CodeQL and dependency audit.
 
 ## Architecture snapshot
 
@@ -30,7 +30,7 @@ Plant teams often have monitoring signals, but they still lack a clear operator-
 - **AI runtime:** Genkit with Google Gemini
 - **Visualization:** ShadCN UI, Tailwind CSS, Recharts
 - **Testing:** Jest and React Testing Library
-- **Deployment target:** Vercel or any Node-compatible host
+- **Deployment:** Docker image (`Dockerfile`, Next.js standalone, port 9002) or Vercel / any Node host
 
 ## Local setup
 
@@ -60,9 +60,17 @@ The app runs on `http://localhost:9002`.
 ## Quality checks
 
 ```bash
-npm test
+npm run lint
 npm run typecheck
+npm test
 npm run build
+```
+
+### Docker
+
+```bash
+docker build -t ot-sentinel .
+docker run --rm -p 9002:9002 -e GEMINI_API_KEY=your-key ot-sentinel
 ```
 
 ## Repository highlights

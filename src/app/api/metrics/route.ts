@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     const isAttack = req.nextUrl.searchParams.get('attack') === 'true';
     const data = isAttack ? generateAnomalyData() : generateNormalData();
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to generate metrics' }, { status: 500 });
   }
 }

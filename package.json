@@ -1,5 +1,5 @@
 {
-  "name": "nextn",
+  "name": "ot-sentinel",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,10 +8,11 @@
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
@@ -43,11 +44,9 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
-    "firebase": "^11.9.1",
     "genkit": "^1.20.0",
     "lucide-react": "^0.475.0",
-    "next": "15.5.9",
-    "patch-package": "^8.0.0",
+    "next": "^15.5.27",
     "react": "^19.2.1",
     "react-day-picker": "^9.11.3",
     "react-dom": "^19.2.1",
@@ -58,12 +57,15 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.0.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
+    "eslint": "^9.38.0",
+    "eslint-config-next": "^15.5.27",
     "genkit-cli": "^1.20.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",

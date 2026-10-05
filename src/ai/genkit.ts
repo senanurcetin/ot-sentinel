@@ -4,19 +4,12 @@ import {googleAI} from '@genkit-ai/google-genai';
 /**
  * Initializes and configures the Genkit AI instance.
  *
- * This setup specifies the Google AI plugin for generative capabilities and
- * sets the default model to 'gemini-1.5-flash-latest' for all AI operations.
- * Using a 'latest' model ensures that the application benefits from the
- * most recent stable updates and improvements automatically.
+ * Uses the Google AI plugin with Gemini 2.5 Flash as the default model:
+ * low latency suits the operator-facing alert dialog. The model is only used to
+ * explain a detection that the anomaly scorer has already made; it never decides
+ * whether an anomaly exists.
  */
 export const ai = genkit({
-  plugins: [
-    googleAI({
-      // The API version can be specified here. 'v1beta' is common for recent features.
-      // apiVersion: 'v1beta',
-    }),
-  ],
-  // Using 'gemini-1.5-flash-latest' ensures access to the most recent stable version of the Flash model,
-  // balancing performance, cost, and cutting-edge capabilities.
-  model: 'gemini-1.5-flash-latest',
+  plugins: [googleAI()],
+  model: 'googleai/gemini-2.5-flash',
 });
