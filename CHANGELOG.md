@@ -26,12 +26,27 @@ All notable changes to this project are documented here.
   coverage thresholds, and Playwright E2E tests (`npm run test:e2e`, CI workflow `e2e-tests.yml`)
 - `src/lib/forensic-csv.ts`: CSV export extracted and protected against spreadsheet formula injection
 
+- Security headers and CSP (`src/lib/security-headers.ts`), per-client rate limiting for `/api/metrics`,
+  `/api/feedback` and the AI server action, request validation (zod query, 4 KB body cap) and
+  `Cache-Control: no-store` on API responses
+- Deterministic rule-based mitigation guidance (`src/lib/fallback-mitigation.ts`) and a 20 s timeout
+  for the Gemini call; the dialog labels fallback guidance as "AI explanation unavailable"
+- `TelemetrySource` interface (`src/lib/telemetry-source.ts`) as the boundary for future replay and
+  read-only protocol adapters
+- `docs/threat-model.md` with threats, mitigations, residual risk and an ATT&CK for ICS mapping
+  (identifiers verified against MITRE's data)
+- `pip-audit` and gitleaks jobs in the security workflow
+
 ### Fixed
 - The alert dialog re-requested the Gemini explanation every second while the first request was
   pending (telemetry updates handed it a new object each tick); it now asks once per alert and
   drops stale responses
 
 ### Changed
+- `GET /api/metrics` now returns 400 for an `attack` value other than `true`/`false` (previously
+  anything but `true` meant normal operation)
+- `generateThreatMitigationAlert` validates its input, never throws on model failure, and returns a
+  `source` of `ai` or `fallback`
 - Tests are type-checked by `npm run typecheck`; the global lucide-react mock was replaced by the
   real icons (CommonJS build)
 - The "AI Confidence" card (which was `100 - anomaly_score*100`, not a confidence) is now the

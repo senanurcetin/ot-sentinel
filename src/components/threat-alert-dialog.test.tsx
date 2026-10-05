@@ -24,7 +24,7 @@ beforeEach(() => {
   fetchMock = jest.fn(async () => ({ ok: true, status: 202 }));
   global.fetch = fetchMock as unknown as typeof fetch;
   mockedAlert.mockReset();
-  mockedAlert.mockResolvedValue({ summary: 'Vibration spike', suggestedActions: ['Isolate pump', 'Check logs'] });
+  mockedAlert.mockResolvedValue({ summary: 'Vibration spike', suggestedActions: ['Isolate pump', 'Check logs'], source: 'ai' });
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -38,11 +38,25 @@ describe('ThreatAlertDialog', () => {
     expect(screen.getByText('Check logs')).toBeInTheDocument();
   });
 
-  it('shows deterministic fallback guidance when the AI call fails', async () => {
-    mockedAlert.mockRejectedValue(new Error('no api key'));
+  it('does not show the fallback notice for an AI answer', async () => {
     render(<ThreatAlertDialog open onOpenChange={jest.fn()} threatData={threat} />);
-    expect(await screen.findByText(/error occurred while generating the AI summary/i)).toBeInTheDocument();
-    expect(screen.getByText(/Isolate the affected network segment/)).toBeInTheDocument();
+    await screen.findByText('Vibration spike');
+    expect(screen.queryByRole('note')).not.toBeInTheDocument();
+  });
+
+  it('labels server-side fallback guidance as rule-based', async () => {
+    mockedAlert.mockResolvedValue({ summary: 'Rule summary', suggestedActions: ['Check gauge'], source: 'fallback' });
+    render(<ThreatAlertDialog open onOpenChange={jest.fn()} threatData={threat} />);
+    expect(await screen.findByText('Rule summary')).toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent('AI explanation unavailable');
+  });
+
+  it('builds the same rule-based guidance locally when the server action itself fails', async () => {
+    mockedAlert.mockRejectedValue(new Error('server action unreachable'));
+    render(<ThreatAlertDialog open onOpenChange={jest.fn()} threatData={threat} />);
+    expect(await screen.findByText(/rule-based assessment/)).toBeInTheDocument();
+    expect(screen.getByText(/Do not restart PLCs/)).toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent('AI explanation unavailable');
   });
 
   it.each([

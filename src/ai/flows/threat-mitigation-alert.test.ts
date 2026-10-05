@@ -8,6 +8,10 @@ import {
 
 // Genkit is replaced by a stub that captures how the prompt and flow are defined.
 const promptFn = jest.fn();
+let callerIp = '192.0.2.1';
+jest.mock('next/headers', () => ({
+  headers: jest.fn(async () => new Headers({ 'x-forwarded-for': callerIp })),
+}));
 jest.mock('@/ai/genkit', () => ({
   ai: {
     definePrompt: jest.fn(() => promptFn),
@@ -29,11 +33,59 @@ const input: ThreatMitigationAlertInput = {
   log_entry: 'ANOMALY DETECTED',
 };
 
+let ipCounter = 0;
+
 describe('threat mitigation flow', () => {
-  it('passes the event to the prompt and returns its structured output', async () => {
+  beforeEach(() => {
+    promptFn.mockReset();
+    callerIp = `192.0.2.${++ipCounter}`; // fresh rate-limit bucket per test
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('passes the event to the prompt and returns its structured output tagged as AI', async () => {
     promptFn.mockResolvedValue({ output: { summary: 'S', suggestedActions: ['A'] } });
-    await expect(generateThreatMitigationAlert(input)).resolves.toEqual({ summary: 'S', suggestedActions: ['A'] });
+    await expect(generateThreatMitigationAlert(input)).resolves.toEqual({
+      summary: 'S',
+      suggestedActions: ['A'],
+      source: 'ai',
+    });
     expect(promptFn).toHaveBeenCalledWith(input);
+  });
+
+  it('returns rule-based guidance instead of throwing when the model call fails', async () => {
+    promptFn.mockRejectedValue(new Error('API key not valid'));
+    const result = await generateThreatMitigationAlert(input);
+    expect(result.source).toBe('fallback');
+    expect(result.summary).toContain('risk score 90/100');
+    expect(result.suggestedActions.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('falls back when the model takes longer than the timeout', async () => {
+    jest.useFakeTimers();
+    try {
+      promptFn.mockReturnValue(new Promise(() => {}));
+      const pending = generateThreatMitigationAlert(input);
+      await jest.advanceTimersByTimeAsync(20_001);
+      await expect(pending).resolves.toMatchObject({ source: 'fallback' });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('stops calling the model after 10 requests a minute from one client', async () => {
+    promptFn.mockResolvedValue({ output: { summary: 'S', suggestedActions: ['A'] } });
+    const sources = [];
+    for (let i = 0; i < 12; i++) sources.push((await generateThreatMitigationAlert(input)).source);
+    expect(sources.slice(0, 10).every((s) => s === 'ai')).toBe(true);
+    expect(sources.slice(10)).toEqual(['fallback', 'fallback']);
+    expect(promptFn).toHaveBeenCalledTimes(10);
+  });
+
+  it('rejects malformed client input before spending a model call', async () => {
+    const bad = { ...input, status: 'WARNING' } as unknown as typeof input;
+    await expect(generateThreatMitigationAlert(bad)).rejects.toThrow();
+    expect(promptFn).not.toHaveBeenCalled();
   });
 
   it('registers the prompt with the shared zod schemas', () => {

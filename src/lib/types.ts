@@ -74,6 +74,11 @@ export type ThreatMitigationAlertOutput = z.infer<
   typeof ThreatMitigationAlertOutputSchema
 >;
 
+/** What the UI receives: the model's answer, or rule-based guidance when the model was unavailable. */
+export type ThreatMitigationAlertResult = ThreatMitigationAlertOutput & {
+  source: 'ai' | 'fallback';
+};
+
 export const AlertFeedbackSchema = z.object({
   timestamp: z.string().min(1).max(64),
   verdict: z.enum(['confirmed_threat', 'false_alarm']),

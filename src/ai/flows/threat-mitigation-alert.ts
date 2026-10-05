@@ -5,18 +5,47 @@
  * - generateThreatMitigationAlert - A function that generates a threat mitigation alert.
  */
 
+import {headers} from 'next/headers';
 import {ai} from '@/ai/genkit';
+import {buildFallbackAlert} from '@/lib/fallback-mitigation';
+import {RateLimiter, clientKey} from '@/lib/rate-limit';
+import {withTimeout} from '@/lib/with-timeout';
 import {
   ThreatMitigationAlertInputSchema,
   ThreatMitigationAlertOutputSchema,
   type ThreatMitigationAlertInput,
-  type ThreatMitigationAlertOutput,
+  type ThreatMitigationAlertResult,
 } from '@/lib/types';
 
+// A server action is a public endpoint and every call costs a model request: cap how long we wait
+// and how often one client can trigger it. Over the cap, callers get the rule-based guidance.
+const AI_TIMEOUT_MS = 20_000;
+const aiLimiter = new RateLimiter(10, 60_000);
+
+async function callerKey(): Promise<string> {
+  try {
+    return clientKey(await headers());
+  } catch {
+    return 'unknown'; // outside a request scope (tests, Genkit dev UI)
+  }
+}
+
 export async function generateThreatMitigationAlert(
-  input: ThreatMitigationAlertInput
-): Promise<ThreatMitigationAlertOutput> {
-  return threatMitigationAlertFlow(input);
+  rawInput: ThreatMitigationAlertInput
+): Promise<ThreatMitigationAlertResult> {
+  // Server action arguments come from the client: validate instead of trusting the TS type.
+  const input = ThreatMitigationAlertInputSchema.parse(rawInput);
+
+  if (!aiLimiter.check(await callerKey()).allowed) {
+    return {...buildFallbackAlert(input), source: 'fallback'};
+  }
+  try {
+    const output = await withTimeout(threatMitigationAlertFlow(input), AI_TIMEOUT_MS, 'AI explanation');
+    return {...output, source: 'ai'};
+  } catch (error) {
+    console.error('AI explanation failed, using rule-based guidance:', error);
+    return {...buildFallbackAlert(input), source: 'fallback'};
+  }
 }
 
 const threatMitigationAlertPrompt = ai.definePrompt({

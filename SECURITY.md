@@ -20,9 +20,17 @@ there is no contractual fix timeline.
 - `GEMINI_API_KEY` is read server-side only. Never commit `.env`; `.env.example` is the template.
 - The AI layer explains a detection that the scorer has already made. It is not a detection control.
 
+## Built-in protections
+
+Security headers and a Content-Security-Policy on every route, per-client rate limits on the API
+and on the AI server action, input validation (zod) with a body-size cap, a 20 s model timeout with
+deterministic rule-based fallback, and CSV formula-injection protection. What they do and do not
+cover is in [docs/threat-model.md](docs/threat-model.md).
+
 ## Automated checks
 
-- `npm audit --omit=dev --audit-level=critical` on every PR and weekly
+- `npm audit --omit=dev --audit-level=critical` and `pip-audit` on every PR and weekly
+- Secret scanning (gitleaks) on every PR and weekly
 - CodeQL (JavaScript/TypeScript) on every PR and weekly
 - Dependabot for npm, pip (`analysis/`) and GitHub Actions
 

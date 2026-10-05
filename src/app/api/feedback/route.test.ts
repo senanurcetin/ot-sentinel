@@ -2,11 +2,12 @@
 import { NextRequest } from 'next/server';
 import { POST } from './route';
 
-const post = (body: string) =>
+let ipCounter = 0;
+const post = (body: string, ip = `192.0.2.${++ipCounter}`, headers: Record<string, string> = {}) =>
   POST(
     new NextRequest('http://localhost/api/feedback', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip, ...headers },
       body,
     })
   );
@@ -34,5 +35,29 @@ describe('POST /api/feedback', () => {
 
   it('rejects malformed JSON with 400', async () => {
     expect((await post('{not json')).status).toBe(400);
+  });
+
+  it('rejects a body over 4 KB with 413 without parsing it', async () => {
+    const res = await post(JSON.stringify({ timestamp: 't', verdict: 'false_alarm', note: 'x'.repeat(5000) }));
+    expect(res.status).toBe(413);
+  });
+
+  it('rejects a request whose declared length is already over the limit', async () => {
+    const res = await post('{}', undefined, { 'content-length': '999999' });
+    expect(res.status).toBe(413);
+  });
+
+  it('returns 429 after 30 requests per minute from one client', async () => {
+    const ip = '198.51.100.7';
+    const ok = JSON.stringify({ timestamp: 't', verdict: 'false_alarm' });
+    const statuses = [];
+    for (let i = 0; i < 31; i++) statuses.push((await post(ok, ip)).status);
+    expect(statuses.slice(0, 30).every((s) => s === 202)).toBe(true);
+    expect(statuses[30]).toBe(429);
+  });
+
+  it('marks responses as not cacheable', async () => {
+    const res = await post(JSON.stringify({ timestamp: 't', verdict: 'false_alarm' }));
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 });

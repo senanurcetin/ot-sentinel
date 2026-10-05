@@ -3,8 +3,9 @@
 import { generateThreatMitigationAlert } from '@/ai/flows/threat-mitigation-alert';
 import type {
   ThreatMitigationAlertInput,
-  ThreatMitigationAlertOutput,
+  ThreatMitigationAlertResult,
 } from '@/lib/types';
+import { buildFallbackAlert } from '@/lib/fallback-mitigation';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -39,7 +40,7 @@ type ThreatAlertDialogProps = {
 
 export default function ThreatAlertDialog({ open, onOpenChange, threatData }: ThreatAlertDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ThreatMitigationAlertOutput | null>(null);
+  const [result, setResult] = useState<ThreatMitigationAlertResult | null>(null);
 
   // Telemetry updates every second, which hands this component a new `threatData` object each
   // time. Without this guard the effect would re-request the AI explanation on every update
@@ -60,10 +61,8 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
         .catch((error) => {
           console.error('Failed to get AI threat mitigation alert:', error);
           if (requestId.current === id) {
-            setResult({
-              summary: "An error occurred while generating the AI summary. Please check the logs and network status manually.",
-              suggestedActions: ["Isolate the affected network segment immediately.", "Review firewall logs for the source IP.", "Perform a system scan on the affected PLCs."]
-            });
+            // The server action itself failed (network, deployment): same rule-based guidance.
+            setResult({ ...buildFallbackAlert(threatData), source: 'fallback' });
           }
         })
         .finally(() => {
@@ -108,7 +107,14 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
                     <Skeleton className="h-4 w-3/4" />
                 </div>
             ) : (
-                <p className="text-muted-foreground bg-muted p-3 rounded-md">{result?.summary}</p>
+                <>
+                  <p className="text-muted-foreground bg-muted p-3 rounded-md">{result?.summary}</p>
+                  {result?.source === 'fallback' && (
+                    <p className="text-xs text-amber-500" role="note">
+                      AI explanation unavailable — showing rule-based guidance.
+                    </p>
+                  )}
+                </>
             )}
           </div>
           <div className="space-y-3">
