@@ -20,6 +20,9 @@ npx playwright install chromium   # once
 npm run test:e2e
 ```
 
+Documentation is tested too (`analysis/tests/test_docs.py`): links must resolve, and numbers about
+detection performance may only appear once a real results file exists.
+
 `jest.config.ts` enforces a coverage floor; add tests with the change rather than lowering it.
 
 Conventions:

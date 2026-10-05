@@ -9,3 +9,6 @@ coverage
 analysis/.cache
 *.md
 !README.md
+docs
+playwright-report
+test-results

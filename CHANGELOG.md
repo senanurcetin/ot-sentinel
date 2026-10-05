@@ -37,7 +37,17 @@ All notable changes to this project are documented here.
   (identifiers verified against MITRE's data)
 - `pip-audit` and gitleaks jobs in the security workflow
 
+- Presentation layer: rewritten README (status table, screenshots, 35 s walkthrough video), `MODEL_CARD.md`
+  (parameter table generated from `scorer-params.json`), `docs/architecture.md` (mermaid diagrams),
+  `docs/case-study.md`, `docs/hiring-summary.md`; the original Firebase Studio spec moved to `docs/archive/`
+- `analysis/tests/test_docs.py`: relative links must resolve, and while no BATADAL results file exists the
+  documents must say the evaluation has not been run and may not quote metric values
+
 ### Fixed
+- Normal-mode telemetry crossed the CRITICAL line about once every 4-5 minutes (0.37 % of samples in a
+  200,000-draw simulation): the generator sampled the ranges uniformly and rounded vibration to two
+  decimals, while the baseline had been fitted on Gaussian draws. It now draws the way the baseline was
+  fitted (about 0.002 %), with seeded regression tests
 - The alert dialog re-requested the Gemini explanation every second while the first request was
   pending (telemetry updates handed it a new object each tick); it now asks once per alert and
   drops stale responses

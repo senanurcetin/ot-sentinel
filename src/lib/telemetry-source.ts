@@ -17,6 +17,23 @@ export interface TelemetrySource {
 
 const getRandomNumber = (min: number, max: number) => Math.random() * (max - min) + min;
 
+/** Standard normal draw (Box-Muller). `1 - random()` keeps the log argument above zero. */
+function gaussian(): number {
+  return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+}
+
+/**
+ * A reading from the NORMAL operating envelope, drawn the same way the detector's baseline was
+ * fitted (analysis/train_anomaly_model.py): Gaussian around the envelope centre with
+ * sigma = range / 6, clipped one sigma beyond the envelope. Drawing uniformly from the range
+ * instead made the demo's own "normal" data cross the CRITICAL line about once every 4-5 minutes.
+ */
+function normalReading(min: number, max: number): number {
+  const sigma = (max - min) / 6;
+  const value = (min + max) / 2 + sigma * gaussian();
+  return Math.min(max + sigma, Math.max(min - sigma, value));
+}
+
 /**
  * Generates normal operating metrics.
  * Sensor values are drawn from the normal operating envelope; the anomaly
@@ -27,9 +44,10 @@ const generateNormalData = (): Metrics => {
   const normalIPs = ['192.168.1.10', '192.168.1.12', '10.0.0.5', '10.0.0.6'];
   const sourceIp = normalIPs[Math.floor(Math.random() * normalIPs.length)];
   const sensorValues = {
-    temp: parseFloat(getRandomNumber(40, 60).toFixed(2)),
-    pressure: parseFloat(getRandomNumber(1000, 1020).toFixed(2)),
-    vibration: parseFloat(getRandomNumber(0.01, 0.1).toFixed(2)),
+    temp: parseFloat(normalReading(40, 60).toFixed(2)),
+    pressure: parseFloat(normalReading(1000, 1020).toFixed(2)),
+    // 3 decimals: at 2 the 0.015 baseline std is coarser than the rounding step.
+    vibration: parseFloat(normalReading(0.01, 0.1).toFixed(3)),
   };
   const scored = scoreMetrics(sensorValues);
 
