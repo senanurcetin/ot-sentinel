@@ -22,7 +22,18 @@ All notable changes to this project are documented here.
 - `POST /api/feedback` (zod-validated, in-memory) and "false alarm" / "confirm threat" buttons
 - Jest tests for the scorer, `/api/metrics`, `/api/feedback` and the new panel
 
+- Dashboard, alert-dialog, forensic-report and Genkit-flow tests (63 Jest tests in total), Jest
+  coverage thresholds, and Playwright E2E tests (`npm run test:e2e`, CI workflow `e2e-tests.yml`)
+- `src/lib/forensic-csv.ts`: CSV export extracted and protected against spreadsheet formula injection
+
+### Fixed
+- The alert dialog re-requested the Gemini explanation every second while the first request was
+  pending (telemetry updates handed it a new object each tick); it now asks once per alert and
+  drops stale responses
+
 ### Changed
+- Tests are type-checked by `npm run typecheck`; the global lucide-react mock was replaced by the
+  real icons (CommonJS build)
 - The "AI Confidence" card (which was `100 - anomaly_score*100`, not a confidence) is now the
   detector's **Risk Score**
 - The Gemini prompt receives the detector's risk score and per-sensor contributions and is told

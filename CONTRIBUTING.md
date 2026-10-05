@@ -9,8 +9,18 @@ npm run dev              # http://localhost:9002
 Before opening a PR run the same checks CI runs:
 
 ```bash
-npm run lint && npm run typecheck && npm test && npm run build
+npm run lint && npm run typecheck && npm run test:coverage && npm run build
+cd analysis && pip install -r requirements-dev.txt && ruff check . && pytest
 ```
+
+End-to-end tests (Playwright) start the app themselves:
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e
+```
+
+`jest.config.ts` enforces a coverage floor; add tests with the change rather than lowering it.
 
 Conventions:
 

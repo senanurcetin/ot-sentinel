@@ -14,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, ListChecks, ShieldCheck, Activity } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -41,33 +41,47 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ThreatMitigationAlertOutput | null>(null);
 
+  // Telemetry updates every second, which hands this component a new `threatData` object each
+  // time. Without this guard the effect would re-request the AI explanation on every update
+  // until the first response arrived. One request per time the dialog opens; stale responses
+  // (dialog closed or reopened meanwhile) are dropped via the request id.
+  const requestId = useRef(0);
+  const requested = useRef(false);
+
   useEffect(() => {
-    if (open && threatData && !result) {
-      const getAlert = async () => {
-        setLoading(true);
-        try {
-          const aiResult = await generateThreatMitigationAlert(threatData);
-          setResult(aiResult);
-        } catch (error) {
+    if (open && threatData && !requested.current) {
+      requested.current = true;
+      const id = ++requestId.current;
+      setLoading(true);
+      generateThreatMitigationAlert(threatData)
+        .then((aiResult) => {
+          if (requestId.current === id) setResult(aiResult);
+        })
+        .catch((error) => {
           console.error('Failed to get AI threat mitigation alert:', error);
-          setResult({
-            summary: "An error occurred while generating the AI summary. Please check the logs and network status manually.",
-            suggestedActions: ["Isolate the affected network segment immediately.", "Review firewall logs for the source IP.", "Perform a system scan on the affected PLCs."]
-          })
-        } finally {
-          setLoading(false);
-        }
-      };
-      getAlert();
+          if (requestId.current === id) {
+            setResult({
+              summary: "An error occurred while generating the AI summary. Please check the logs and network status manually.",
+              suggestedActions: ["Isolate the affected network segment immediately.", "Review firewall logs for the source IP.", "Perform a system scan on the affected PLCs."]
+            });
+          }
+        })
+        .finally(() => {
+          if (requestId.current === id) setLoading(false);
+        });
     }
+
     if (!open) {
-      // Reset state when dialog is closed
-      setTimeout(() => {
+      requested.current = false;
+      requestId.current += 1; // invalidate any in-flight request
+      // Keep the content visible while the close animation plays, then reset.
+      const timer = setTimeout(() => {
         setResult(null);
         setLoading(false);
       }, 300);
+      return () => clearTimeout(timer);
     }
-  }, [open, threatData, result]);
+  }, [open, threatData]);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

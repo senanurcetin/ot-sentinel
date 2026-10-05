@@ -76,9 +76,10 @@ Telemetry is still synthetic until the BATADAL replay mode lands (see `analysis/
 
 ```bash
 npm run lint
-npm run typecheck
-npm test
+npm run typecheck        # includes test files
+npm run test:coverage    # Jest + coverage thresholds
 npm run build
+npm run test:e2e         # Playwright, needs `npx playwright install chromium` once
 ```
 
 ### Docker

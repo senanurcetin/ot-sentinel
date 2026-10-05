@@ -14,7 +14,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "case-study:refresh": "python3 analysis/run_batadal_case_study.py",
-    "analysis:test": "cd analysis && python3 -m pytest"
+    "analysis:test": "cd analysis && python3 -m pytest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
@@ -60,6 +61,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.0.0",
     "@types/jest": "^29.5.12",

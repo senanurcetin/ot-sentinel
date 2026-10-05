@@ -35,8 +35,8 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
-      - name: Test
-        run: npm test -- --runInBand
+      - name: Test with coverage (thresholds in jest.config.ts)
+        run: npm run test:coverage -- --runInBand
 
       - name: Build
         run: npm run build

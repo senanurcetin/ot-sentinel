@@ -47,3 +47,7 @@ __pycache__/
 .ruff_cache/
 analysis/data/
 analysis/artifacts/synthetic-smoke/
+
+# playwright
+/test-results/
+/playwright-report/
