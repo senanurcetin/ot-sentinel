@@ -11,6 +11,7 @@ import ThreatAlertDialog from '@/components/threat-alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldAlert, Gauge, Thermometer, Waves, Activity } from 'lucide-react';
 import ForensicReportDialog from './forensic-report-dialog';
+import SensorContributions from '@/components/sensor-contributions';
 
 /**
  * The maximum number of data points to display on the charts.
@@ -148,11 +149,11 @@ export default function Dashboard() {
     }
   };
 
-  // Derived state for system status and AI confidence score
+  // Derived state for system status and the detector's risk score
   const systemStatus = metrics?.status || 'UNKNOWN';
-  const aiConfidence = metrics ? `${(100 - metrics.anomaly_score * 100).toFixed(1)}%` : 'N/A';
+  const riskScore = metrics ? `${metrics.risk_score}/100` : 'N/A';
 
-  // Prepare the data to be sent to the AI for analysis, removing unnecessary fields.
+  // Data sent to the LLM: the detector's verdict and the sensors behind it.
   const threatDataForAI: ThreatMitigationAlertInput | null = metrics
     ? {
         timestamp: metrics.timestamp,
@@ -160,6 +161,8 @@ export default function Dashboard() {
         network_traffic: metrics.network_traffic,
         status: metrics.status,
         anomaly_score: metrics.anomaly_score,
+        risk_score: metrics.risk_score,
+        per_sensor_contributions: metrics.per_sensor_contributions,
         log_entry: metrics.log_entry,
       }
     : null;
@@ -195,10 +198,11 @@ export default function Dashboard() {
                valueClassName={metrics && metrics.metrics.vibration > 0.5 ? 'text-rose-500' : 'text-foreground'}
             />
             <MetricCard
-              title="AI Confidence"
-              value={aiConfidence}
+              title="Risk Score"
+              value={riskScore}
               icon={Gauge}
-              description="Confidence in 'Secure' status"
+              valueClassName={metrics && metrics.status === 'CRITICAL' ? 'text-rose-500' : 'text-foreground'}
+              description="Statistical detector, 0 = nominal"
             />
             <MetricCard
               title="Active Threats"
@@ -215,6 +219,10 @@ export default function Dashboard() {
               <AnalyticsCharts data={chartData} />
             </div>
           </div>
+          <SensorContributions
+            contributions={metrics?.per_sensor_contributions ?? []}
+            riskScore={metrics?.risk_score ?? null}
+          />
           <div>
             <AuditLog logs={logs} />
           </div>

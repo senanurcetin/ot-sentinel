@@ -16,7 +16,19 @@ All notable changes to this project are documented here.
   the real dataset** (no network access to batadal.net in the authoring environment).
 - Python CI job (ruff + pytest)
 
+- `analysis/export_model.py` generates `src/data/model/scorer-params.json`; the TypeScript scorer
+  imports it instead of hand-copied constants, and a pytest fails if the artifact goes stale
+- "Why this score?" panel: per-sensor z-score, share of the score and status
+- `POST /api/feedback` (zod-validated, in-memory) and "false alarm" / "confirm threat" buttons
+- Jest tests for the scorer, `/api/metrics`, `/api/feedback` and the new panel
+
 ### Changed
+- The "AI Confidence" card (which was `100 - anomaly_score*100`, not a confidence) is now the
+  detector's **Risk Score**
+- The Gemini prompt receives the detector's risk score and per-sensor contributions and is told
+  to explain the detection, not re-decide it
+- Scorer constants now come from the exported model statistics (e.g. temp mean 49.93, std 3.33)
+  instead of rounded hand-typed values
 - Package renamed from `nextn` to `ot-sentinel`
 - Genkit default model moved from `gemini-1.5-flash-latest` to `gemini-2.5-flash`
 - Next.js 15.5.9 → 15.5.27 (clears the critical advisory)

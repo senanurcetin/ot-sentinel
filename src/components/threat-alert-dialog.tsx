@@ -17,6 +17,19 @@ import {
 import { useEffect, useState } from 'react';
 import { AlertTriangle, ListChecks, ShieldCheck, Activity } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
+import { Button } from '@/components/ui/button';
+
+async function sendFeedback(timestamp: string, verdict: 'confirmed_threat' | 'false_alarm') {
+  try {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timestamp, verdict }),
+    });
+  } catch (error) {
+    console.error('Failed to send alert feedback:', error);
+  }
+}
 
 type ThreatAlertDialogProps = {
   open: boolean;
@@ -109,11 +122,23 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
         </div>
 
         <AlertDialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (threatData) void sendFeedback(threatData.timestamp, 'false_alarm');
+              onOpenChange(false);
+            }}
+          >
+            Mark as false alarm
+          </Button>
           <AlertDialogAction 
-            onClick={() => onOpenChange(false)} 
+            onClick={() => {
+              if (threatData) void sendFeedback(threatData.timestamp, 'confirmed_threat');
+              onOpenChange(false);
+            }} 
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            Acknowledge & Close
+            Confirm threat & close
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
