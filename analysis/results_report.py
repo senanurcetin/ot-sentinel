@@ -36,12 +36,25 @@ SET_TITLES = {
 }
 
 
+def _scaled(value: float, digits: int) -> int:
+    """``value`` rounded half-up to ``digits`` decimals, as an integer.
+
+    results.json stores 4 decimals. Python's float formatting (round-half-even on the binary value)
+    and JavaScript's toFixed disagree on exact ties such as 0.1825, which would make the README and
+    the /case-study page show different numbers. Both sides therefore round the stored 4-decimal
+    value half-up with integer arithmetic.
+    """
+    stored = round(value * 10_000)
+    drop = 4 - digits
+    return (stored + 5 * 10 ** (drop - 1)) // 10**drop if drop > 0 else stored
+
+
 def _f(value, digits=3):
-    return "n/a" if value is None else f"{value:.{digits}f}"
+    return "n/a" if value is None else f"{_scaled(value, digits) / 10**digits:.{digits}f}"
 
 
 def _pct(value):
-    return "n/a" if value is None else f"{100 * value:.1f} %"
+    return "n/a" if value is None else f"{_scaled(value, 3) / 10:.1f} %"
 
 
 def _hours(value):

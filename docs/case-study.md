@@ -69,9 +69,9 @@ Isolation Forest, and a supervised gradient-boosting reference trained on the 20
 
 | Detector | Attacks caught | Expected from false alarms alone | Median hours to detect | Alarm hours in attack-free data | Precision | Attack hours caught | PR-AUC |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Static limits | 7 of 7 | 6.3 | 2 | 18.2 % | 34.1 % | 39.1 % | 0.387 |
+| Static limits | 7 of 7 | 6.3 | 2 | 18.3 % | 34.1 % | 39.1 % | 0.387 |
 | Max absolute z-score | 7 of 7 | 6.3 | 1 | 5.2 % | 54.9 % | 26.0 % | 0.427 |
-| Isolation Forest | 7 of 7 | 6.2 | 4 | 6.5 % | 32.1 % | 12.8 % | 0.247 |
+| Isolation Forest | 7 of 7 | 6.2 | 4 | 6.5 % | 32.1 % | 12.8 % | 0.248 |
 | Gradient boosting (supervised) † | 7 of 7 | 6.2 | 3 | 6.3 % | 39.1 % | 16.7 % | 0.322 |
 
 **dataset04 (attacks 1-7, Jul-Dec 2016): secondary** - 7 attacks, 492 attack hours (11.8 % of 4177); a random guess scores a PR-AUC of about 0.118.

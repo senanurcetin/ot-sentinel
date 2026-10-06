@@ -48,7 +48,14 @@ All notable changes to this project are documented here.
 - Metrics that expose degenerate detectors: false-alarm hour fraction and the number of attacks expected to be
   "caught" by false alarms alone
 
+- `/case-study` page in the app: the same results as the README tables, read from `results.json` and validated
+  with zod at build time (synthetic or malformed results fail the build), caveats first, real `h2` headings;
+  linked from the dashboard header; unit tests, a test that its cells equal the README table, and E2E
+
 ### Fixed
+- README and the app disagreed on exact rounding ties (0.1825 showed as 18.2 % in Python, 18.3 % in
+  JavaScript); both now round the stored 4-decimal value half-up with integer arithmetic, with a test that
+  compares the page's cells with the generated README table
 - The first BATADAL run showed the static-limit detector alarming permanently and looking perfect (alarm rule
   `>=` plus a segment-based budget); alarms are now strictly above the threshold and the new columns make the
   failure visible; regression test added

@@ -249,6 +249,13 @@ def test_apply_block_replaces_only_the_named_block_and_requires_markers():
         rr.apply_block("no markers", "x", "NEW")
 
 
+def test_rounding_is_half_up_on_the_stored_value_and_matches_the_typescript_rule():
+    assert rr._pct(0.1825) == "18.3 %" and rr._pct(0.1824) == "18.2 %"
+    assert rr._f(0.3875) == "0.388" and rr._f(0.4267) == "0.427"
+    assert rr._f(6.25, 1) == "6.3" and rr._f(6.2724, 1) == "6.3"
+    assert rr._pct(None) == "n/a" and rr._f(None) == "n/a"
+
+
 def test_guard_regexes_catch_what_they_should():
     assert METRIC_WITH_VALUE.search("PR-AUC: 0.91")
     assert METRIC_WITH_VALUE.search("event recall of 0.50")
