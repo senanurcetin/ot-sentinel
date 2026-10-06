@@ -12,10 +12,11 @@
 
 ## Known advisories
 
-Last checked with `npm audit --omit=dev` after upgrading Next.js to 15.5.27:
-0 critical, 15 high, 52 moderate. They sit in transitive trees:
+Last checked on 2026-10-06 with `npm audit --omit=dev` (Next.js 15.5.27, Genkit 1.42):
+0 critical, 13 high, 59 moderate. A critical advisory in `proxy-addr` (transitive, via Genkit's Express
+dependency) appeared that day and was cleared with `npm audit fix`; the CI gate caught it. The rest They sit in transitive trees:
 
-- Genkit's OpenTelemetry/gRPC exporters (`@genkit-ai/core` → `@opentelemetry/*`, `@grpc/grpc-js`, `protobufjs`)
+- Genkit's OpenTelemetry exporters (`@genkit-ai/core` → `@opentelemetry/*`); several of these have no fixed version yet
 - Tailwind 3 build tooling (`tailwindcss` → `chokidar` → `braces`/`micromatch`), build-time only
 
 CI fails on critical advisories. Highs are cleared by upgrading Genkit and migrating to Tailwind 4,
