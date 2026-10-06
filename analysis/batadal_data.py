@@ -1,8 +1,13 @@
-"""BATADAL data access: download, integrity check, loading, labels and schema validation.
+"""BATADAL data access: integrity check, loading, labels and schema validation.
 
 BATADAL (BATtle of the Attack Detection ALgorithms) is a public simulated water-distribution
 SCADA benchmark (C-Town): hourly readings of 43 tank levels, pump/valve flows and states, and
 junction pressures. Source: https://www.batadal.net/data.html
+
+This code does NOT download anything. The download page was not reachable from the authoring
+environment, so an automated downloader could not be verified and was removed. Get the three files
+from that page by hand and put them in analysis/data/batadal/; the SHA-256 values pinned below tell
+you whether they are the ones this study was run on.
 
 Facts verified against the real files (not assumed):
   * timestamp column ``DATETIME`` formatted ``dd/mm/yy HH``; no gaps, no NaN, no duplicates
@@ -21,7 +26,6 @@ from __future__ import annotations
 import hashlib
 import io
 import json
-import urllib.request
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,7 +35,6 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent
 ATTACKS_FILE = ROOT / "batadal_attacks.json"
-BASE_URL = "https://www.batadal.net/data"
 TIME_COLUMN = "DATETIME"
 LABEL_COLUMN = "ATT_FLAG"
 TIME_FORMAT = "%d/%m/%y %H"
@@ -78,20 +81,6 @@ def sha256_of(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def download(dest_dir: Path, files: tuple[DatasetFile, ...] = DATASET_FILES) -> list[Path]:
-    """Fetch missing files. The URLs are UNVERIFIED (the host was not reachable when this was
-    written; the files were supplied by hand). If a download fails, place the files manually."""
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    paths = []
-    for spec in files:
-        target = dest_dir / spec.filename
-        if not target.exists():
-            urllib.request.urlretrieve(f"{BASE_URL}/{spec.filename}", target)  # noqa: S310
-        verify(target, spec)
-        paths.append(target)
-    return paths
 
 
 def verify(path: Path, spec: DatasetFile) -> str:

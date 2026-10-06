@@ -28,8 +28,9 @@ python run_batadal_case_study.py                # writes src/data/batadal-case-s
 python results_report.py                        # regenerates the tables in README.md and docs/case-study.md
 ```
 
-`batadal_data.py` pins the SHA-256 of the files the study was run on and refuses others. `--download` exists but
-its URLs are unverified (the host was not reachable from the authoring environment); fetch the files by hand.
+`batadal_data.py` pins the SHA-256 of the files the study was run on and refuses others. There is no
+automatic download: the dataset host was not reachable from the authoring environment, so a downloader could
+not be verified and was removed. Get the three files from <https://www.batadal.net/data.html> by hand.
 `--synthetic` runs the pipeline on generated data as a smoke test: its output is labelled `NOT BATADAL`, goes to
 `analysis/artifacts/synthetic-smoke/` and must never be quoted.
 

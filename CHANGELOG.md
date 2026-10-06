@@ -87,3 +87,5 @@ All notable changes to this project are documented here.
 
 ### Removed
 - Unused `firebase` and `patch-package` dependencies
+- The unverified `--download` path of the BATADAL pipeline (the dataset host was unreachable, so it could not be
+  tested); files are placed by hand and checked against pinned SHA-256 values
