@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-06
+
 ### Added
 - ESLint flat config and a working `npm run lint`, enforced in CI
 - Dockerfile (Next.js standalone, non-root) and a CI job that builds it
