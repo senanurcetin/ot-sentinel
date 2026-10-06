@@ -13,6 +13,10 @@ extend-exclude = ["train_anomaly_model.py"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]  # long assertion messages and fixtures read better unwrapped
+"results_report.py" = ["E501"]  # Markdown table rows are clearer on one line
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

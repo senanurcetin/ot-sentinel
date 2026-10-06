@@ -13,7 +13,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "case-study:refresh": "python3 analysis/run_batadal_case_study.py",
+    "case-study:refresh": "python3 analysis/run_batadal_case_study.py && python3 analysis/results_report.py",
     "analysis:test": "cd analysis && python3 -m pytest",
     "test:e2e": "playwright test"
   },

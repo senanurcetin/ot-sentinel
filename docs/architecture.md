@@ -46,13 +46,15 @@ flowchart LR
   MP --> E[export_model.py]
   E --> J[src/data/model/scorer-params.json]
   E --> MC[MODEL_CARD.md parameter table]
-  B[run_batadal_case_study.py] -. "not run yet" .-> RJ[results.json]
+  B[run_batadal_case_study.py<br/>BATADAL files, not in git] --> RJ[results.json]
+  RJ --> RR[results_report.py]
+  RR --> RM[README + case study tables]
 ```
 
 `export_model.py --check` (run by `pytest`) fails if the artifact or the model card table is stale,
 so the TypeScript scorer, the Python side and the documentation cannot drift apart. The BATADAL
-pipeline is implemented and tested on synthetic data but has no real-data output yet; nothing in the
-app reads `results.json`.
+evaluation writes `results.json`; `results_report.py` renders every number in the README and the case
+study from it (a test fails if a table is stale). Nothing in the running app reads `results.json`.
 
 ## What happens when an alert fires
 

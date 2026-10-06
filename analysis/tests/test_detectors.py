@@ -30,6 +30,21 @@ def test_static_limits_zero_inside_range(data):
     assert np.all(det.score(normal) == 0.0)
 
 
+def test_zscore_flags_any_departure_from_a_constant_feature():
+    X = np.column_stack([np.zeros(200), np.random.default_rng(0).normal(size=200)])
+    det = ZScoreDetector().fit(X)
+    quiet = det.score(np.array([[0.0, 0.0]]))[0]
+    moved = det.score(np.array([[30.0, 0.0]]))[0]
+    assert moved > 1000 * max(quiet, 1.0)  # a moved constant dominates, it is not ignored
+
+
+def test_static_limits_flag_a_moved_constant_feature():
+    X = np.column_stack([np.zeros(100), np.linspace(0, 1, 100)])
+    det = StaticLimitDetector().fit(X)
+    assert det.score(np.array([[0.0, 0.5]]))[0] == 0.0
+    assert det.score(np.array([[5.0, 0.5]]))[0] > 0.0
+
+
 def test_zscore_constant_feature_is_safe():
     X = np.column_stack([np.ones(50), np.linspace(0, 1, 50)])
     det = ZScoreDetector().fit(X)

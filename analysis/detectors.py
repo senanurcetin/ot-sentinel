@@ -50,9 +50,16 @@ class ZScoreDetector:
     name = "zscore_max"
     supervised = False
 
+    # Pre-registered rule for constant features (decided from the data's structure, before any
+    # detection result was seen): the std is floored at STD_FLOOR_REL * max(1, |mean|), so any
+    # departure from a constant baseline produces a very large z instead of a division by zero
+    # or a silently ignored feature.
+    STD_FLOOR_REL = 1e-3
+
     def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> ZScoreDetector:
         self.mean_ = X.mean(axis=0)
-        self.std_ = np.where(X.std(axis=0) > 1e-9, X.std(axis=0), 1.0)
+        floor = self.STD_FLOOR_REL * np.maximum(1.0, np.abs(self.mean_))
+        self.std_ = np.maximum(X.std(axis=0), floor)
         return self
 
     def score(self, X: np.ndarray) -> np.ndarray:

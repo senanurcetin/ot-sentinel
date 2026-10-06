@@ -5,6 +5,7 @@ from metrics import (
     calibrate_threshold,
     event_metrics,
     find_segments,
+    per_attack,
     point_metrics,
     split_index_outside_event,
 )
@@ -61,15 +62,54 @@ def test_calibrate_threshold_meets_budget_and_ignores_attacks():
     rng = np.random.default_rng(0)
     normal = rng.normal(size=24 * 60)
     thr = calibrate_threshold(normal, max_false_alarms_per_day=1.0)
-    n_segments = len(find_segments(normal >= thr))
+    n_segments = len(find_segments(normal > thr))
     assert n_segments / 60 <= 1.0
     # a stricter budget can only raise the threshold
     assert calibrate_threshold(normal, 0.1) >= thr
 
 
-def test_calibrate_threshold_impossible_budget_exceeds_max():
+def test_calibrate_threshold_impossible_budget_means_no_alarms():
     scores = np.array([1.0, 2.0, 3.0])
-    assert calibrate_threshold(scores, 0.0) > scores.max()
+    thr = calibrate_threshold(scores, 0.0)
+    assert not np.any(scores > thr)
+
+
+def test_alarm_requires_a_score_strictly_above_the_threshold():
+    """A score sitting exactly on the threshold (e.g. 0 inside a static range) is not an alarm."""
+    scores = np.array([0.0, 0.0, 5.0, 0.0])
+    y = np.array([0, 0, 1, 0])
+    m = point_metrics(y, scores, threshold=0.0)
+    assert m["precision"] == 1.0 and m["recall"] == 1.0  # only the spike alarms
+    thr = calibrate_threshold(np.zeros(24 * 30), max_false_alarms_per_day=1.0)
+    assert not np.any(np.zeros(10) > thr)
+
+
+def test_always_on_alarm_is_exposed_by_the_hour_fraction_and_chance_baseline():
+    y = np.zeros(200, dtype=int)
+    y[100:130] = 1
+    on = event_metrics(y, np.ones(200, dtype=bool))
+    assert on["events_detected"] == 1 and on["false_alarm_segments"] == 0  # looks perfect...
+    assert on["false_alarm_hour_fraction"] == 1.0  # ...but is on all the time
+
+
+def test_chance_baseline_follows_the_false_alarm_rate_and_attack_length():
+    y = np.zeros(1000, dtype=int)
+    y[500:530] = 1  # 30 h attack
+    quiet = np.zeros(1000, dtype=bool)
+    assert event_metrics(y, quiet)["expected_events_detected_by_chance"] == 0.0
+    noisy = np.zeros(1000, dtype=bool)
+    noisy[::10] = True  # a false alarm segment every 10 h
+    noisy[500:530] = False
+    chance = event_metrics(y, noisy)["expected_events_detected_by_chance"]
+    rate = (event_metrics(y, noisy)["false_alarm_segments"]) / 970
+    assert chance == pytest.approx(1 - np.exp(-rate * 30), abs=1e-9)
+    assert 0.5 < chance < 1.0
+    assert (
+        event_metrics(np.zeros(10, dtype=int), np.zeros(10, dtype=bool))[
+            "expected_events_detected_by_chance"
+        ]
+        is None
+    )
 
 
 def test_split_never_cuts_through_an_event():
@@ -77,3 +117,17 @@ def test_split_never_cuts_through_an_event():
     y[45:60] = 1
     idx = split_index_outside_event(y, 0.5)
     assert y[idx] == 0 and y[idx - 1] == 0 and idx >= 60
+
+
+def test_per_attack_reports_detection_and_delay_for_each_attack():
+    ids = np.zeros(60, dtype=int)
+    ids[10:20] = 8
+    ids[30:35] = 9
+    alarm = np.zeros(60, dtype=bool)
+    alarm[13:15] = True  # attack 8 caught 3 hours after its start; attack 9 missed
+    rows = per_attack(ids, alarm)
+    assert rows == [
+        {"attack": 8, "duration_hours": 10, "detected": True, "hours_to_detect": 3.0},
+        {"attack": 9, "duration_hours": 5, "detected": False, "hours_to_detect": None},
+    ]
+    assert per_attack(np.zeros(5, dtype=int), np.zeros(5, dtype=bool)) == []

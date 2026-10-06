@@ -53,11 +53,20 @@ choices; they have not been tuned or validated against labelled attacks.
 
 ## Evaluation
 
-**Not evaluated on real data.** The pipeline that compares this scorer with an Isolation Forest, a
-static-limit rule and a supervised reference on the public BATADAL benchmark is implemented and
-tested on synthetic data (`analysis/`), but **it has not been run on BATADAL**, so there are no
-detection metrics to report. The demo's simulated attacks are generated far outside the normal range,
-so catching them says nothing about real attacks.
+The *method* (per-sample max/weighted z-score against an attack-free baseline) was evaluated on the public
+BATADAL benchmark against a static-limit rule, an Isolation Forest and a supervised reference, using all 43
+benchmark signals. Results, protocol, caveats and per-attack tables are in
+[`docs/case-study.md`](docs/case-study.md); the numbers are generated from `results.json` and deliberately not
+repeated here.
+
+What that evaluation does and does not cover:
+
+- It measures the z-score *method* on BATADAL's 43 signals. The runtime code in `src/lib/anomaly-scorer.ts`
+  uses 3 demo signals, a weighted sum rather than a max, and thresholds that were never fitted to BATADAL, so
+  **the runtime scorer itself has not been evaluated on real attacks.**
+- Results are modest (see the case study); a detector like this is a baseline, not a finished product.
+- The dashboard's simulated attacks are generated far outside the normal range, so catching them says nothing
+  about real attacks.
 
 ## Known limitations
 

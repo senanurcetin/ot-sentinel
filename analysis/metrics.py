@@ -21,7 +21,7 @@ def point_metrics(
     y_true: np.ndarray, score: np.ndarray, threshold: float
 ) -> dict[str, float | None]:
     y = np.asarray(y_true, dtype=int)
-    alarm = np.asarray(score) >= threshold
+    alarm = np.asarray(score) > threshold
     tp = int(np.sum(alarm & (y == 1)))
     fp = int(np.sum(alarm & (y == 0)))
     fn = int(np.sum(~alarm & (y == 1)))
@@ -55,7 +55,15 @@ def event_metrics(y_true: np.ndarray, alarm: np.ndarray, step_hours: float = 1.0
             ttd.append(float(hits[0]) * step_hours)
 
     false_segments = [(s, e) for s, e in find_segments(alarm) if not np.any(y[s:e] == 1)]
-    normal_days = float(np.sum(y == 0)) * step_hours / 24.0
+    normal_hours = int(np.sum(y == 0))
+    normal_days = float(normal_hours) * step_hours / 24.0
+
+    # How many attacks would be "detected" by false alarms alone? False alarm segments start at
+    # `rate` per attack-free hour; an attack of d hours contains at least one with probability
+    # 1 - exp(-rate * d) (Poisson). With frequent false alarms and long attacks, event recall is
+    # inflated by chance, so this baseline must be read next to events_detected.
+    rate = len(false_segments) / normal_hours if normal_hours else 0.0
+    chance = sum(1.0 - float(np.exp(-rate * (end - start))) for start, end in events)
     return {
         "n_events": len(events),
         "events_detected": len(ttd),
@@ -65,6 +73,8 @@ def event_metrics(y_true: np.ndarray, alarm: np.ndarray, step_hours: float = 1.0
         "false_alarm_segments": len(false_segments),
         "false_alarms_per_day": len(false_segments) / normal_days if normal_days else None,
         "alarm_fraction": float(alarm.mean()) if alarm.size else None,
+        "false_alarm_hour_fraction": float(alarm[y == 0].mean()) if normal_hours else None,
+        "expected_events_detected_by_chance": chance if events else None,
     }
 
 
@@ -72,6 +82,11 @@ def calibrate_threshold(
     normal_scores: np.ndarray, max_false_alarms_per_day: float, step_hours: float = 1.0
 ) -> float:
     """Lowest threshold whose false-alarm rate on ATTACK-FREE data is within budget.
+
+    An alarm is raised when ``score > threshold`` (strictly). With ``>=`` a detector whose scores
+    sit on a constant floor (static limits: 0 while inside the range) could choose that floor as
+    its threshold, alarm permanently, and still count as ONE alarm segment per calibration
+    window. The strict form makes "inside the range" mean "no alarm".
 
     Uses only attack-free scores, so no attack label can influence the operating point.
     """
@@ -81,10 +96,10 @@ def calibrate_threshold(
         raise ValueError("no calibration data")
     candidates = np.unique(np.quantile(scores, np.linspace(0.5, 1.0, 501)))
     for threshold in candidates:
-        n_segments = len(find_segments(scores >= threshold))
+        n_segments = len(find_segments(scores > threshold))
         if n_segments / days <= max_false_alarms_per_day:
             return float(threshold)
-    return float(np.nextafter(scores.max(), np.inf))
+    return float(scores.max())  # nothing exceeds it: no alarms on the calibration data
 
 
 def split_index_outside_event(y: np.ndarray, fraction: float) -> int:
@@ -97,3 +112,25 @@ def split_index_outside_event(y: np.ndarray, fraction: float) -> int:
     while idx < len(y) and (y[idx] == 1 or y[idx - 1] == 1):
         idx += 1
     return idx
+
+
+def per_attack(ids: np.ndarray, alarm: np.ndarray, step_hours: float = 1.0) -> list[dict]:
+    """One row per attack: detected at all, and hours from its published start to the first alarm.
+
+    ``ids`` holds the attack id of every sample (0 = no attack).
+    """
+    ids = np.asarray(ids, dtype=int)
+    alarm = np.asarray(alarm, dtype=bool)
+    rows = []
+    for attack_id in sorted(set(ids[ids > 0].tolist())):
+        positions = np.flatnonzero(ids == attack_id)
+        hits = np.flatnonzero(alarm[positions])
+        rows.append(
+            {
+                "attack": int(attack_id),
+                "duration_hours": int(len(positions) * step_hours),
+                "detected": bool(hits.size),
+                "hours_to_detect": float(hits[0] * step_hours) if hits.size else None,
+            }
+        )
+    return rows

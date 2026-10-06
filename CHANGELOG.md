@@ -12,8 +12,7 @@ All notable changes to this project are documented here.
 
 - `analysis/` pipeline for a BATADAL attack-detection case study: loader with schema validation,
   four detectors (static limits, z-score, Isolation Forest, gradient boosting), event-level
-  metrics, a same-false-alarm-budget threshold protocol, and 27 pytest tests. **Not yet run on
-  the real dataset** (no network access to batadal.net in the authoring environment).
+  metrics and a same-false-alarm-budget threshold protocol.
 - Python CI job (ruff + pytest)
 
 - `analysis/export_model.py` generates `src/data/model/scorer-params.json`; the TypeScript scorer
@@ -40,10 +39,19 @@ All notable changes to this project are documented here.
 - Presentation layer: rewritten README (status table, screenshots, 35 s walkthrough video), `MODEL_CARD.md`
   (parameter table generated from `scorer-params.json`), `docs/architecture.md` (mermaid diagrams),
   `docs/case-study.md`, `docs/hiring-summary.md`; the original Firebase Studio spec moved to `docs/archive/`
-- `analysis/tests/test_docs.py`: relative links must resolve, and while no BATADAL results file exists the
-  documents must say the evaluation has not been run and may not quote metric values
+- `analysis/tests/test_docs.py`: relative links must resolve; metric values may only appear in generated blocks
+
+- **BATADAL evaluation run on the real data** (protocol v2): published attack intervals as ground truth
+  (`batadal_attacks.json`), zip/padded-header loader, constant signals kept, per-attack and drift tables,
+  `results_report.py` generating every number in the README and case study, and a test that checks the prose
+  claims against `results.json`
+- Metrics that expose degenerate detectors: false-alarm hour fraction and the number of attacks expected to be
+  "caught" by false alarms alone
 
 ### Fixed
+- The first BATADAL run showed the static-limit detector alarming permanently and looking perfect (alarm rule
+  `>=` plus a segment-based budget); alarms are now strictly above the threshold and the new columns make the
+  failure visible; regression test added
 - Normal-mode telemetry crossed the CRITICAL line about once every 4-5 minutes (0.37 % of samples in a
   200,000-draw simulation): the generator sampled the ranges uniformly and rounded vibration to two
   decimals, while the baseline had been fitted on Gaussian draws. It now draws the way the baseline was
