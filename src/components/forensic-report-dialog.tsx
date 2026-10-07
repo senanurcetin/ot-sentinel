@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import type { LogEntry } from '@/lib/types';
+import { buildForensicCsv, forensicCsvFilename } from '@/lib/forensic-csv';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useMemo } from 'react';
 import { FileSearch, AlertCircle, CheckCircle, List, Download } from 'lucide-react';
@@ -62,30 +63,13 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
       return;
     }
 
-    const headers = ['Timestamp', 'Status', 'Source IP', 'Payload'];
-    
-    const csvRows = logs.map(log => {
-      const row = [
-        new Date(log.timestamp).toISOString(),
-        log.status,
-        log.sourceIp,
-        log.payload,
-      ];
-      return row
-        .map(field => {
-          const stringField = String(field ?? '').replace(/"/g, '""');
-          return `"${stringField}"`;
-        })
-        .join(',');
-    });
-
-    const csvString = [headers.join(','), ...csvRows].join('\n');
+    const csvString = buildForensicCsv(logs);
     
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `otsentinel-forensic-report-${new Date().toISOString()}.csv`);
+    link.setAttribute('download', forensicCsvFilename());
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();

@@ -1,3 +1,7 @@
+> **Archived.** This is the original Firebase Studio product spec the prototype started from. It
+> describes intent, not the current system: the detector is a statistical z-score scorer (not an
+> Isolation Forest at runtime), and the current architecture is in [`../architecture.md`](../architecture.md).
+
 # **App Name**: OT-Sentinel
 
 ## Core Features:

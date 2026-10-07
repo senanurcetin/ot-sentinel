@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { BarChart2 } from 'lucide-react';
+import Link from 'next/link';
 
 type HeaderProps = {
   isAttackMode: boolean;
@@ -22,6 +23,9 @@ export default function Header({ isAttackMode, onAttackModeChange, onShowReport 
         </h1>
       </div>
       <div className="flex items-center gap-4">
+        <Button asChild variant="ghost" size="sm">
+          <Link href="/case-study">Case study</Link>
+        </Button>
         <Button variant="outline" size="sm" onClick={onShowReport}>
           <BarChart2 className="mr-2 h-4 w-4" />
           View Report

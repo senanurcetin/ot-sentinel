@@ -1,0 +1,23 @@
+[project]
+name = "ot-sentinel-analysis"
+version = "0.2.0"
+description = "Reproducible OT anomaly-detection case study for OT-Sentinel (BATADAL)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+# Legacy script from the original prototype; superseded by the BATADAL pipeline.
+extend-exclude = ["train_anomaly_model.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]  # long assertion messages and fixtures read better unwrapped
+"results_report.py" = ["E501"]  # Markdown table rows are clearer on one line
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

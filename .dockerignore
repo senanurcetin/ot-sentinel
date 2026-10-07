@@ -1,0 +1,14 @@
+.git
+.github
+.next
+node_modules
+coverage
+.env
+.env.*
+!.env.example
+analysis/.cache
+*.md
+!README.md
+docs
+playwright-report
+test-results

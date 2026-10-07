@@ -1,0 +1,24 @@
+{
+  "_source": "Attack tables published with the BATADAL data (batadal.net): 'Attacks featured in Training dataset 2' (attacks 1-7, dataset04) and 'Attacks featured in the Test dataset' (attacks 8-14). Transcribed by hand from those tables and cross-checked in tests: duration == (end - start) + 1 hours, and the interval row counts match the data files.",
+  "_notes": [
+    "Times are dd/mm/YYYY HH in the source; stored here as ISO hours. Both endpoints are inclusive.",
+    "dataset04's ATT_FLAG is 1 only for the 'labeled_hours' of each attack and -999 elsewhere (there are no 0 labels), so these intervals, not ATT_FLAG, are the ground truth.",
+    "'concealment' describes how the attacker hid the attack from SCADA; a replay attack makes the reported values look like earlier normal data."
+  ],
+  "attacks": [
+    {"id": 1, "dataset": "train", "start": "2016-09-13T23", "end": "2016-09-16T00", "duration_hours": 50, "labeled_hours": 42, "description": "Attacker changes L_T7 thresholds (which control PU10/PU11) by altering SCADA transmission to PLC9. Low levels in T7.", "concealment": "Replay attack on L_T7."},
+    {"id": 2, "dataset": "train", "start": "2016-09-26T11", "end": "2016-09-27T10", "duration_hours": 24, "labeled_hours": 0, "description": "Like attack 1.", "concealment": "Like attack 1 but the replay is extended to PU10/PU11 flow and status."},
+    {"id": 3, "dataset": "train", "start": "2016-10-09T09", "end": "2016-10-11T20", "duration_hours": 60, "labeled_hours": 60, "description": "Attack alters L_T1 readings sent by PLC2 to PLC1, which reads a constant low level and keeps pumps PU1/PU2 ON. Overflow in T1.", "concealment": "Polyline to offset the L_T1 increase."},
+    {"id": 4, "dataset": "train", "start": "2016-10-29T19", "end": "2016-11-02T16", "duration_hours": 94, "labeled_hours": 37, "description": "Like attack 3.", "concealment": "Replay attack on L_T1, PU1/PU2 flow and status, and pressure at the pumps' outlet."},
+    {"id": 5, "dataset": "train", "start": "2016-11-26T17", "end": "2016-11-29T04", "duration_hours": 60, "labeled_hours": 7, "description": "Working speed of PU7 reduced to 0.9 of nominal speed, causing lower water levels in T4.", "concealment": ""},
+    {"id": 6, "dataset": "train", "start": "2016-12-06T07", "end": "2016-12-10T04", "duration_hours": 94, "labeled_hours": 73, "description": "Like attack 5, but speed reduced to 0.7.", "concealment": "L_T4 drop concealed with replay attack."},
+    {"id": 7, "dataset": "train", "start": "2016-12-14T15", "end": "2016-12-19T04", "duration_hours": 110, "labeled_hours": 0, "description": "Like attack 6.", "concealment": "Replay attack on L_T1, as well as PU1/PU2 flow and status."},
+    {"id": 8, "dataset": "test", "start": "2017-01-16T09", "end": "2017-01-19T06", "duration_hours": 70, "description": "Attacker changes L_T3 thresholds (which control PU4/PU5) by gaining control of PLC3. Low levels in T3.", "concealment": "Replay attack on L_T3, as well as PU4/PU5 flow and status."},
+    {"id": 9, "dataset": "test", "start": "2017-01-30T08", "end": "2017-02-02T00", "duration_hours": 65, "description": "Attack alters L_T2 readings arriving to PLC3, which reads a low level and keeps valve V2 OPEN, leading T2 to overflow.", "concealment": "Polyline to offset the L_T2 increase."},
+    {"id": 10, "dataset": "test", "start": "2017-02-09T03", "end": "2017-02-10T09", "duration_hours": 31, "description": "Malicious activation of pump PU3.", "concealment": ""},
+    {"id": 11, "dataset": "test", "start": "2017-02-12T01", "end": "2017-02-13T07", "duration_hours": 31, "description": "Similar to attack 10.", "concealment": ""},
+    {"id": 12, "dataset": "test", "start": "2017-02-24T05", "end": "2017-02-28T08", "duration_hours": 100, "description": "Similar to attack 9.", "concealment": "Replay attack on L_T2, V2 flow and status, as well as V2 inlet + outlet pressure readings (P_J14, P_J422)."},
+    {"id": 13, "dataset": "test", "start": "2017-03-10T14", "end": "2017-03-13T21", "duration_hours": 80, "description": "Attacker changes L_T7 thresholds (which control PU10/PU11) by gaining control of PLC5, causing the pumps to switch ON/OFF continuously.", "concealment": "Replay attack on L_T7, PU10/PU11 flow and status, as well as inlet + outlet pressure readings (P_J14, P_J422). Inlet pressure concealment terminates before that of other variables."},
+    {"id": 14, "dataset": "test", "start": "2017-03-25T20", "end": "2017-03-27T01", "duration_hours": 30, "description": "Alteration of T4 signal arriving to PLC6. Overflow in T6.", "concealment": ""}
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "_generated_by": "analysis/export_model.py - do not edit by hand",
+  "model": {
+    "kind": "zscore-composite",
+    "trained_on": "simulated normal operating envelope (analysis/train_anomaly_model.py)",
+    "n_normal_samples": 5000
+  },
+  "sensors": {
+    "temp": {
+      "mean": 49.9337,
+      "std": 3.3312,
+      "z_warning": 2.0,
+      "z_critical": 3.0,
+      "weight": 0.4
+    },
+    "pressure": {
+      "mean": 1009.9982,
+      "std": 3.3758,
+      "z_warning": 2.0,
+      "z_critical": 3.0,
+      "weight": 0.3
+    },
+    "vibration": {
+      "mean": 0.0549,
+      "std": 0.015,
+      "z_warning": 2.0,
+      "z_critical": 3.0,
+      "weight": 0.3
+    }
+  },
+  "risk_score_decay": 0.25,
+  "anomaly_score_decay": 0.15,
+  "critical_risk_threshold": 50
+}

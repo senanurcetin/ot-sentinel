@@ -1,81 +1,168 @@
 # OT-Sentinel
 
-OT-Sentinel is a documentation-first industrial cybersecurity dashboard that visualizes OT telemetry, simulates incident scenarios, and uses AI-assisted workflows to explain threats in operator-friendly language.
+[![CI](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml)
+[![E2E](https://github.com/senanurcetin/ot-sentinel/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/e2e-tests.yml)
+[![Security checks](https://github.com/senanurcetin/ot-sentinel/actions/workflows/security-checks.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/security-checks.yml)
+![Next.js 15](https://img.shields.io/badge/Next.js-15-black)
+![Node 20+](https://img.shields.io/badge/Node-20%2B-339933)
+![Python 3.11](https://img.shields.io/badge/Python-3.11-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-![OT-Sentinel interface](https://github.com/user-attachments/assets/160b1ec4-267f-4084-b599-971810920d0e)
+**An explainable anomaly dashboard for industrial (OT) telemetry.** A statistical detector decides
+whether a reading is anomalous and which sensors drive it; an LLM turns that verdict into
+operator-friendly triage; a deterministic fallback keeps the guidance useful when the LLM is
+unavailable. The live demo runs on simulated telemetry; the detector method is evaluated on the
+public BATADAL attack benchmark (see [Evaluation](#evaluation)).
 
-Demo: [YouTube walkthrough](https://www.youtube.com/watch?v=KcpTW0QM0FM)
+![Dashboard in normal operation](docs/assets/dashboard-normal.png)
 
-Portfolio role: `archive proof`
+Walkthrough video: [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel-demo.webm) (about 35 s: normal operation → simulated attack → alert → forensic report). It was recorded without a Gemini key, so the alert shows the rule-based guidance, not an AI answer. Earlier version of the project: [YouTube walkthrough](https://www.youtube.com/watch?v=KcpTW0QM0FM).
 
-## Why it sits in supporting evidence
+Reviewing this project? Start with the [case study](docs/case-study.md) and the [reviewer summary](docs/hiring-summary.md).
 
-OT-Sentinel is useful for domain breadth and operator-facing OT workflow thinking, but it is not one of the three primary Data + AI case studies. The strongest public portfolio path still starts with `Ops-Copilot`, then moves to `visual-qc-project` and `smart-factory-app`.
+## Status
+
+| Part | State |
+|---|---|
+| Dashboard, detector, explanation, fallback, operator feedback | working, tested |
+| Live demo telemetry | **synthetic**; the BATADAL evaluation is offline: its results are shown on the app's `/case-study` page, the live scorer does not use it |
+| Detector comparison on BATADAL (14 real-benchmark attacks) | run, results below; honest reading: modest, see caveats |
+| Authentication, persistence, real protocol adapters | not implemented |
+
+Portfolio role: `OT-security case study`.
 
 ## Why this project exists
 
-Plant teams often have monitoring signals, but they still lack a clear operator-facing workflow for interpreting anomalies, understanding severity, and documenting mitigation actions. OT-Sentinel demonstrates how a modern web interface can bridge cyber monitoring, simulated incidents, and explainable operational response.
+Plant teams often have monitoring signals but no clear workflow for interpreting an anomaly,
+judging severity and recording what was done. OT-Sentinel explores one answer: keep detection simple
+and auditable, make the reason for every alert visible, and use an LLM only to explain, never to decide.
 
 ## What it does
 
-- Streams industrial telemetry such as temperature, pressure, vibration, and traffic indicators.
-- Uses Genkit and Gemini to classify anomalies and generate mitigation guidance.
-- Supports attack simulation for demo and training scenarios.
-- Generates a forensic summary with charts and exportable audit data.
-- Includes Jest-based UI tests and a baseline GitHub Actions workflow.
+- Streams (simulated) temperature, pressure, vibration and traffic readings once a second.
+- Scores every sample against an attack-free baseline and shows **why**: per-sensor z-score and each sensor's share of the risk score.
+- On a CRITICAL sample, opens an alert with a summary and suggested actions. Gemini writes it when available; otherwise a rule-based fallback does, and the dialog says which one you are reading.
+- Lets the operator mark each alert as a confirmed threat or a false alarm (`POST /api/feedback`, in-memory demo storage).
+- Simulates an attack on demand, and exports a forensic report as CSV (spreadsheet-formula safe).
 
-## Architecture snapshot
+| Alert with rule-based guidance | Why this score? |
+|---|---|
+| ![Alert](docs/assets/alert-rule-based.png) | ![Attack mode](docs/assets/dashboard-attack.png) |
 
-- **Frontend:** Next.js App Router, React 19, TypeScript
-- **AI runtime:** Genkit with Google Gemini
-- **Visualization:** ShadCN UI, Tailwind CSS, Recharts
-- **Testing:** Jest and React Testing Library
-- **Deployment target:** Vercel or any Node-compatible host
+## Architecture
 
-## Local setup
+Next.js App Router (React 19, TypeScript), Genkit + Gemini 2.5 Flash, Tailwind + shadcn/ui,
+Recharts, zod. Python (`analysis/`) holds the evaluation pipeline and generates the detector's
+constants. Diagrams and the alert sequence are in [`docs/architecture.md`](docs/architecture.md).
 
-### Prerequisites
+The detector's parameters live in `src/data/model/scorer-params.json`, generated by
+`analysis/export_model.py`; the [model card](MODEL_CARD.md) parameter table is generated from the
+same file, and `pytest` fails if either goes stale.
 
-- Node.js 20+
-- npm
-- A Google AI Studio API key
+## Evaluation
 
-### Install
+[`analysis/`](analysis/README.md) compares four detectors on the public
+[BATADAL](https://www.batadal.net/data.html) water-distribution attack benchmark (43 signals,
+hourly, 14 attacks in two files). Detectors learn from a year of attack-free data, every one is held to the
+**same false-alarm budget**, and results are reported separately on a later, unseen test file (headline) and on
+the training file of the benchmark. Ground truth is the published attack intervals.
+
+<!-- BEGIN results:summary (generated by analysis/results_report.py) -->
+**Test set (attacks 8-14, Jan-Mar 2017): headline** - 7 attacks, 407 attack hours (19.5 % of 2089); a random guess scores a PR-AUC of about 0.195.
+
+| Detector | Attacks caught | Expected from false alarms alone | Median hours to detect | Alarm hours in attack-free data | Precision | Attack hours caught | PR-AUC |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Static limits | 7 of 7 | 6.3 | 2 | 18.3 % | 34.1 % | 39.1 % | 0.387 |
+| Max absolute z-score | 7 of 7 | 6.3 | 1 | 5.2 % | 54.9 % | 26.0 % | 0.427 |
+| Isolation Forest | 7 of 7 | 6.2 | 4 | 6.5 % | 32.1 % | 12.8 % | 0.248 |
+| Gradient boosting (supervised) † | 7 of 7 | 6.2 | 3 | 6.3 % | 39.1 % | 16.7 % | 0.322 |
+
+**dataset04 (attacks 1-7, Jul-Dec 2016): secondary** - 7 attacks, 492 attack hours (11.8 % of 4177); a random guess scores a PR-AUC of about 0.118.
+
+| Detector | Attacks caught | Expected from false alarms alone | Median hours to detect | Alarm hours in attack-free data | Precision | Attack hours caught | PR-AUC |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Static limits | 7 of 7 | 6.6 | 3 | 18.7 % | 23.8 % | 43.7 % | 0.285 |
+| Max absolute z-score | 7 of 7 | 6.5 | 2 | 5.3 % | 44.7 % | 31.9 % | 0.437 |
+| Isolation Forest | 7 of 7 | 6.6 | 5 | 8.4 % | 26.9 % | 23.2 % | 0.196 |
+| Gradient boosting (supervised) † | not evaluated here: trained on this data | | | | | | |
+
+† trained on dataset04 with the published attack intervals and evaluated on the test set only; an optimistic reference, not a deployable detector.
+<!-- END results:summary -->
+
+How to read this, and what it does **not** show:
+
+- **"Attacks caught" is nearly meaningless here.** Every detector catches every attack, and false alarms
+  alone would be expected to land in almost all of them (attacks last 24-110 hours). Use the hour-level
+  columns (precision, attack hours caught, PR-AUC against the random-guess value) instead.
+- The hour-level numbers are modest. The best detector flags a minority of attack hours and is right about
+  half the time it raises an alarm; no detector is close to a deployable operating point.
+- Seven attacks per file means differences between detectors are anecdotes, not statistically established.
+- The attack-free reference is from 2014, the evaluation files from 2016-2017, and one pressure signal drifted
+  (see the [case study](docs/case-study.md#data-drift)); part of every false-alarm figure is that shift.
+- It evaluates the *method* on 43 signals. The live dashboard's scorer is a 3-signal demo and is not what was measured.
+
+Full tables per attack, the protocol, an amendment made after a first run exposed a flaw in my own metric, and
+the limitations: [`docs/case-study.md`](docs/case-study.md).
+
+## Quick start
 
 ```bash
 npm install
-cp .env.example .env
+cp .env.example .env     # optional: add GEMINI_API_KEY; without it the rule-based fallback is used
+npm run dev              # http://localhost:9002 , toggle "Simulate Attack"
 ```
 
-Update `.env` with your Gemini API key.
-
-### Run
+Docker:
 
 ```bash
-npm run dev
+docker build -t ot-sentinel .
+docker run --rm -p 9002:9002 -e GEMINI_API_KEY=your-key ot-sentinel
 ```
-
-The app runs on `http://localhost:9002`.
 
 ## Quality checks
 
 ```bash
-npm test
-npm run typecheck
+npm run lint
+npm run typecheck        # includes test files
+npm run test:coverage    # Jest + coverage thresholds
 npm run build
+npm run test:e2e         # Playwright; run `npx playwright install chromium` once
+cd analysis && pip install -r requirements-dev.txt && ruff check . && pytest
 ```
 
-## Repository highlights
+CI runs all of the above plus a Docker build, CodeQL, `npm audit`, `pip-audit` and secret scanning.
 
-- `src/components/dashboard.tsx` contains the main monitoring surface.
-- `src/ai/flows/threat-mitigation-alert.ts` contains the anomaly-to-guidance workflow.
-- `src/app/page.test.tsx` covers the main page interaction path.
-- `docs/blueprint.md` captures the product blueprint.
+## Security
 
-## Portfolio note
+Security headers and CSP, per-client rate limits, validated inputs, a model timeout with fallback,
+and CSV formula-injection protection. The demo has **no authentication**; do not expose it to an
+untrusted network or connect it to a live control system. Scope, residual risks and an ATT&CK for
+ICS mapping: [`docs/threat-model.md`](docs/threat-model.md). Report issues via [`SECURITY.md`](SECURITY.md).
 
-This repository is intended as archive proof for Industrial AI and OT-security workflow thinking. It focuses on system design, operator workflows, and explainable incident response rather than production-grade backend integrations.
+## Repository map
+
+| Path | What |
+|---|---|
+| `src/app/` | pages and API routes (`/api/metrics`, `/api/feedback`) |
+| `src/lib/` | scorer, telemetry source, fallback guidance, rate limiter, security headers, CSV export |
+| `src/ai/flows/` | Genkit flow behind the alert dialog |
+| `src/components/` | dashboard UI |
+| `analysis/` | evaluation pipeline, model-constants export, Python tests |
+| `tests/e2e/` | Playwright tests |
+| `docs/` | [architecture](docs/architecture.md), [threat model](docs/threat-model.md), [case study](docs/case-study.md), [reviewer summary](docs/hiring-summary.md), [archived original spec](docs/archive/blueprint.md) |
+
+## Related work
+
+[Vision2DCS](https://github.com/senanurcetin/Vision2DCS) includes a rule-based "OT Sentinel" audit of
+P&ID extractions (ISA-5.1 tag naming, safety-function keywords, loop integrity). It is a different
+tool from the telemetry detector in this repository.
+
+## Limitations
+
+Synthetic live telemetry; per-sample static baseline (no drift, missing-data or stuck-value detection);
+three sensors in the live demo; 7 attacks per evaluation file; in-memory feedback; no authentication.
+See the [model card](MODEL_CARD.md) and the [case study](docs/case-study.md).
 
 ## License
 
-MIT
+[MIT](LICENSE)
