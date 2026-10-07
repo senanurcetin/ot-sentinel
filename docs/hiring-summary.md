@@ -13,7 +13,9 @@ my word for it.
 | Full-stack TypeScript (Next.js App Router, React, server actions, zod) | `src/app/`, `src/components/`, `src/ai/flows/` |
 | Applying an LLM with guard rails (verdict owned by the detector, input validation, timeout, rate limit, labelled fallback) | `src/ai/flows/threat-mitigation-alert.ts`, `src/lib/fallback-mitigation.ts` |
 | Keeping Python and TypeScript consistent | `analysis/export_model.py` generates the scorer constants and the model card table; a test fails on drift |
-| Evaluation design for imbalanced, time-ordered security data | `analysis/`: same false-alarm budget for every detector, thresholds from attack-free data only, a chance baseline for event recall, published attack intervals as ground truth after finding the label column unusable |
+| Evaluation design for imbalanced, time-ordered security data | `analysis/`: same false-alarm budget for every detector, thresholds from attack-free data only, a chance baseline for event recall, published attack intervals as ground truth after finding the label column unusable; a follow-up protocol ([v3](protocol-v3.md)) committed before its run, with bootstrap intervals and a decision rule stated in advance |
+| Reporting a negative result | Three temporal detectors were added to beat the per-hour z-score; by the pre-stated rule none did on the test file, and the [case study](case-study.md#protocol-v3-does-adding-time-help) says so |
+| Testing an explainability claim | [Explanation accuracy](case-study.md#does-the-explanation-point-at-the-attacked-equipment): do the signals behind an alarm match the equipment the attack description names, compared with chance |
 | Testing depth | Jest (unit, component, API routes) with coverage thresholds in `jest.config.ts`; Playwright E2E; pytest |
 | Finding and fixing real defects | [case study, findings](case-study.md#findings-from-building-the-system-engineering-not-detection-performance) |
 | Security hygiene for a web app | headers/CSP, rate limiting, validation, CSV-injection guard, CodeQL, `npm audit`, `pip-audit`; [threat model](threat-model.md) with verified ATT&CK for ICS identifiers |
@@ -24,7 +26,7 @@ my word for it.
 - Telemetry is synthetic and the baseline comes from the demo's own simulator.
 - The BATADAL result is modest and rests on 7 attacks per file; it evaluates the method on 43 signals, not the live dashboard's 3-signal scorer.
 - One of my own metrics was flawed (an always-on alarm looked perfect) until the first run exposed it; the amendment is documented, not hidden.
-- The detector is per-sample and static; the [model card](../MODEL_CARD.md) lists what it cannot see.
+- The live detector is per-sample and static; temporal variants did not help on the test file. The [model card](../MODEL_CARD.md) lists what it cannot see.
 - There is no authentication, and no real protocol adapter (only an interface and rules for one).
 
 ## Run it in two minutes

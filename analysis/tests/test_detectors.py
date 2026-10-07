@@ -147,3 +147,13 @@ def test_v3_detectors_are_in_the_default_set_after_the_v2_ones():
         "isolation_forest",
         "hist_gradient_boosting",
     ]
+
+
+def test_rolling_residual_uses_exactly_the_previous_window_hours():
+    detector = RollingResidualDetector(window=24)
+    detector.fit(np.array([[-1.0], [1.0]]))  # std 1
+    X = np.zeros((30, 1))
+    X[0, 0] = 24.0  # inside the 24-hour window of hour 24, outside it for hour 25
+    scores = detector.score(X)
+    assert scores[24] == pytest.approx(1.0)  # |0 - 24/24|
+    assert scores[25] == pytest.approx(0.0)

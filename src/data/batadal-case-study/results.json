@@ -1,7 +1,20 @@
 {
   "data_source": "BATADAL (batadal.net)",
   "protocol": {
-    "version": 2,
+    "version": 3,
+    "document": "docs/protocol-v3.md",
+    "temporal_detectors": {
+      "ewma_z": {
+        "lambda": 0.2
+      },
+      "cusum": {
+        "k": 0.5
+      },
+      "rolling_residual": {
+        "window_hours": 24
+      }
+    },
+    "explanation_top_k": 3,
     "ground_truth": "published attack intervals (batadal_attacks.json)",
     "headline_evaluation": "test",
     "max_false_alarms_per_day": 1.0,
@@ -141,7 +154,57 @@
               "detected": true,
               "hours_to_detect": 2.0
             }
-          ]
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 159,
+            "hit_rate": 0.6226,
+            "chance": 0.1947,
+            "per_attack": [
+              {
+                "attack": 8,
+                "alarmed_hours": 21,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 9,
+                "alarmed_hours": 21,
+                "hit_rate": 0.5714,
+                "chance": 0.1994
+              },
+              {
+                "attack": 10,
+                "alarmed_hours": 30,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 11,
+                "alarmed_hours": 30,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 12,
+                "alarmed_hours": 35,
+                "hit_rate": 0.7714,
+                "chance": 0.1994
+              },
+              {
+                "attack": 13,
+                "alarmed_hours": 11,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 14,
+                "alarmed_hours": 11,
+                "hit_rate": 0.0,
+                "chance": 0.1362
+              }
+            ]
+          }
         },
         "zscore_max": {
           "supervised": false,
@@ -207,7 +270,405 @@
               "detected": true,
               "hours_to_detect": 8.0
             }
-          ]
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 106,
+            "hit_rate": 0.5849,
+            "chance": 0.1832,
+            "per_attack": [
+              {
+                "attack": 8,
+                "alarmed_hours": 18,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 9,
+                "alarmed_hours": 8,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              },
+              {
+                "attack": 10,
+                "alarmed_hours": 30,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 11,
+                "alarmed_hours": 31,
+                "hit_rate": 0.9677,
+                "chance": 0.1362
+              },
+              {
+                "attack": 12,
+                "alarmed_hours": 11,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              },
+              {
+                "attack": 13,
+                "alarmed_hours": 3,
+                "hit_rate": 0.3333,
+                "chance": 0.3164
+              },
+              {
+                "attack": 14,
+                "alarmed_hours": 5,
+                "hit_rate": 0.2,
+                "chance": 0.1362
+              }
+            ]
+          }
+        },
+        "ewma_z": {
+          "supervised": false,
+          "threshold": 1.3106,
+          "point": {
+            "precision": 0.2964,
+            "recall": 0.4791,
+            "f1": 0.3662,
+            "pr_auc": 0.3911
+          },
+          "event": {
+            "n_events": 7,
+            "events_detected": 7,
+            "event_recall": 1.0,
+            "median_time_to_detect_h": 5.0,
+            "mean_time_to_detect_h": 7.5714,
+            "false_alarm_segments": 65,
+            "false_alarms_per_day": 0.9275,
+            "alarm_fraction": 0.315,
+            "false_alarm_hour_fraction": 0.2753,
+            "expected_events_detected_by_chance": 5.8683
+          },
+          "per_attack": [
+            {
+              "attack": 8,
+              "duration_hours": 70,
+              "detected": true,
+              "hours_to_detect": 5.0
+            },
+            {
+              "attack": 9,
+              "duration_hours": 65,
+              "detected": true,
+              "hours_to_detect": 1.0
+            },
+            {
+              "attack": 10,
+              "duration_hours": 31,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 11,
+              "duration_hours": 31,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 12,
+              "duration_hours": 100,
+              "detected": true,
+              "hours_to_detect": 16.0
+            },
+            {
+              "attack": 13,
+              "duration_hours": 80,
+              "detected": true,
+              "hours_to_detect": 23.0
+            },
+            {
+              "attack": 14,
+              "duration_hours": 30,
+              "detected": true,
+              "hours_to_detect": 8.0
+            }
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 195,
+            "hit_rate": 0.3333,
+            "chance": 0.1942,
+            "per_attack": [
+              {
+                "attack": 8,
+                "alarmed_hours": 19,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 9,
+                "alarmed_hours": 44,
+                "hit_rate": 0.0227,
+                "chance": 0.1994
+              },
+              {
+                "attack": 10,
+                "alarmed_hours": 31,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 11,
+                "alarmed_hours": 31,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 12,
+                "alarmed_hours": 35,
+                "hit_rate": 0.0571,
+                "chance": 0.1994
+              },
+              {
+                "attack": 13,
+                "alarmed_hours": 16,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 14,
+                "alarmed_hours": 19,
+                "hit_rate": 0.0,
+                "chance": 0.1362
+              }
+            ]
+          }
+        },
+        "cusum": {
+          "supervised": false,
+          "threshold": 9.2956,
+          "point": {
+            "precision": 0.2218,
+            "recall": 0.9214,
+            "f1": 0.3575,
+            "pr_auc": 0.2073
+          },
+          "event": {
+            "n_events": 7,
+            "events_detected": 7,
+            "event_recall": 1.0,
+            "median_time_to_detect_h": 0.0,
+            "mean_time_to_detect_h": 0.0,
+            "false_alarm_segments": 20,
+            "false_alarms_per_day": 0.2854,
+            "alarm_fraction": 0.8095,
+            "false_alarm_hour_fraction": 0.7824,
+            "expected_events_detected_by_chance": 3.3292
+          },
+          "per_attack": [
+            {
+              "attack": 8,
+              "duration_hours": 70,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 9,
+              "duration_hours": 65,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 10,
+              "duration_hours": 31,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 11,
+              "duration_hours": 31,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 12,
+              "duration_hours": 100,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 13,
+              "duration_hours": 80,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 14,
+              "duration_hours": 30,
+              "detected": true,
+              "hours_to_detect": 0.0
+            }
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 375,
+            "hit_rate": 0.168,
+            "chance": 0.2207,
+            "per_attack": [
+              {
+                "attack": 8,
+                "alarmed_hours": 38,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 9,
+                "alarmed_hours": 65,
+                "hit_rate": 0.0154,
+                "chance": 0.1994
+              },
+              {
+                "attack": 10,
+                "alarmed_hours": 31,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 11,
+                "alarmed_hours": 31,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 12,
+                "alarmed_hours": 100,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              },
+              {
+                "attack": 13,
+                "alarmed_hours": 80,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 14,
+                "alarmed_hours": 30,
+                "hit_rate": 0.0,
+                "chance": 0.1362
+              }
+            ]
+          }
+        },
+        "rolling_residual": {
+          "supervised": false,
+          "threshold": 2.7086,
+          "point": {
+            "precision": 0.4351,
+            "recall": 0.2555,
+            "f1": 0.322,
+            "pr_auc": 0.3157
+          },
+          "event": {
+            "n_events": 7,
+            "events_detected": 7,
+            "event_recall": 1.0,
+            "median_time_to_detect_h": 1.0,
+            "mean_time_to_detect_h": 3.4286,
+            "false_alarm_segments": 84,
+            "false_alarms_per_day": 1.1986,
+            "alarm_fraction": 0.1144,
+            "false_alarm_hour_fraction": 0.0803,
+            "expected_events_detected_by_chance": 6.2568
+          },
+          "per_attack": [
+            {
+              "attack": 8,
+              "duration_hours": 70,
+              "detected": true,
+              "hours_to_detect": 11.0
+            },
+            {
+              "attack": 9,
+              "duration_hours": 65,
+              "detected": true,
+              "hours_to_detect": 1.0
+            },
+            {
+              "attack": 10,
+              "duration_hours": 31,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 11,
+              "duration_hours": 31,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 12,
+              "duration_hours": 100,
+              "detected": true,
+              "hours_to_detect": 3.0
+            },
+            {
+              "attack": 13,
+              "duration_hours": 80,
+              "detected": true,
+              "hours_to_detect": 1.0
+            },
+            {
+              "attack": 14,
+              "duration_hours": 30,
+              "detected": true,
+              "hours_to_detect": 8.0
+            }
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 104,
+            "hit_rate": 0.6154,
+            "chance": 0.1784,
+            "per_attack": [
+              {
+                "attack": 8,
+                "alarmed_hours": 14,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 9,
+                "alarmed_hours": 9,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              },
+              {
+                "attack": 10,
+                "alarmed_hours": 31,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 11,
+                "alarmed_hours": 31,
+                "hit_rate": 1.0,
+                "chance": 0.1362
+              },
+              {
+                "attack": 12,
+                "alarmed_hours": 12,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              },
+              {
+                "attack": 13,
+                "alarmed_hours": 3,
+                "hit_rate": 0.3333,
+                "chance": 0.3164
+              },
+              {
+                "attack": 14,
+                "alarmed_hours": 4,
+                "hit_rate": 0.25,
+                "chance": 0.1362
+              }
+            ]
+          }
         },
         "isolation_forest": {
           "supervised": false,
@@ -273,7 +734,8 @@
               "detected": true,
               "hours_to_detect": 9.0
             }
-          ]
+          ],
+          "explanation": null
         },
         "hist_gradient_boosting": {
           "supervised": true,
@@ -339,7 +801,139 @@
               "detected": true,
               "hours_to_detect": 0.0
             }
-          ]
+          ],
+          "explanation": null
+        }
+      },
+      "bootstrap": {
+        "method": "day-block bootstrap, 95 % percentile interval, thresholds fixed",
+        "n_boot": 1000,
+        "seed": 42,
+        "skipped_single_class_resamples": 0,
+        "reference": "zscore_max",
+        "intervals": {
+          "static_limits": {
+            "precision": [
+              0.2033,
+              0.4826
+            ],
+            "recall": [
+              0.2731,
+              0.5225
+            ],
+            "pr_auc": [
+              0.2457,
+              0.5279
+            ],
+            "pr_auc_diff": [
+              -0.0651,
+              0.001
+            ]
+          },
+          "zscore_max": {
+            "precision": [
+              0.331,
+              0.7018
+            ],
+            "recall": [
+              0.1296,
+              0.418
+            ],
+            "pr_auc": [
+              0.2635,
+              0.5726
+            ]
+          },
+          "ewma_z": {
+            "precision": [
+              0.1765,
+              0.429
+            ],
+            "recall": [
+              0.3263,
+              0.6453
+            ],
+            "pr_auc": [
+              0.217,
+              0.5627
+            ],
+            "pr_auc_diff": [
+              -0.0882,
+              0.0414
+            ]
+          },
+          "cusum": {
+            "precision": [
+              0.1374,
+              0.3126
+            ],
+            "recall": [
+              0.8296,
+              0.9974
+            ],
+            "pr_auc": [
+              0.1224,
+              0.3251
+            ],
+            "pr_auc_diff": [
+              -0.3774,
+              -0.0417
+            ]
+          },
+          "rolling_residual": {
+            "precision": [
+              0.2573,
+              0.5993
+            ],
+            "recall": [
+              0.1301,
+              0.4115
+            ],
+            "pr_auc": [
+              0.1896,
+              0.4812
+            ],
+            "pr_auc_diff": [
+              -0.1796,
+              -0.0213
+            ]
+          },
+          "isolation_forest": {
+            "precision": [
+              0.1829,
+              0.4575
+            ],
+            "recall": [
+              0.0787,
+              0.1822
+            ],
+            "pr_auc": [
+              0.1551,
+              0.3498
+            ],
+            "pr_auc_diff": [
+              -0.2948,
+              -0.0605
+            ]
+          },
+          "hist_gradient_boosting": {
+            "precision": [
+              0.1984,
+              0.5443
+            ],
+            "recall": [
+              0.0852,
+              0.2616
+            ],
+            "pr_auc": [
+              0.1898,
+              0.451
+            ],
+            "pr_auc_diff": [
+              -0.2292,
+              -0.0087
+            ]
+          }
         }
       }
     },
@@ -412,7 +1006,57 @@
               "detected": true,
               "hours_to_detect": 17.0
             }
-          ]
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 215,
+            "hit_rate": 0.2837,
+            "chance": 0.2435,
+            "per_attack": [
+              {
+                "attack": 1,
+                "alarmed_hours": 28,
+                "hit_rate": 0.7143,
+                "chance": 0.3164
+              },
+              {
+                "attack": 2,
+                "alarmed_hours": 5,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 3,
+                "alarmed_hours": 25,
+                "hit_rate": 0.88,
+                "chance": 0.3164
+              },
+              {
+                "attack": 4,
+                "alarmed_hours": 23,
+                "hit_rate": 0.4783,
+                "chance": 0.3164
+              },
+              {
+                "attack": 5,
+                "alarmed_hours": 31,
+                "hit_rate": 0.2258,
+                "chance": 0.1994
+              },
+              {
+                "attack": 6,
+                "alarmed_hours": 68,
+                "hit_rate": 0.0147,
+                "chance": 0.1994
+              },
+              {
+                "attack": 7,
+                "alarmed_hours": 35,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              }
+            ]
+          }
         },
         "zscore_max": {
           "supervised": false,
@@ -478,7 +1122,405 @@
               "detected": true,
               "hours_to_detect": 5.0
             }
-          ]
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 157,
+            "hit_rate": 0.6943,
+            "chance": 0.2471,
+            "per_attack": [
+              {
+                "attack": 1,
+                "alarmed_hours": 31,
+                "hit_rate": 1.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 2,
+                "alarmed_hours": 7,
+                "hit_rate": 0.1429,
+                "chance": 0.3164
+              },
+              {
+                "attack": 3,
+                "alarmed_hours": 10,
+                "hit_rate": 0.2,
+                "chance": 0.3164
+              },
+              {
+                "attack": 4,
+                "alarmed_hours": 16,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 5,
+                "alarmed_hours": 16,
+                "hit_rate": 0.375,
+                "chance": 0.1994
+              },
+              {
+                "attack": 6,
+                "alarmed_hours": 71,
+                "hit_rate": 0.9577,
+                "chance": 0.1994
+              },
+              {
+                "attack": 7,
+                "alarmed_hours": 6,
+                "hit_rate": 0.1667,
+                "chance": 0.1994
+              }
+            ]
+          }
+        },
+        "ewma_z": {
+          "supervised": false,
+          "threshold": 1.3106,
+          "point": {
+            "precision": 0.2966,
+            "recall": 0.6667,
+            "f1": 0.4105,
+            "pr_auc": 0.5858
+          },
+          "event": {
+            "n_events": 7,
+            "events_detected": 7,
+            "event_recall": 1.0,
+            "median_time_to_detect_h": 6.0,
+            "mean_time_to_detect_h": 5.5714,
+            "false_alarm_segments": 151,
+            "false_alarms_per_day": 0.9834,
+            "alarm_fraction": 0.2648,
+            "false_alarm_hour_fraction": 0.2111,
+            "expected_events_detected_by_chance": 6.2725
+          },
+          "per_attack": [
+            {
+              "attack": 1,
+              "duration_hours": 50,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 2,
+              "duration_hours": 24,
+              "detected": true,
+              "hours_to_detect": 7.0
+            },
+            {
+              "attack": 3,
+              "duration_hours": 60,
+              "detected": true,
+              "hours_to_detect": 1.0
+            },
+            {
+              "attack": 4,
+              "duration_hours": 94,
+              "detected": true,
+              "hours_to_detect": 13.0
+            },
+            {
+              "attack": 5,
+              "duration_hours": 60,
+              "detected": true,
+              "hours_to_detect": 6.0
+            },
+            {
+              "attack": 6,
+              "duration_hours": 94,
+              "detected": true,
+              "hours_to_detect": 11.0
+            },
+            {
+              "attack": 7,
+              "duration_hours": 110,
+              "detected": true,
+              "hours_to_detect": 1.0
+            }
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 328,
+            "hit_rate": 0.6402,
+            "chance": 0.2544,
+            "per_attack": [
+              {
+                "attack": 1,
+                "alarmed_hours": 50,
+                "hit_rate": 1.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 2,
+                "alarmed_hours": 5,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 3,
+                "alarmed_hours": 47,
+                "hit_rate": 0.7447,
+                "chance": 0.3164
+              },
+              {
+                "attack": 4,
+                "alarmed_hours": 52,
+                "hit_rate": 0.3846,
+                "chance": 0.3164
+              },
+              {
+                "attack": 5,
+                "alarmed_hours": 45,
+                "hit_rate": 0.5111,
+                "chance": 0.1994
+              },
+              {
+                "attack": 6,
+                "alarmed_hours": 83,
+                "hit_rate": 0.9759,
+                "chance": 0.1994
+              },
+              {
+                "attack": 7,
+                "alarmed_hours": 46,
+                "hit_rate": 0.0217,
+                "chance": 0.1994
+              }
+            ]
+          }
+        },
+        "cusum": {
+          "supervised": false,
+          "threshold": 9.2956,
+          "point": {
+            "precision": 0.1495,
+            "recall": 1.0,
+            "f1": 0.2601,
+            "pr_auc": 0.2606
+          },
+          "event": {
+            "n_events": 7,
+            "events_detected": 7,
+            "event_recall": 1.0,
+            "median_time_to_detect_h": 0.0,
+            "mean_time_to_detect_h": 0.0,
+            "false_alarm_segments": 52,
+            "false_alarms_per_day": 0.3387,
+            "alarm_fraction": 0.7879,
+            "false_alarm_hour_fraction": 0.7596,
+            "expected_events_detected_by_chance": 4.1932
+          },
+          "per_attack": [
+            {
+              "attack": 1,
+              "duration_hours": 50,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 2,
+              "duration_hours": 24,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 3,
+              "duration_hours": 60,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 4,
+              "duration_hours": 94,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 5,
+              "duration_hours": 60,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 6,
+              "duration_hours": 94,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 7,
+              "duration_hours": 110,
+              "detected": true,
+              "hours_to_detect": 0.0
+            }
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 492,
+            "hit_rate": 0.3069,
+            "chance": 0.2536,
+            "per_attack": [
+              {
+                "attack": 1,
+                "alarmed_hours": 50,
+                "hit_rate": 1.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 2,
+                "alarmed_hours": 24,
+                "hit_rate": 1.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 3,
+                "alarmed_hours": 60,
+                "hit_rate": 1.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 4,
+                "alarmed_hours": 94,
+                "hit_rate": 0.1702,
+                "chance": 0.3164
+              },
+              {
+                "attack": 5,
+                "alarmed_hours": 60,
+                "hit_rate": 0.0167,
+                "chance": 0.1994
+              },
+              {
+                "attack": 6,
+                "alarmed_hours": 94,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              },
+              {
+                "attack": 7,
+                "alarmed_hours": 110,
+                "hit_rate": 0.0,
+                "chance": 0.1994
+              }
+            ]
+          }
+        },
+        "rolling_residual": {
+          "supervised": false,
+          "threshold": 2.7086,
+          "point": {
+            "precision": 0.4793,
+            "recall": 0.4715,
+            "f1": 0.4754,
+            "pr_auc": 0.4758
+          },
+          "event": {
+            "n_events": 7,
+            "events_detected": 7,
+            "event_recall": 1.0,
+            "median_time_to_detect_h": 5.0,
+            "mean_time_to_detect_h": 5.7143,
+            "false_alarm_segments": 159,
+            "false_alarms_per_day": 1.0355,
+            "alarm_fraction": 0.1159,
+            "false_alarm_hour_fraction": 0.0684,
+            "expected_events_detected_by_chance": 6.3358
+          },
+          "per_attack": [
+            {
+              "attack": 1,
+              "duration_hours": 50,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 2,
+              "duration_hours": 24,
+              "detected": true,
+              "hours_to_detect": 1.0
+            },
+            {
+              "attack": 3,
+              "duration_hours": 60,
+              "detected": true,
+              "hours_to_detect": 0.0
+            },
+            {
+              "attack": 4,
+              "duration_hours": 94,
+              "detected": true,
+              "hours_to_detect": 18.0
+            },
+            {
+              "attack": 5,
+              "duration_hours": 60,
+              "detected": true,
+              "hours_to_detect": 5.0
+            },
+            {
+              "attack": 6,
+              "duration_hours": 94,
+              "detected": true,
+              "hours_to_detect": 11.0
+            },
+            {
+              "attack": 7,
+              "duration_hours": 110,
+              "detected": true,
+              "hours_to_detect": 5.0
+            }
+          ],
+          "explanation": {
+            "top_k": 3,
+            "alarmed_attack_hours": 232,
+            "hit_rate": 0.306,
+            "chance": 0.2403,
+            "per_attack": [
+              {
+                "attack": 1,
+                "alarmed_hours": 48,
+                "hit_rate": 0.9792,
+                "chance": 0.3164
+              },
+              {
+                "attack": 2,
+                "alarmed_hours": 10,
+                "hit_rate": 0.1,
+                "chance": 0.3164
+              },
+              {
+                "attack": 3,
+                "alarmed_hours": 8,
+                "hit_rate": 0.0,
+                "chance": 0.3164
+              },
+              {
+                "attack": 4,
+                "alarmed_hours": 15,
+                "hit_rate": 0.2667,
+                "chance": 0.3164
+              },
+              {
+                "attack": 5,
+                "alarmed_hours": 55,
+                "hit_rate": 0.1091,
+                "chance": 0.1994
+              },
+              {
+                "attack": 6,
+                "alarmed_hours": 83,
+                "hit_rate": 0.1446,
+                "chance": 0.1994
+              },
+              {
+                "attack": 7,
+                "alarmed_hours": 13,
+                "hit_rate": 0.0769,
+                "chance": 0.1994
+              }
+            ]
+          }
         },
         "isolation_forest": {
           "supervised": false,
@@ -544,13 +1586,235 @@
               "detected": true,
               "hours_to_detect": 1.0
             }
-          ]
+          ],
+          "explanation": null
+        }
+      },
+      "bootstrap": {
+        "method": "day-block bootstrap, 95 % percentile interval, thresholds fixed",
+        "n_boot": 1000,
+        "seed": 42,
+        "skipped_single_class_resamples": 0,
+        "reference": "zscore_max",
+        "intervals": {
+          "static_limits": {
+            "precision": [
+              0.1435,
+              0.3274
+            ],
+            "recall": [
+              0.3343,
+              0.5425
+            ],
+            "pr_auc": [
+              0.1506,
+              0.4119
+            ],
+            "pr_auc_diff": [
+              -0.2314,
+              -0.0762
+            ]
+          },
+          "zscore_max": {
+            "precision": [
+              0.2746,
+              0.5801
+            ],
+            "recall": [
+              0.2034,
+              0.4563
+            ],
+            "pr_auc": [
+              0.2869,
+              0.5672
+            ]
+          },
+          "ewma_z": {
+            "precision": [
+              0.1903,
+              0.3951
+            ],
+            "recall": [
+              0.5442,
+              0.7873
+            ],
+            "pr_auc": [
+              0.4094,
+              0.7287
+            ],
+            "pr_auc_diff": [
+              0.079,
+              0.2218
+            ]
+          },
+          "cusum": {
+            "precision": [
+              0.097,
+              0.2053
+            ],
+            "recall": [
+              1.0,
+              1.0
+            ],
+            "pr_auc": [
+              0.1496,
+              0.4236
+            ],
+            "pr_auc_diff": [
+              -0.3459,
+              0.0362
+            ]
+          },
+          "rolling_residual": {
+            "precision": [
+              0.3146,
+              0.6077
+            ],
+            "recall": [
+              0.3063,
+              0.654
+            ],
+            "pr_auc": [
+              0.2912,
+              0.6432
+            ],
+            "pr_auc_diff": [
+              -0.0631,
+              0.1546
+            ]
+          },
+          "isolation_forest": {
+            "precision": [
+              0.162,
+              0.3661
+            ],
+            "recall": [
+              0.1743,
+              0.2955
+            ],
+            "pr_auc": [
+              0.119,
+              0.2788
+            ],
+            "pr_auc_diff": [
+              -0.3417,
+              -0.1446
+            ]
+          }
         }
       },
       "not_evaluated": [
         "hist_gradient_boosting"
       ]
     }
+  },
+  "decision": {
+    "reference": "zscore_max",
+    "evaluated_on": "test",
+    "detectors": {
+      "ewma_z": {
+        "pr_auc_diff_interval": [
+          -0.0882,
+          0.0414
+        ],
+        "better_than_reference": false
+      },
+      "cusum": {
+        "pr_auc_diff_interval": [
+          -0.3774,
+          -0.0417
+        ],
+        "better_than_reference": false
+      },
+      "rolling_residual": {
+        "pr_auc_diff_interval": [
+          -0.1796,
+          -0.0213
+        ],
+        "better_than_reference": false
+      }
+    }
+  },
+  "affected_signals": {
+    "1": [
+      "F_PU10",
+      "F_PU11",
+      "L_T7",
+      "S_PU10",
+      "S_PU11"
+    ],
+    "2": [
+      "F_PU10",
+      "F_PU11",
+      "L_T7",
+      "S_PU10",
+      "S_PU11"
+    ],
+    "3": [
+      "F_PU1",
+      "F_PU2",
+      "L_T1",
+      "S_PU1",
+      "S_PU2"
+    ],
+    "4": [
+      "F_PU1",
+      "F_PU2",
+      "L_T1",
+      "S_PU1",
+      "S_PU2"
+    ],
+    "5": [
+      "F_PU7",
+      "L_T4",
+      "S_PU7"
+    ],
+    "6": [
+      "F_PU7",
+      "L_T4",
+      "S_PU7"
+    ],
+    "7": [
+      "F_PU7",
+      "L_T4",
+      "S_PU7"
+    ],
+    "8": [
+      "F_PU4",
+      "F_PU5",
+      "L_T3",
+      "S_PU4",
+      "S_PU5"
+    ],
+    "9": [
+      "F_V2",
+      "L_T2",
+      "S_V2"
+    ],
+    "10": [
+      "F_PU3",
+      "S_PU3"
+    ],
+    "11": [
+      "F_PU3",
+      "S_PU3"
+    ],
+    "12": [
+      "F_V2",
+      "L_T2",
+      "S_V2"
+    ],
+    "13": [
+      "F_PU10",
+      "F_PU11",
+      "L_T7",
+      "S_PU10",
+      "S_PU11"
+    ],
+    "14": [
+      "L_T4",
+      "L_T6"
+    ]
   },
   "drift": {
     "test": {
@@ -584,6 +1848,8 @@
     "dataset04 and the test file are rounded to 2 decimals; dataset03, the reference, is not.",
     "Time-to-detect counts from the published attack start. For attacks that conceal themselves with a replay of normal readings, the sensor-visible effect can begin later.",
     "The supervised reference sees labelled attacks of the same simulator and is an optimistic comparison, not a deployable detector. It is trained on dataset04 only.",
-    "The runtime scorer in src/lib/anomaly-scorer.ts is a 3-sensor demo; this study evaluates the same z-score method on all 43 BATADAL signals, not that runtime code."
+    "The runtime scorer in src/lib/anomaly-scorer.ts is a 3-sensor demo; this study evaluates the same z-score method on all 43 BATADAL signals, not that runtime code.",
+    "Protocol v3 was written after the v2 results were known. Its parameters are textbook defaults fixed in advance and nothing was tuned on labelled data, but it is a follow-up analysis, not a strict pre-registration. With seven detectors, one of them looks best by chance; the decision rule therefore uses a paired bootstrap interval, not point estimates.",
+    "Explanation accuracy only checks whether an alarm's top-3 signals include equipment the attack description names. Attacks that replay normal readings hide exactly those signals, so a low rate there is expected and does not mean the alarm is spurious."
   ]
 }

@@ -243,3 +243,13 @@ def test_decision_rule_follows_the_paired_interval(result):
         interval = result["evaluations"]["test"]["bootstrap"]["intervals"][name]["pr_auc_diff"]
         assert verdict["pr_auc_diff_interval"] == interval
         assert verdict["better_than_reference"] == (interval[0] > 0)
+
+
+def test_decision_requires_the_whole_interval_above_zero():
+    def bootstrap(interval):
+        return {"intervals": {name: {"pr_auc_diff": interval} for name in run.V3_DETECTORS}}
+
+    straddles = run._decision(bootstrap([-0.1, 0.2]))
+    above = run._decision(bootstrap([0.01, 0.2]))
+    assert not any(v["better_than_reference"] for v in straddles["detectors"].values())
+    assert all(v["better_than_reference"] for v in above["detectors"].values())

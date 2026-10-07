@@ -144,3 +144,39 @@ def test_validate_attacks_rejects_wrong_duration_and_overlap():
 def test_attack_file_keeps_its_provenance_note():
     raw = json.loads(bd.ATTACKS_FILE.read_text(encoding="utf-8"))
     assert "batadal.net" in raw["_source"] and "ATT_FLAG" in " ".join(raw["_notes"])
+
+
+def test_affected_signals_for_all_fourteen_published_attacks():
+    """Protocol v3: attacked signals are read mechanically from the official descriptions."""
+    pumps = lambda *ns: [s for n in ns for s in (f"F_PU{n}", f"S_PU{n}")]  # noqa: E731
+    expected = {
+        1: ["L_T7", *pumps(10, 11)],
+        2: ["L_T7", *pumps(10, 11)],  # "Like attack 1"
+        3: ["L_T1", *pumps(1, 2)],
+        4: ["L_T1", *pumps(1, 2)],  # "Like attack 3"
+        5: ["L_T4", *pumps(7)],
+        6: ["L_T4", *pumps(7)],  # "Like attack 5"
+        7: ["L_T4", *pumps(7)],  # "Like attack 6"
+        8: ["L_T3", *pumps(4, 5)],
+        9: ["L_T2", "F_V2", "S_V2"],
+        10: pumps(3),
+        11: pumps(3),  # "Similar to attack 10"
+        12: ["L_T2", "F_V2", "S_V2"],  # "Similar to attack 9"
+        13: ["L_T7", *pumps(10, 11)],
+        14: ["L_T4", "L_T6"],
+    }
+    got = bd.affected_signals(bd.load_attacks())
+    assert got == {k: sorted(v) for k, v in expected.items()}
+
+
+def test_affected_signals_ignore_plc_names_and_concealment_text():
+    attack = bd.Attack(
+        id=1,
+        dataset="test",
+        start=pd.Timestamp("2017-01-01T00"),
+        end=pd.Timestamp("2017-01-01T05"),
+        duration_hours=6,
+        description="Attack on PLC9 alters T5 readings.",
+        concealment="Replay attack on PU1 and V2.",
+    )
+    assert bd.affected_signals([attack]) == {1: ["L_T5"]}

@@ -219,3 +219,10 @@ def test_bootstrap_skips_resamples_without_both_classes():
     result = day_block_bootstrap(y, {"perfect": (score, 0.5)}, days, n_boot=300, seed=0)
     assert result["skipped_single_class_resamples"] > 0
     assert result["intervals"]["perfect"]["precision"] == [1.0, 1.0]
+
+
+def test_explanation_accuracy_uses_the_top_k_features():
+    contributions = np.array([[5.0, 4.0, 3.0, 0.0]])  # attacked feature 2 is third
+    ids, alarm = np.array([1]), np.array([True])
+    assert explanation_accuracy(contributions, alarm, ids, {1: [2]}, k=3)["hit_rate"] == 1.0
+    assert explanation_accuracy(contributions, alarm, ids, {1: [2]}, k=2)["hit_rate"] == 0.0

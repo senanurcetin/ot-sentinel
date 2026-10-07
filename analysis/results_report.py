@@ -127,7 +127,7 @@ def render_v3_decision(results: dict) -> str:
         f"{ref.lower()} on the test set"
     )
     out = [
-        f"Protocol v3 decision rule (fixed in advance, [docs/protocol-v3.md](docs/protocol-v3.md)): "
+        f"Protocol v3 decision rule (fixed in advance in `docs/protocol-v3.md`): "
         f"a temporal detector beats {ref.lower()} only if the 95 % interval of its paired PR-AUC "
         f"difference on the test set lies entirely above 0 ({boot['n_boot']} day-block bootstrap "
         f"resamples). Result: {verdict}.",

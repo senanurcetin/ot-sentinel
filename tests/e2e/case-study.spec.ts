@@ -36,6 +36,15 @@ test.describe('case study page', () => {
     await expect(page.getByRole('heading', { name: 'Limitations' })).toBeVisible();
   });
 
+  test('shows the protocol v3 decision and explanation accuracy', async ({ page }) => {
+    await page.goto('/case-study');
+    await expect(page.getByRole('heading', { name: 'Does adding time help? (protocol v3)' })).toBeVisible();
+    await expect(page.getByText('No temporal detector passes.')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Do the explanations point at the attacked equipment?' })
+    ).toBeVisible();
+  });
+
   test('links back to the dashboard', async ({ page }) => {
     await page.goto('/case-study');
     await page.getByRole('link', { name: /Dashboard/ }).click();

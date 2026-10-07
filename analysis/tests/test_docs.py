@@ -106,7 +106,7 @@ def test_readme_references_existing_demo_assets():
 def test_results_are_from_the_real_benchmark_not_the_synthetic_smoke_test(results):
     assert results["data_source"].startswith("BATADAL")
     assert "NOT BATADAL" not in results["data_source"]
-    assert results["protocol"]["version"] == 2
+    assert results["protocol"]["version"] == 3
 
 
 def test_generated_blocks_are_up_to_date():
@@ -129,9 +129,10 @@ def test_no_stale_not_run_statements(doc):
 def test_case_study_and_readme_contain_the_generated_blocks():
     case = (ROOT / "docs" / "case-study.md").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    for name in ("summary", "per-attack", "drift", "data"):
+    for name in ("summary", "v3-decision", "explanation", "per-attack", "drift", "data"):
         assert f"BEGIN results:{name}" in case
-    assert "BEGIN results:summary" in readme
+    for name in ("summary", "v3-decision"):
+        assert f"BEGIN results:{name}" in readme
 
 
 # --- prose claims, checked against the results -----------------------------------------------------
@@ -141,23 +142,46 @@ def _detectors(results, name):
     return results["evaluations"][name]["detectors"]
 
 
+V2_DETECTORS = ("static_limits", "zscore_max", "isolation_forest", "hist_gradient_boosting")
+V3_DETECTORS = ("ewma_z", "cusum", "rolling_residual")
+
+
 def test_claim_every_detector_catches_every_attack_and_chance_alone_would_catch_most(results):
     for name in ("test", "train"):
-        for det in _detectors(results, name).values():
+        for key, det in _detectors(results, name).items():
             event = det["event"]
             assert event["events_detected"] == event["n_events"] == 7
-            assert event["expected_events_detected_by_chance"] >= 0.8 * event["n_events"]
+            if key != "cusum":  # "the CUSUM is the extreme case": few, very long false alarms
+                assert event["expected_events_detected_by_chance"] >= 0.8 * event["n_events"], key
+
+
+def test_claim_the_cusum_alarms_in_most_attack_free_hours(results):
+    for name in ("test", "train"):
+        cusum = _detectors(results, name)["cusum"]["event"]
+        assert cusum["false_alarm_hour_fraction"] > 0.5
+        assert cusum["expected_events_detected_by_chance"] < 0.8 * cusum["n_events"]
 
 
 def test_claim_hour_level_results_are_modest(results):
     for name in ("test", "train"):
         for det in _detectors(results, name).values():
-            p = det["point"]
+            p, e = det["point"], det["event"]
             assert not (p["precision"] >= 0.8 and p["recall"] >= 0.8)
-            assert p["recall"] < 0.5, "'a minority of attack hours' no longer holds"
+            if e["false_alarm_hour_fraction"] < 0.1:  # "stays quiet in most attack-free hours"
+                assert p["recall"] < 0.5, (
+                    "'catches less than half of the attack hours' no longer holds"
+                )
+            if p["recall"] >= 0.5:  # "the ones that catch more pay for it with many more alarms"
+                assert e["false_alarm_hour_fraction"] > 0.2
     best = _detectors(results, "test")["zscore_max"]["point"]
     train_best = _detectors(results, "train")["zscore_max"]["point"]
     assert 0.4 <= best["precision"] <= 0.6 and 0.4 <= train_best["precision"] <= 0.6  # "about half"
+
+
+def test_claim_v2_ordering_holds_on_point_estimates_only(results):
+    """'even the z-score's lead over static limits on the test file is not established'"""
+    diff = results["evaluations"]["test"]["bootstrap"]["intervals"]["static_limits"]["pr_auc_diff"]
+    assert diff[0] < 0 < diff[1]
 
 
 def test_claim_ordering_zscore_then_static_then_isolation_forest_on_both_files(results):
@@ -263,3 +287,53 @@ def test_guard_regexes_catch_what_they_should():
     assert not METRIC_WITH_VALUE.search("the 0.37 % rate")
     assert STALE_STATUS.search("it has not been run on BATADAL")
     assert bd.ATTACKS_FILE.exists()
+
+
+# --- protocol v3 claims ---------------------------------------------------------------------------
+
+
+def test_claim_no_temporal_detector_passes_the_decision_rule(results):
+    decision = results["decision"]["detectors"]
+    assert set(decision) == set(V3_DETECTORS)
+    assert not any(v["better_than_reference"] for v in decision.values())
+
+
+def test_claim_cusum_and_rolling_residual_are_worse_and_ewma_is_undecided_on_the_test_file(results):
+    decision = results["decision"]["detectors"]
+    for name in ("cusum", "rolling_residual"):
+        assert decision[name]["pr_auc_diff_interval"][1] < 0, name
+    lo, hi = decision["ewma_z"]["pr_auc_diff_interval"]
+    assert lo < 0 < hi
+
+
+def test_claim_ewma_is_better_on_the_2016_file_only(results):
+    train = results["evaluations"]["train"]["bootstrap"]["intervals"]["ewma_z"]["pr_auc_diff"]
+    assert train[0] > 0
+
+
+def test_claim_zscore_explanations_hit_about_three_times_chance_on_both_files(results):
+    for name in ("test", "train"):
+        x = _detectors(results, name)["zscore_max"]["explanation"]
+        assert 2.5 <= x["hit_rate"] / x["chance"] <= 3.5, name
+
+
+def test_claim_pump_attacks_lead_and_replay_attack_8_misses(results):
+    test = _detectors(results, "test")
+    for name in V3_DETECTORS + ("static_limits", "zscore_max"):
+        rows = {r["attack"]: r for r in test[name]["explanation"]["per_attack"]}
+        assert rows[10]["hit_rate"] >= 0.9 and rows[11]["hit_rate"] >= 0.9, name
+        assert rows[8]["hit_rate"] == 0.0, name
+
+
+def test_claim_static_limits_explain_well_on_test_but_near_chance_on_2016(results):
+    test = _detectors(results, "test")
+    train = _detectors(results, "train")
+    t, z = test["static_limits"]["explanation"], test["zscore_max"]["explanation"]
+    assert abs(t["hit_rate"] - z["hit_rate"]) < 0.1
+    s = train["static_limits"]["explanation"]
+    assert s["hit_rate"] - s["chance"] < 0.1
+
+
+def test_claim_cusum_explanations_are_not_better_than_chance_on_the_test_file(results):
+    x = _detectors(results, "test")["cusum"]["explanation"]
+    assert x["hit_rate"] <= x["chance"]

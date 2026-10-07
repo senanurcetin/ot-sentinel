@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+- **Evaluation protocol v3** ([`docs/protocol-v3.md`](docs/protocol-v3.md)), committed before its first run: three
+  causal temporal detectors with fixed textbook parameters (EWMA of z-scores, two-sided CUSUM, 24 h rolling
+  residual), day-block bootstrap 95 % intervals, a paired PR-AUC comparison with the z-score, explanation accuracy
+  (do the top-3 signals of an alarm include equipment the attack description names?) and a decision rule stated
+  in advance
+- Result, reported as is: by that rule no temporal detector improves on the z-score on the test file (two are
+  worse; the EWMA is better on the 2016 file only), and the z-score's explanations point at the attacked equipment
+  roughly three times as often as chance, except under replay concealment
+- `/case-study` page: interval column, v3 decision and explanation-accuracy sections; README, case study, model
+  card and reviewer summary updated, with every new prose claim encoded as a test
+
 ## [0.3.0] - 2026-10-07
 
 ### Added
