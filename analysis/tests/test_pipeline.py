@@ -7,7 +7,16 @@ import batadal_data as bd
 import run_batadal_case_study as run
 from synthetic import make_synthetic, write_attacks, write_files
 
-DETECTORS = {"static_limits", "zscore_max", "isolation_forest", "hist_gradient_boosting"}
+DETECTORS = {
+    "static_limits",
+    "zscore_max",
+    "ewma_z",
+    "cusum",
+    "rolling_residual",
+    "isolation_forest",
+    "hist_gradient_boosting",
+}
+PER_FEATURE = ("static_limits", "zscore_max", "ewma_z", "cusum", "rolling_residual")
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +34,7 @@ def test_runs_and_is_deterministic(synthetic, result):
     frames, attacks = synthetic
     assert result == run.run_case_study(*make_synthetic(), "synthetic")
     assert set(result["evaluations"]["test"]["detectors"]) == DETECTORS
-    assert result["limitations"] and result["protocol"]["version"] == 2
+    assert result["limitations"] and result["protocol"]["version"] == 3
 
 
 def test_supervised_reference_is_never_evaluated_on_its_training_data(result):
@@ -75,7 +84,7 @@ def test_a_feature_that_is_constant_in_the_reference_still_counts(synthetic):
     """The 'pump' attack only moves a feature that is constant in the reference."""
     frames, attacks = synthetic
     out = run.run_case_study(frames, attacks, "x")
-    pump = next(a for a in attacks if a.dataset == "test" and a.description.endswith("pump attack"))
+    pump = next(a for a in attacks if a.dataset == "test" and "pump PU3" in a.description)
     for name in ("static_limits", "zscore_max"):
         row = next(
             r
@@ -85,14 +94,14 @@ def test_a_feature_that_is_constant_in_the_reference_still_counts(synthetic):
         assert row["detected"], (
             f"{name} missed an attack that only moves a constant-in-reference feature"
         )
-    assert "PUMP" in out["data"]["constant_features_in_reference"]
+    assert "F_PU3" in out["data"]["constant_features_in_reference"]
 
 
 def test_thresholds_depend_only_on_the_attack_free_reference(synthetic):
     frames, attacks = synthetic
     changed = {k: v.copy() for k, v in frames.items()}
     for key in ("train", "test"):
-        changed[key].loc[:, [c for c in changed[key].columns if c.startswith("S_")]] += 50.0
+        changed[key].loc[:, [c for c in changed[key].columns if c.startswith("L_T")]] += 50.0
     a = run.run_case_study(frames, attacks, "x")
     b = run.run_case_study(changed, attacks, "x")
     for name in ("static_limits", "zscore_max", "isolation_forest"):
@@ -126,7 +135,7 @@ def test_requires_attacks_in_both_sets(synthetic):
 
 def test_missing_feature_in_an_evaluation_file_is_an_error(synthetic):
     frames, attacks = synthetic
-    broken = dict(frames, test=frames["test"].drop(columns=["S_1"]))
+    broken = dict(frames, test=frames["test"].drop(columns=["L_T1"]))
     with pytest.raises(bd.SchemaError):
         run.run_case_study(broken, attacks, "x")
 
@@ -181,3 +190,66 @@ def _load(path):
         )
         for a in raw
     ]
+
+
+# --- Protocol v3 ---
+
+
+def test_explanations_exist_only_for_per_feature_detectors(result):
+    for name in ("train", "test"):
+        detectors = result["evaluations"][name]["detectors"]
+        for detector, res in detectors.items():
+            if detector in PER_FEATURE:
+                assert res["explanation"]["top_k"] == 3, (name, detector)
+            else:
+                assert res["explanation"] is None, (name, detector)
+
+
+def test_explanations_point_at_the_synthetic_attack_targets(result):
+    """The synthetic attacks move exactly the signals their descriptions name."""
+    explanation = result["evaluations"]["test"]["detectors"]["zscore_max"]["explanation"]
+    assert explanation["alarmed_attack_hours"] > 0
+    assert explanation["hit_rate"] == 1.0
+    assert explanation["hit_rate"] > explanation["chance"]
+
+
+def test_affected_signals_come_from_the_descriptions(synthetic, result):
+    _, attacks = synthetic
+    for attack in attacks:
+        signals = result["affected_signals"][str(attack.id)]
+        if "pump PU3" in attack.description:
+            assert signals == ["F_PU3", "S_PU3"]
+        else:
+            assert signals == ["L_T1", "L_T2", "L_T3"]
+
+
+def test_bootstrap_intervals_compare_every_detector_with_the_zscore_reference(result):
+    for name in ("train", "test"):
+        boot = result["evaluations"][name]["bootstrap"]
+        assert boot["reference"] == "zscore_max" and boot["n_boot"] == run.N_BOOTSTRAP
+        detectors = set(result["evaluations"][name]["detectors"])
+        assert set(boot["intervals"]) == detectors
+        for detector, intervals in boot["intervals"].items():
+            lo, hi = intervals["pr_auc"]
+            assert 0.0 <= lo <= hi <= 1.0
+            assert ("pr_auc_diff" in intervals) == (detector != "zscore_max")
+
+
+def test_decision_rule_follows_the_paired_interval(result):
+    decision = result["decision"]
+    assert decision["reference"] == "zscore_max" and decision["evaluated_on"] == "test"
+    assert set(decision["detectors"]) == set(run.V3_DETECTORS)
+    for name, verdict in decision["detectors"].items():
+        interval = result["evaluations"]["test"]["bootstrap"]["intervals"][name]["pr_auc_diff"]
+        assert verdict["pr_auc_diff_interval"] == interval
+        assert verdict["better_than_reference"] == (interval[0] > 0)
+
+
+def test_decision_requires_the_whole_interval_above_zero():
+    def bootstrap(interval):
+        return {"intervals": {name: {"pr_auc_diff": interval} for name in run.V3_DETECTORS}}
+
+    straddles = run._decision(bootstrap([-0.1, 0.2]))
+    above = run._decision(bootstrap([0.01, 0.2]))
+    assert not any(v["better_than_reference"] for v in straddles["detectors"].values())
+    assert all(v["better_than_reference"] for v in above["detectors"].values())

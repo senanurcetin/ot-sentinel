@@ -54,8 +54,11 @@ choices; they have not been tuned or validated against labelled attacks.
 ## Evaluation
 
 The *method* (per-sample max/weighted z-score against an attack-free baseline) was evaluated on the public
-BATADAL benchmark against a static-limit rule, an Isolation Forest and a supervised reference, using all 43
-benchmark signals. Results, protocol, caveats and per-attack tables are in
+BATADAL benchmark against a static-limit rule, an Isolation Forest, a supervised reference and three temporal
+variants (EWMA, CUSUM, 24 h rolling residual; protocol v3), using all 43 benchmark signals. By the decision rule
+fixed in advance, none of the temporal variants improved on it on the test file. The same study checks whether the
+signals that drive an alarm are the attacked ones: for the z-score they are, well above chance, except when the
+attacker replays normal readings for exactly those signals. Results, protocol, caveats and per-attack tables are in
 [`docs/case-study.md`](docs/case-study.md); the numbers are generated from `results.json` and deliberately not
 repeated here.
 
@@ -71,7 +74,8 @@ What that evaluation does and does not cover:
 ## Known limitations
 
 - Judges each sample alone against a static baseline: no temporal context, so slow drift and small
-  coordinated changes inside normal ranges can pass.
+  coordinated changes inside normal ranges can pass. (Temporal variants were evaluated offline and did not help on
+  the BATADAL test file; see the case study.)
 - Treats sensors independently except through the weighted sum; no cross-sensor relationships.
 - No missing-data or stuck-value handling: a frozen or absent reading is not flagged.
 - Network traffic volume is displayed but not scored.

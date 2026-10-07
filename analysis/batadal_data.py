@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import re
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -228,3 +229,40 @@ def check_flags_inside_intervals(frame: pd.DataFrame, attacks: list[Attack]) -> 
         "flagged_inside_intervals": int((flagged & inside).sum()),
         "interval_hours_in_file": int(inside.sum()),
     }
+
+
+# Protocol v3, "Explanation accuracy": the signals an attack acts on, read mechanically from the
+# official description. Never from the concealment text: concealed signals are replayed to look
+# normal.
+_TANK = re.compile(r"\b(?:L_)?T(\d)\b")
+_PUMP = re.compile(r"\bPU(\d+)\b")
+_VALVE = re.compile(r"\bV(\d)\b")
+_SAME_AS = re.compile(r"^(?:Like|Similar to) attack (\d+)\b")
+
+
+def affected_signals(attacks: list[Attack]) -> dict[int, list[str]]:
+    """Map each attack id to the SCADA signals its description names.
+
+    Tank ``Tn``/``L_Tn`` -> ``L_Tn``; pump ``PUn`` -> ``F_PUn``, ``S_PUn``;
+    valve ``Vn`` -> ``F_Vn``, ``S_Vn``;
+    "Like attack N" / "Similar to attack N" -> the signals of attack N.
+    """
+    by_id = {a.id: a for a in attacks}
+
+    def resolve(attack_id: int, seen: tuple[int, ...] = ()) -> list[str]:
+        if attack_id in seen:
+            raise ValueError(f"circular 'like attack' reference at attack {attack_id}")
+        description = by_id[attack_id].description
+        same = _SAME_AS.match(description)
+        if same:
+            return resolve(int(same.group(1)), (*seen, attack_id))
+        signals = {f"L_T{n}" for n in _TANK.findall(description)}
+        for n in _PUMP.findall(description):
+            signals |= {f"F_PU{n}", f"S_PU{n}"}
+        for n in _VALVE.findall(description):
+            signals |= {f"F_V{n}", f"S_V{n}"}
+        if not signals:
+            raise ValueError(f"attack {attack_id}: description names no signal")
+        return sorted(signals)
+
+    return {a.id: resolve(a.id) for a in attacks}

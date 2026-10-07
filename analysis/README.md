@@ -34,7 +34,7 @@ not be verified and was removed. Get the three files from <https://www.batadal.n
 `--synthetic` runs the pipeline on generated data as a smoke test: its output is labelled `NOT BATADAL`, goes to
 `analysis/artifacts/synthetic-smoke/` and must never be quoted.
 
-## Protocol (v2)
+## Protocol (v2, extended by v3)
 
 1. **Ground truth = the published attack intervals** (`batadal_attacks.json`). `ATT_FLAG` in the 2016 file is 1 for
    part of each attack and -999 ("unknown") elsewhere, with no 0 labels, so it cannot define "normal"; it is only
@@ -51,12 +51,20 @@ not be verified and was removed. Get the three files from <https://www.batadal.n
 An amendment (items 3 and the two extra columns of 6) was made after a first run showed an always-on alarm
 looking perfect; the history is in the case study.
 
+**Protocol v3** ([`docs/protocol-v3.md`](../docs/protocol-v3.md), committed before its first run) keeps all of the
+above and adds three causal temporal detectors with fixed textbook parameters, day-block bootstrap 95 % intervals,
+a paired PR-AUC comparison with `zscore_max`, explanation accuracy (do an alarm's top-3 signals include equipment
+the attack description names?) and a decision rule stated in advance.
+
 ## Detectors
 
 | Name | Idea |
 |---|---|
 | `static_limits` | alarm outside the min-max seen in the reference (what a naive operator rule does) |
 | `zscore_max` | largest per-signal \|z\|; same family as the live scorer in `src/lib/anomaly-scorer.ts` |
+| `ewma_z` (v3) | EWMA (λ = 0.2) of each signal's z-score; largest absolute value |
+| `cusum` (v3) | two-sided CUSUM (k = 0.5) on each signal's z-score, never reset; largest statistic |
+| `rolling_residual` (v3) | deviation from the mean of the previous 24 hours, in reference standard deviations |
 | `isolation_forest` | scikit-learn Isolation Forest on standardised signals |
 | `hist_gradient_boosting` | supervised reference trained on the labelled 2016 attacks (optimistic) |
 

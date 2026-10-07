@@ -13,6 +13,8 @@ import {
   DETECTOR_LABELS,
   SET_TITLES,
   baseRate,
+  decisionRows,
+  explanationRows,
   fixed,
   pct,
   perAttackRows,
@@ -41,6 +43,7 @@ function SummaryTable({ evaluation }: { evaluation: Evaluation }) {
           <TableHead className="text-right">Precision</TableHead>
           <TableHead className="text-right">Attack hours caught</TableHead>
           <TableHead className="text-right">PR-AUC</TableHead>
+          <TableHead className="text-right">PR-AUC 95 % interval</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -54,12 +57,13 @@ function SummaryTable({ evaluation }: { evaluation: Evaluation }) {
             <TableCell className="text-right">{row.precision}</TableCell>
             <TableCell className="text-right">{row.attackHoursCaught}</TableCell>
             <TableCell className="text-right">{row.prAuc}</TableCell>
+            <TableCell className="text-right">{row.prAucInterval}</TableCell>
           </TableRow>
         ))}
         {(evaluation.not_evaluated ?? []).map((key) => (
           <TableRow key={key}>
             <TableCell className="font-medium">{DETECTOR_LABELS[key] ?? key}</TableCell>
-            <TableCell colSpan={7} className="text-muted-foreground">
+            <TableCell colSpan={8} className="text-muted-foreground">
               not evaluated here: trained on this data
             </TableCell>
           </TableRow>
@@ -101,6 +105,95 @@ function PerAttackTable({ evaluation }: { evaluation: Evaluation }) {
   );
 }
 
+function DecisionCard() {
+  const rows = decisionRows(results);
+  if (rows.length === 0) return null;
+  const reference = (DETECTOR_LABELS[results.decision!.reference] ?? '').toLowerCase();
+  const passed = rows.filter((r) => r.better);
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-lg font-semibold leading-none tracking-tight">
+          Does adding time help? (protocol v3)
+        </h2>
+        <CardDescription>
+          Rule fixed before the run: a temporal detector beats the {reference} only if the 95 %
+          interval of its paired PR-AUC difference on the test file lies entirely above 0.{' '}
+          {passed.length === 0
+            ? 'No temporal detector passes.'
+            : `Passes: ${passed.map((r) => r.label).join(', ')}.`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Detector</TableHead>
+              <TableHead className="text-right">PR-AUC minus {reference}, 95 % interval</TableHead>
+              <TableHead className="text-right">Better?</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.key}>
+                <TableCell className="font-medium">{row.label}</TableCell>
+                <TableCell className="text-right">{row.difference}</TableCell>
+                <TableCell className="text-right">{row.better ? 'yes' : 'no'}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ExplanationCard() {
+  const sets = ['test', 'train'] as const;
+  if (explanationRows(results.evaluations.test).length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-lg font-semibold leading-none tracking-tight">
+          Do the explanations point at the attacked equipment?
+        </h2>
+        <CardDescription>
+          Share of alarmed attack hours whose three strongest signals include one the attack
+          description names, next to the chance level. Attacks that replay normal readings hide
+          exactly those signals, so a miss there does not mean the alarm is spurious.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6 overflow-x-auto">
+        {sets.map((name) => (
+          <div key={name}>
+            <h3 className="mb-2 text-sm font-medium">{SET_TITLES[name]}</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Detector</TableHead>
+                  <TableHead className="text-right">Alarmed attack hours</TableHead>
+                  <TableHead className="text-right">Top 3 include an attacked signal</TableHead>
+                  <TableHead className="text-right">Chance level</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {explanationRows(results.evaluations[name]).map((row) => (
+                  <TableRow key={row.key}>
+                    <TableCell className="font-medium">{row.label}</TableCell>
+                    <TableCell className="text-right">{row.alarmedHours}</TableCell>
+                    <TableCell className="text-right">{row.hitRate}</TableCell>
+                    <TableCell className="text-right">{row.chance}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function CaseStudyPage() {
   const sets = ['test', 'train'] as const;
   return (
@@ -124,10 +217,16 @@ export default function CaseStudyPage() {
           </p>
           <p>
             Every detector catches every attack, but false alarms alone would be expected to land in
-            almost all of them, so &quot;attacks caught&quot; says little. The hour-level columns
-            (precision, attack hours caught, PR-AUC against the random-guess level) carry the
-            information, and they are modest. With {results.evaluations.test.attacks} attacks per
-            file, differences between detectors are anecdotes.
+            almost all of them, and one detector (CUSUM) alarms most of the time, so &quot;attacks
+            caught&quot; says little. The hour-level columns (precision, attack hours caught, PR-AUC
+            against the random-guess level) carry the information, and they are modest. With{' '}
+            {results.evaluations.test.attacks} attacks per file, differences between detectors are
+            anecdotes, and the 95 % intervals overlap.
+          </p>
+          <p>
+            Three detectors marked (v3) add time to the per-hour z-score. They were fixed in advance
+            with a decision rule, and by that rule none of them improves on the z-score on the test
+            file.
           </p>
           <p>
             Protocol: thresholds come from attack-free data only, with the same false-alarm budget (
@@ -173,6 +272,10 @@ export default function CaseStudyPage() {
           </section>
         );
       })}
+
+      <DecisionCard />
+
+      <ExplanationCard />
 
       <Card>
         <CardHeader>

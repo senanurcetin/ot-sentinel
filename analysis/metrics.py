@@ -6,6 +6,8 @@ are event-level: was each attack caught, how late, and how many false alarms per
 
 from __future__ import annotations
 
+from math import comb
+
 import numpy as np
 from sklearn.metrics import average_precision_score
 
@@ -134,3 +136,124 @@ def per_attack(ids: np.ndarray, alarm: np.ndarray, step_hours: float = 1.0) -> l
             }
         )
     return rows
+
+
+# --- Protocol v3 (docs/protocol-v3.md) ---
+
+
+def _hour_metrics(y: np.ndarray, score: np.ndarray, threshold: float) -> dict[str, float | None]:
+    point = point_metrics(y, score, threshold)
+    return {"precision": point["precision"], "recall": point["recall"], "pr_auc": point["pr_auc"]}
+
+
+def day_block_bootstrap(
+    y_true: np.ndarray,
+    scores: dict[str, tuple[np.ndarray, float]],
+    days: np.ndarray,
+    reference: str | None = None,
+    n_boot: int = 1000,
+    seed: int = 42,
+) -> dict:
+    """95 % percentile intervals for hour-level metrics by resampling whole calendar days.
+
+    ``scores`` maps a detector name to ``(score, threshold)``; thresholds stay fixed. With
+    ``reference`` set, every other detector also gets an interval for its PR-AUC minus the
+    reference's PR-AUC on the SAME resamples (a paired comparison). Resamples that contain only
+    one class have no PR-AUC and are skipped; their number is reported.
+    """
+    y = np.asarray(y_true, dtype=int)
+    days = np.asarray(days)
+    unique_days = np.unique(days)
+    positions = [np.flatnonzero(days == d) for d in unique_days]
+    rng = np.random.default_rng(seed)
+
+    samples: dict[str, dict[str, list[float]]] = {
+        name: {"precision": [], "recall": [], "pr_auc": [], "pr_auc_diff": []} for name in scores
+    }
+    skipped = 0
+    for _ in range(n_boot):
+        picked = rng.integers(0, len(positions), len(positions))
+        idx = np.concatenate([positions[i] for i in picked])
+        yb = y[idx]
+        if yb.sum() == 0 or yb.sum() == len(yb):
+            skipped += 1
+            continue
+        metrics = {n: _hour_metrics(yb, s[idx], t) for n, (s, t) in scores.items()}
+        for name, m in metrics.items():
+            for key in ("precision", "recall", "pr_auc"):
+                if m[key] is not None:
+                    samples[name][key].append(m[key])
+            if reference is not None and name != reference:
+                samples[name]["pr_auc_diff"].append(m["pr_auc"] - metrics[reference]["pr_auc"])
+
+    def interval(values: list[float]) -> list[float] | None:
+        if not values:
+            return None
+        lo, hi = np.percentile(values, [2.5, 97.5])
+        return [float(lo), float(hi)]
+
+    return {
+        "method": "day-block bootstrap, 95 % percentile interval, thresholds fixed",
+        "n_boot": n_boot,
+        "seed": seed,
+        "skipped_single_class_resamples": skipped,
+        "reference": reference,
+        "intervals": {
+            name: {key: interval(values) for key, values in s.items() if values}
+            for name, s in samples.items()
+        },
+    }
+
+
+def chance_top_k_hit(n_features: int, n_affected: int, k: int = 3) -> float:
+    """Probability that k features drawn at random include at least one of n_affected."""
+    if n_affected <= 0:
+        return 0.0
+    if k >= n_features:
+        return 1.0  # every feature is drawn
+    return 1.0 - comb(n_features - n_affected, k) / comb(n_features, k)
+
+
+def explanation_accuracy(
+    contributions: np.ndarray,
+    alarm: np.ndarray,
+    ids: np.ndarray,
+    affected: dict[int, list[int]],
+    k: int = 3,
+) -> dict:
+    """Share of alarmed attack hours whose top-k features include an attacked signal.
+
+    ``affected`` maps an attack id to the column indices of the signals its official description
+    names. Returned next to the chance level of k random features, overall (weighted by alarmed
+    hours) and per attack.
+    """
+    contributions = np.asarray(contributions, dtype=float)
+    alarm = np.asarray(alarm, dtype=bool)
+    ids = np.asarray(ids, dtype=int)
+    n_features = contributions.shape[1]
+    top = np.argsort(-contributions, axis=1, kind="stable")[:, :k]
+
+    rows, total_hits, total_hours, chance_mass = [], 0, 0, 0.0
+    for attack_id in sorted(set(ids[ids > 0].tolist())):
+        hours = np.flatnonzero((ids == attack_id) & alarm)
+        targets = set(affected.get(attack_id, []))
+        chance = chance_top_k_hit(n_features, len(targets), k)
+        hits = int(sum(1 for h in hours if targets.intersection(top[h].tolist())))
+        rows.append(
+            {
+                "attack": attack_id,
+                "alarmed_hours": int(len(hours)),
+                "hit_rate": hits / len(hours) if len(hours) else None,
+                "chance": chance,
+            }
+        )
+        total_hits += hits
+        total_hours += len(hours)
+        chance_mass += chance * len(hours)
+    return {
+        "top_k": k,
+        "alarmed_attack_hours": total_hours,
+        "hit_rate": total_hits / total_hours if total_hours else None,
+        "chance": chance_mass / total_hours if total_hours else None,
+        "per_attack": rows,
+    }

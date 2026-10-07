@@ -12,6 +12,8 @@ describe('/case-study', () => {
         'Read this first',
         expect.stringMatching(/Test set/),
         expect.stringMatching(/dataset04/),
+        'Does adding time help? (protocol v3)',
+        'Do the explanations point at the attacked equipment?',
         'Data drift',
         'Limitations',
       ])
@@ -30,8 +32,12 @@ describe('/case-study', () => {
 
   it('renders the headline and secondary evaluations with their attack counts', () => {
     render(<CaseStudyPage />);
-    expect(screen.getByText(/Test set \(attacks 8-14.*headline/)).toBeInTheDocument();
-    expect(screen.getByText(/dataset04 \(attacks 1-7.*secondary/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Test set \(attacks 8-14.*headline/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /dataset04 \(attacks 1-7.*secondary/ })
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/a random guess scores a PR-AUC of about/)).toHaveLength(2);
   });
 
@@ -43,7 +49,9 @@ describe('/case-study', () => {
       expect(detector.event.n_events).toBe(7);
     }
     expect(within(summary).getByText('Max absolute z-score')).toBeInTheDocument();
-    expect(within(summary).getAllByText('7 of 7')).toHaveLength(4);
+    expect(within(summary).getAllByText('7 of 7')).toHaveLength(
+      Object.keys(results.evaluations.test.detectors).length
+    );
   });
 
   it('explains why the supervised reference is absent from the training-file table', () => {
@@ -70,5 +78,12 @@ describe('/case-study', () => {
       'href',
       expect.stringContaining('docs/case-study.md')
     );
+  });
+
+  it('states the protocol v3 decision and shows explanation accuracy for both files', () => {
+    render(<CaseStudyPage />);
+    expect(screen.getByText(/No temporal detector passes\./)).toBeInTheDocument();
+    expect(screen.getAllByText('CUSUM (v3)').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Top 3 include an attacked signal')).toHaveLength(2);
   });
 });
