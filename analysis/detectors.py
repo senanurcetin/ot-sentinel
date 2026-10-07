@@ -3,6 +3,14 @@
 Every detector exposes ``fit(X, y=None)`` and ``score(X)``; a HIGHER score means MORE anomalous.
 Operating thresholds are never set here: they are calibrated on attack-free data in the pipeline
 so every detector faces the same false-alarm budget.
+
+Detectors that score each feature separately also expose ``contributions(X)``, an
+``(n_samples, n_features)`` array whose row maximum is the score; protocol v3 uses it to check
+whether an alarm points at the attacked equipment.
+
+The temporal detectors (protocol v3, docs/protocol-v3.md) are causal: the score at hour t uses
+hours <= t only. Each ``score`` call receives ONE contiguous hourly series and starts from a fresh
+state, so warm-up is handled identically during threshold calibration and evaluation.
 """
 
 from __future__ import annotations
@@ -34,10 +42,13 @@ class StaticLimitDetector:
         self.span_ = np.where(self.hi_ - self.lo_ > 0, self.hi_ - self.lo_, 1.0)
         return self
 
-    def score(self, X: np.ndarray) -> np.ndarray:
+    def contributions(self, X: np.ndarray) -> np.ndarray:
         below = (self.lo_ - X) / self.span_
         above = (X - self.hi_) / self.span_
-        return np.maximum(np.maximum(below, above), 0.0).max(axis=1)
+        return np.maximum(np.maximum(below, above), 0.0)
+
+    def score(self, X: np.ndarray) -> np.ndarray:
+        return self.contributions(X).max(axis=1)
 
 
 class ZScoreDetector:
@@ -62,8 +73,110 @@ class ZScoreDetector:
         self.std_ = np.maximum(X.std(axis=0), floor)
         return self
 
+    def z(self, X: np.ndarray) -> np.ndarray:
+        """Signed per-feature z-scores against the attack-free baseline."""
+        return (X - self.mean_) / self.std_
+
+    def contributions(self, X: np.ndarray) -> np.ndarray:
+        return np.abs(self.z(X))
+
     def score(self, X: np.ndarray) -> np.ndarray:
-        return np.abs((X - self.mean_) / self.std_).max(axis=1)
+        return self.contributions(X).max(axis=1)
+
+
+class EwmaZDetector:
+    """EWMA of each feature's signed z-score; score is the largest |EWMA| (protocol v3).
+
+    lambda = 0.2 is the usual EWMA control-chart choice; it is fixed, not tuned.
+    """
+
+    name = "ewma_z"
+    supervised = False
+
+    def __init__(self, lam: float = 0.2) -> None:
+        self.lam = lam
+
+    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> EwmaZDetector:
+        self.base_ = ZScoreDetector().fit(X)
+        return self
+
+    def contributions(self, X: np.ndarray) -> np.ndarray:
+        z = self.base_.z(X)
+        out = np.empty_like(z)
+        state = np.zeros(z.shape[1])
+        for t in range(len(z)):
+            state = self.lam * z[t] + (1.0 - self.lam) * state
+            out[t] = state
+        return np.abs(out)
+
+    def score(self, X: np.ndarray) -> np.ndarray:
+        return self.contributions(X).max(axis=1)
+
+
+class CusumDetector:
+    """Two-sided tabular CUSUM on each feature's z-score; score is the largest statistic (v3).
+
+    k = 0.5 targets a one-standard-deviation shift (textbook default). The decision interval h is
+    not a parameter: the calibrated alarm threshold plays that role. The statistics never reset.
+    """
+
+    name = "cusum"
+    supervised = False
+
+    def __init__(self, k: float = 0.5) -> None:
+        self.k = k
+
+    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> CusumDetector:
+        self.base_ = ZScoreDetector().fit(X)
+        return self
+
+    def contributions(self, X: np.ndarray) -> np.ndarray:
+        z = self.base_.z(X)
+        out = np.empty_like(z)
+        upper = np.zeros(z.shape[1])
+        lower = np.zeros(z.shape[1])
+        for t in range(len(z)):
+            upper = np.maximum(0.0, upper + z[t] - self.k)
+            lower = np.maximum(0.0, lower - z[t] - self.k)
+            out[t] = np.maximum(upper, lower)
+        return out
+
+    def score(self, X: np.ndarray) -> np.ndarray:
+        return self.contributions(X).max(axis=1)
+
+
+class RollingResidualDetector:
+    """|x_t - mean of the previous `window` hours| / reference std, per feature (protocol v3).
+
+    window = 24 h, one daily demand cycle. Before 24 hours of history exist, the available history
+    is used; the first hour of a series scores 0.
+    """
+
+    name = "rolling_residual"
+    supervised = False
+
+    def __init__(self, window: int = 24) -> None:
+        self.window = window
+
+    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> RollingResidualDetector:
+        self.base_ = ZScoreDetector().fit(X)
+        return self
+
+    def contributions(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=float)
+        n = len(X)
+        csum = np.vstack([np.zeros((1, X.shape[1])), np.cumsum(X, axis=0)])
+        t = np.arange(n)
+        lo = np.maximum(0, t - self.window)
+        count = (t - lo).astype(float)
+        out = np.zeros_like(X)
+        has_history = count > 0
+        mean_prev = (csum[t[has_history]] - csum[lo[has_history]]) / count[has_history, None]
+        out[has_history] = np.abs(X[has_history] - mean_prev) / self.base_.std_
+        return out
+
+    def score(self, X: np.ndarray) -> np.ndarray:
+        return self.contributions(X).max(axis=1)
 
 
 class IsolationForestDetector:
@@ -109,6 +222,9 @@ def default_detectors(seed: int = 42) -> list[Detector]:
     return [
         StaticLimitDetector(),
         ZScoreDetector(),
+        EwmaZDetector(),
+        CusumDetector(),
+        RollingResidualDetector(),
         IsolationForestDetector(seed=seed),
         GradientBoostingDetector(seed=seed),
     ]

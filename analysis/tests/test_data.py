@@ -39,7 +39,7 @@ def test_constant_reference_features_are_kept(files):
     directory, _, _ = files
     normal = bd.load_dataset(directory / "BATADAL_dataset03.csv")
     features = bd.feature_columns(normal)
-    assert "CONST" in features and "PUMP" in features and "flag" not in features
+    assert "S_PU1" in features and "F_PU3" in features and "flag" not in features
 
 
 def test_flags_must_lie_inside_the_published_intervals(files):

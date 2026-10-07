@@ -27,6 +27,11 @@ Fixed by (1) strict `score > threshold` and (2) always reporting the false-alarm
 the number of attacks expected to be "detected" by false alarms alone. No detector, feature,
 split or budget was changed.
 
+PROTOCOL v3 (docs/protocol-v3.md, committed before the first v3 run) keeps everything above and
+adds three causal temporal detectors with fixed textbook parameters, day-block bootstrap intervals,
+a paired PR-AUC comparison with zscore_max, explanation accuracy (do the top-3 features of an
+alarm include a signal the attack description names?), and a decision rule stated in advance.
+
 Usage:
   python run_batadal_case_study.py --data-dir data/batadal   # run on the real files
   python run_batadal_case_study.py --synthetic               # pipeline smoke test; NOT a result
@@ -46,7 +51,14 @@ import sklearn
 
 import batadal_data as bd
 from detectors import default_detectors
-from metrics import calibrate_threshold, event_metrics, per_attack, point_metrics
+from metrics import (
+    calibrate_threshold,
+    day_block_bootstrap,
+    event_metrics,
+    explanation_accuracy,
+    per_attack,
+    point_metrics,
+)
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_DATA_DIR = ROOT / "data" / "batadal"
@@ -55,6 +67,11 @@ SMOKE_OUT_DIR = ROOT / "artifacts" / "synthetic-smoke"
 
 NORMAL_FIT_FRACTION = 0.8
 MAX_FALSE_ALARMS_PER_DAY = 1.0
+PROTOCOL_VERSION = 3
+V3_DETECTORS = ("ewma_z", "cusum", "rolling_residual")
+COMPARISON_REFERENCE = "zscore_max"
+N_BOOTSTRAP = 1000
+EXPLANATION_TOP_K = 3
 
 LIMITATIONS = [
     "Event recall is easy to inflate: with about one false-alarm segment a day, an attack of 30 to "
@@ -74,6 +91,13 @@ LIMITATIONS = [
     "comparison, not a deployable detector. It is trained on dataset04 only.",
     "The runtime scorer in src/lib/anomaly-scorer.ts is a 3-sensor demo; this study evaluates the "
     "same z-score method on all 43 BATADAL signals, not that runtime code.",
+    "Protocol v3 was written after the v2 results were known. Its parameters are textbook "
+    "defaults fixed in advance and nothing was tuned on labelled data, but it is a follow-up "
+    "analysis, not a strict pre-registration. With seven detectors, one of them looks best by "
+    "chance; the decision rule therefore uses a paired bootstrap interval, not point estimates.",
+    "Explanation accuracy only checks whether an alarm's top-3 signals include equipment the "
+    "attack description names. Attacks that replay normal readings hide exactly those signals, "
+    "so a low rate there is expected and does not mean the alarm is spurious.",
 ]
 
 
@@ -104,18 +128,38 @@ def drift_diagnostic(reference: pd.DataFrame, evaluation: pd.DataFrame, normal_m
     }
 
 
-def _evaluate(name_scores, y, ids):
+def _evaluate(name_scores, y, ids, contributions, affected):
     out = {}
     for name, (supervised, threshold, score) in name_scores.items():
         alarm = score > threshold
+        contrib = contributions.get(name)
         out[name] = {
             "supervised": supervised,
             "threshold": threshold,
             "point": point_metrics(y.astype(int), score, threshold),
             "event": event_metrics(y.astype(int), alarm),
             "per_attack": per_attack(ids, alarm),
+            # None for detectors without a per-feature score (Isolation Forest, gradient boosting)
+            "explanation": (
+                explanation_accuracy(contrib, alarm, ids, affected, EXPLANATION_TOP_K)
+                if contrib is not None
+                else None
+            ),
         }
     return out
+
+
+def _decision(bootstrap: dict) -> dict:
+    """Protocol v3 decision rule: better than the reference only if the paired PR-AUC difference
+    interval on the test file lies entirely above 0."""
+    out = {}
+    for name in V3_DETECTORS:
+        diff = bootstrap["intervals"].get(name, {}).get("pr_auc_diff")
+        out[name] = {
+            "pr_auc_diff_interval": diff,
+            "better_than_reference": bool(diff is not None and diff[0] > 0),
+        }
+    return {"reference": COMPARISON_REFERENCE, "evaluated_on": "test", "detectors": out}
 
 
 def run_case_study(
@@ -141,17 +185,25 @@ def run_case_study(
     x_fit = bd.as_matrix(normal.iloc[:split], features)
     x_cal = bd.as_matrix(normal.iloc[split:], features)
 
+    column = {name: i for i, name in enumerate(features)}
+    affected = {
+        attack_id: [column[s] for s in signals if s in column]
+        for attack_id, signals in bd.affected_signals(attacks).items()
+    }
+
     sets = {}
     for name, frame, atk in (("test", test, test_attacks), ("train", train, train_attacks)):
         sets[name] = {
             "x": bd.as_matrix(frame, features),
             "y": bd.attack_mask(frame.index, atk),
             "ids": bd.attack_ids_at(frame.index, atk),
+            "days": np.asarray(frame.index.normalize()),
         }
     if not sets["train"]["y"].any() or not sets["test"]["y"].any():
         raise ValueError("an evaluation set contains no attack hours; check the interval table")
 
     scored: dict[str, dict] = {"test": {}, "train": {}}
+    contributions: dict[str, dict] = {"test": {}, "train": {}}
     thresholds = {}
     for detector in default_detectors(seed):
         if detector.supervised:
@@ -168,6 +220,8 @@ def run_case_study(
                 threshold,
                 detector.score(data["x"]),
             )
+            if hasattr(detector, "contributions"):
+                contributions[set_name][detector.name] = detector.contributions(data["x"])
 
     evaluations = {}
     for set_name, data in sets.items():
@@ -175,7 +229,17 @@ def run_case_study(
             "attacks": len(set(data["ids"][data["ids"] > 0].tolist())),
             "attack_hours": int(data["y"].sum()),
             "attack_free_hours": int((~data["y"]).sum()),
-            "detectors": _evaluate(scored[set_name], data["y"], data["ids"]),
+            "detectors": _evaluate(
+                scored[set_name], data["y"], data["ids"], contributions[set_name], affected
+            ),
+            "bootstrap": day_block_bootstrap(
+                data["y"].astype(int),
+                {n: (score, thr) for n, (_, thr, score) in scored[set_name].items()},
+                data["days"],
+                reference=COMPARISON_REFERENCE,
+                n_boot=N_BOOTSTRAP,
+                seed=seed,
+            ),
         }
     evaluations["train"]["not_evaluated"] = [
         d.name for d in default_detectors(seed) if d.supervised
@@ -185,7 +249,14 @@ def run_case_study(
         {
             "data_source": data_source,
             "protocol": {
-                "version": 2,
+                "version": PROTOCOL_VERSION,
+                "document": "docs/protocol-v3.md",
+                "temporal_detectors": {
+                    "ewma_z": {"lambda": 0.2},
+                    "cusum": {"k": 0.5},
+                    "rolling_residual": {"window_hours": 24},
+                },
+                "explanation_top_k": EXPLANATION_TOP_K,
                 "ground_truth": "published attack intervals (batadal_attacks.json)",
                 "headline_evaluation": "test",
                 "max_false_alarms_per_day": max_false_alarms_per_day,
@@ -204,6 +275,8 @@ def run_case_study(
                 "features": features,
             },
             "evaluations": evaluations,
+            "decision": _decision(evaluations["test"]["bootstrap"]),
+            "affected_signals": {str(k): v for k, v in bd.affected_signals(attacks).items()},
             "drift": {
                 "test": drift_diagnostic(normal, test, sets["test"]["y"], features),
                 "train": drift_diagnostic(normal, train, sets["train"]["y"], features),

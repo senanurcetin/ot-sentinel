@@ -24,9 +24,9 @@ def _signal(n: int, rng: np.random.Generator, start: pd.Timestamp) -> pd.DataFra
     cols = {}
     for i in range(N_SENSORS):
         daily = np.sin(2 * np.pi * (hours % 24) / 24 + i)
-        cols[f"S_{i + 1}"] = 10 * (i + 1) + 2 * daily + rng.normal(0, 0.5, n)
-    cols["CONST"] = np.full(n, 1.0)  # constant everywhere, like S_PU1
-    cols["PUMP"] = np.zeros(n)  # constant in the reference; attacks switch it on, like F_PU3
+        cols[f"L_T{i + 1}"] = 10 * (i + 1) + 2 * daily + rng.normal(0, 0.5, n)
+    cols["S_PU1"] = np.full(n, 1.0)  # constant everywhere, as in BATADAL
+    cols["F_PU3"] = np.zeros(n)  # constant in the reference; attacks switch it on, as in BATADAL
     return pd.DataFrame(cols, index=pd.date_range(start, periods=n, freq="h", name="time"))
 
 
@@ -36,14 +36,19 @@ def _attack(frame: pd.DataFrame, attack_id: int, dataset: str, start: int, hours
     if kind == "shift":
         frame.iloc[start : end + 1, 0:3] += 8.0
     elif kind == "pump":  # visible only through a feature that is constant in the reference
-        frame.iloc[start : end + 1, frame.columns.get_loc("PUMP")] = 30.0
+        frame.iloc[start : end + 1, frame.columns.get_loc("F_PU3")] = 30.0
     return bd.Attack(
         id=attack_id,
         dataset=dataset,
         start=frame.index[start],
         end=frame.index[end],
         duration_hours=hours,
-        description=f"synthetic {kind} attack",
+        # Named like the official descriptions, so bd.affected_signals can read the targets.
+        description=(
+            "Synthetic level shift on T1, T2 and T3."
+            if kind == "shift"
+            else "Synthetic malicious activation of pump PU3."
+        ),
         concealment="",
         labeled_hours=hours // 2 if dataset == "train" else None,
     )
