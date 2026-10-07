@@ -17,7 +17,6 @@ const config: Config = {
     '!src/hooks/**',
     '!src/ai/dev.ts',
     '!src/ai/genkit.ts',
-    '!src/lib/placeholder-images.ts',
     '!src/app/layout.tsx',
   ],
   testEnvironment: 'jest-environment-jsdom',

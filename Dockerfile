@@ -24,5 +24,5 @@ COPY --from=build --chown=app:app /app/.next/static ./.next/static
 COPY --from=build --chown=app:app /app/public ./public
 USER app
 EXPOSE 9002
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:9002/api/metrics || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:9002/api/health || exit 1
 CMD ["node", "server.js"]
