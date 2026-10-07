@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
-config();
+config({ quiet: true });
 
 import '@/ai/flows/threat-mitigation-alert.ts';

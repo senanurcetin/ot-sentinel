@@ -1,28 +1,62 @@
 version: 2
 updates:
+  # Minor and patch updates arrive as one grouped PR a week. Majors still arrive one per PR,
+  # except the ones listed under `ignore`, which need a deliberate migration (see DEPENDENCIES.md).
+  # Security updates are not affected by the weekly schedule.
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
     groups:
-      radix-ui:
-        patterns: ["@radix-ui/*"]
-      genkit:
-        patterns: ["genkit", "genkit-cli", "@genkit-ai/*"]
+      npm-minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      # React and its renderer must move together (react and react-dom versions must match exactly).
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      jest:
+        patterns: ["jest", "jest-environment-jsdom", "@types/jest"]
+    ignore:
+      # typescript-eslint (via eslint-config-next) does not support TypeScript 7 yet.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Genkit (@genkit-ai/next) has a peer dependency on zod 3.
+      - dependency-name: zod
+        update-types: ["version-update:semver-major"]
+      # Tailwind 4 needs a config and PostCSS migration (@tailwindcss/postcss).
+      - dependency-name: tailwindcss
+        update-types: ["version-update:semver-major"]
+      # Recharts 3 changed its TypeScript types; ui/chart.tsx needs porting.
+      - dependency-name: recharts
+        update-types: ["version-update:semver-major"]
+      # Types follow the Node runtime used in CI and the Docker image (Node 24).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  # Requirements are lower bounds. CI installs the newest versions on every run, so a bound is only
+  # raised when a release falls outside it. All analysis dependencies arrive as one PR.
   - package-ecosystem: pip
     directory: /analysis
     schedule:
       interval: weekly
       day: monday
+    versioning-strategy: increase-if-necessary
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      analysis:
+        patterns: ["*"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     commit-message:
       prefix: "chore(ci)"
+    groups:
+      actions:
+        patterns: ["*"]

@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Changed
+- Node 24 (active LTS) in CI and the Docker image; Node 20 reached end of life on 2026-04-30
+- Dependency updates from the first Dependabot run: React and React DOM 19.3 (together; Dependabot's PR bumped
+  only `react` and failed), Radix UI group, Playwright 1.63, Jest 30 with jest-environment-jsdom 30 and
+  `@types/jest` 30, dotenv 18 (`quiet` startup), `@types/node` 24, in-range npm updates, GitHub Actions
+  (checkout, setup-node, setup-python, upload-artifact v7; gitleaks-action v3), and the analysis lower bounds
+  (numpy 2.4.6, pandas 3.0.6, scikit-learn 1.9.1, pytest 9.1.1, ruff 0.16.10); BATADAL results unchanged
+- Dependabot groups minor/patch updates and ignores four majors that need a migration (TypeScript 7, zod 4,
+  Tailwind 4, Recharts 3); reasons in `DEPENDENCIES.md`
+
 ## [0.2.0] - 2026-10-06
 
 ### Added
