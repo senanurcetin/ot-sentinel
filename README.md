@@ -3,7 +3,7 @@
 [![CI](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml)
 [![E2E](https://github.com/senanurcetin/ot-sentinel/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/e2e-tests.yml)
 [![Security checks](https://github.com/senanurcetin/ot-sentinel/actions/workflows/security-checks.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/security-checks.yml)
-![Next.js 15](https://img.shields.io/badge/Next.js-15-black)
+![Next.js 16](https://img.shields.io/badge/Next.js-16-black)
 ![Node 24](https://img.shields.io/badge/Node-24-339933)
 ![Python 3.11](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
