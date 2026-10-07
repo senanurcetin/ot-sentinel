@@ -4,11 +4,14 @@
 |---|---|---|
 | Framework | `next` 15, `react` 19, `typescript` 5 | App Router UI and `/api/metrics` route |
 | AI | `genkit`, `@genkit-ai/google-genai` (Gemini 2.5 Flash), `zod` | Structured, schema-validated threat explanations |
-| UI | `tailwindcss`, shadcn/ui on `@radix-ui/*`, `recharts`, `lucide-react` | Dashboard, charts, icons |
+| UI | `tailwindcss`, 13 shadcn/ui components on 7 `@radix-ui/*` packages, `recharts`, `lucide-react` | Dashboard, charts, icons |
 | Dev | `jest`, `@testing-library/*`, `eslint` + `eslint-config-next` | Tests and lint |
 | Dev (AI) | `genkit-cli`, `dotenv` | `npm run genkit:dev` loads `.env` |
 
-`firebase` and `patch-package` were removed: nothing imported them.
+`firebase` and `patch-package` were removed: nothing imported them. On 2026-10-07 the 23 shadcn/ui components
+the app never rendered (calendar, form, sidebar, carousel and others from the original scaffold) were removed
+together with the packages only they used: 14 `@radix-ui/*` packages, `react-hook-form`, `@hookform/resolvers`,
+`react-day-picker`, `date-fns`, `embla-carousel-react`, and `@genkit-ai/next`, which nothing imported.
 
 ## Upgrade policy
 
@@ -21,7 +24,7 @@
 | Package | Held at | Blocked by (from the failing CI run) |
 |---|---|---|
 | `typescript` | 5.x | typescript-eslint (via `eslint-config-next`) does not support TypeScript 7 |
-| `zod` | 3.x | `@genkit-ai/next` has a peer dependency on zod 3 (`npm ci` fails with ERESOLVE) |
+| `zod` | 3.x | Genkit (`@genkit-ai/core`) depends on zod 3 and the app passes its schemas to Genkit; the first attempt also failed `npm ci` on `@genkit-ai/next`'s zod 3 peer dependency (that package has since been removed as unused) |
 | `tailwindcss` | 3.x | Tailwind 4 moved its PostCSS plugin to `@tailwindcss/postcss` and changed the config types |
 | `recharts` | 2.x | Recharts 3 changed its TypeScript types; `src/components/ui/chart.tsx` needs porting |
 | `@types/node` | 24.x | follows the Node runtime (Node 24 in CI and the Docker image), not the newest Node |
@@ -34,7 +37,7 @@
 ## Known advisories
 
 Last checked on 2026-10-07 with `npm audit --omit=dev` (Next.js 15.5.27, Genkit 1.42):
-0 critical, 13 high, 59 moderate (the same counts before and after the 2026-10-07 dependency updates). A critical
+0 critical, 13 high, 58 moderate (59 moderate before the unused packages were removed on 2026-10-07). A critical
 advisory in `proxy-addr` (transitive, via Genkit's Express dependency) appeared on 2026-10-06 and was cleared with
 `npm audit fix`; the CI gate caught it. The remaining ones sit in transitive trees:
 

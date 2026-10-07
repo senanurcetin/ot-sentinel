@@ -4,7 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Removed
+- 23 shadcn/ui components the app never rendered and the packages only they used (14 `@radix-ui/*` packages,
+  `react-hook-form`, `@hookform/resolvers`, `react-day-picker`, `date-fns`, `embla-carousel-react`), plus the
+  unused `@genkit-ai/next`; 39 fewer installed packages
+
 ### Changed
+- lucide-react 1.x (every imported icon still resolves), `@testing-library/jest-dom` 7, CodeQL action v4
 - Node 24 (active LTS) in CI and the Docker image; Node 20 reached end of life on 2026-04-30
 - Dependency updates from the first Dependabot run: React and React DOM 19.3 (together; Dependabot's PR bumped
   only `react` and failed), Radix UI group, Playwright 1.63, Jest 30 with jest-environment-jsdom 30 and
