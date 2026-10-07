@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import scorerParams from '@/data/model/scorer-params.json';
 
 export type SensorContribution = {
   sensor: string;
@@ -79,9 +80,15 @@ export type ThreatMitigationAlertResult = ThreatMitigationAlertOutput & {
   source: 'ai' | 'fallback';
 };
 
+/** Sensors the live scorer knows; feedback may only name these, so stored keys stay bounded. */
+export const SENSOR_NAMES = Object.keys(scorerParams.sensors) as [string, ...string[]];
+
 export const AlertFeedbackSchema = z.object({
   timestamp: z.string().min(1).max(64),
   verdict: z.enum(['confirmed_threat', 'false_alarm']),
   note: z.string().max(500).optional(),
+  /** Detector context at the time of the alert, used to report false-alarm rates per sensor. */
+  risk_score: z.number().min(0).max(100).optional(),
+  top_sensor: z.enum(SENSOR_NAMES).optional(),
 });
 export type AlertFeedback = z.infer<typeof AlertFeedbackSchema>;

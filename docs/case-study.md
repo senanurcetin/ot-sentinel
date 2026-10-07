@@ -20,8 +20,9 @@ for itself whether something is an attack can invent a threat that is not there.
 3. **The explanation can fail safely.** On error, timeout or rate limit the operator gets deterministic,
    rule-based triage built from the detector's own output, labelled as such
    ([`src/lib/fallback-mitigation.ts`](../src/lib/fallback-mitigation.ts)).
-4. **The operator closes the loop.** Each alert can be marked "confirmed threat" or "false alarm". Verdicts are
-   stored in memory only and nothing reads them back yet.
+4. **The operator closes the loop.** Each alert can be marked "confirmed threat" or "false alarm", together with
+   the risk score and the sensor that drove it. Verdicts are stored (SQLite in the Docker image) and the forensic
+   report shows the false-alarm share per sensor; nothing tunes thresholds from them yet.
 
 ![Alert with rule-based guidance](assets/alert-rule-based.png)
 

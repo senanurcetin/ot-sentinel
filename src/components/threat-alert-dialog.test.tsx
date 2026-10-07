@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import ThreatAlertDialog from '@/components/threat-alert-dialog';
+import ThreatAlertDialog, { feedbackBody } from '@/components/threat-alert-dialog';
 import { generateThreatMitigationAlert } from '@/ai/flows/threat-mitigation-alert';
 import type { ThreatMitigationAlertInput } from '@/lib/types';
 
@@ -15,6 +15,11 @@ const threat: ThreatMitigationAlertInput = {
   status: 'CRITICAL',
   anomaly_score: 0.99,
   risk_score: 90,
+  per_sensor_contributions: [
+    { sensor: 'temp', z_score: 2, contribution_pct: 20, status: 'warning' },
+    { sensor: 'vibration', z_score: 7, contribution_pct: 70, status: 'critical' },
+    { sensor: 'pressure', z_score: 1, contribution_pct: 10, status: 'normal' },
+  ],
   log_entry: 'ANOMALY DETECTED',
 };
 
@@ -73,7 +78,12 @@ describe('ThreatAlertDialog', () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/feedback');
     expect(init.method).toBe('POST');
-    expect(JSON.parse(init.body)).toEqual({ timestamp: threat.timestamp, verdict });
+    expect(JSON.parse(init.body)).toEqual({
+      timestamp: threat.timestamp,
+      verdict,
+      risk_score: 90,
+      top_sensor: 'vibration', // the largest contribution, not the first in the list
+    });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -108,5 +118,13 @@ describe('ThreatAlertDialog', () => {
     rerender(<ThreatAlertDialog open onOpenChange={jest.fn()} threatData={{ ...threat, timestamp: 'later' }} />);
     expect(await screen.findByText('Second alert')).toBeInTheDocument();
     expect(mockedAlert).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends only the verdict when the alert carries no detector context', () => {
+    const bare = { ...threat, risk_score: undefined, per_sensor_contributions: undefined };
+    expect(feedbackBody(bare, 'false_alarm')).toEqual({
+      timestamp: threat.timestamp,
+      verdict: 'false_alarm',
+    });
   });
 });

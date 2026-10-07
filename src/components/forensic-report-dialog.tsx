@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import type { LogEntry } from '@/lib/types';
 import { buildForensicCsv, forensicCsvFilename } from '@/lib/forensic-csv';
+import OperatorVerdicts from '@/components/operator-verdicts';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useMemo } from 'react';
 import { FileSearch, AlertCircle, CheckCircle, List, Download } from 'lucide-react';
@@ -134,6 +135,10 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
                 <p className="text-xs text-muted-foreground">Most frequent critical source</p>
               </CardContent>
             </Card>
+          </div>
+
+          <div className="px-2">
+            <OperatorVerdicts />
           </div>
 
           {/* Chart and Table */}

@@ -10,7 +10,7 @@ document states what the project defends, what it does not, and which mitigation
  browser ──HTTP──▶ Next.js server ──HTTPS──▶ Gemini API
                      │   ▲
                      │   └── TelemetrySource (synthetic today; replay / read-only adapter later)
-                     └── in-memory operator feedback (not persisted)
+                     └── operator feedback (SQLite if FEEDBACK_DB_PATH is set, else memory; capped)
 ```
 
 | Asset | Where | Why it matters |
@@ -35,7 +35,7 @@ text.
 | 6 | Secret exposure | `.env` is git-ignored, key is server-side, CI uses a placeholder, secret scanning in CI | A leaked key must still be rotated by the owner |
 | 7 | Vulnerable dependencies | Dependabot (npm, pip, Actions), `npm audit` gate on critical, `pip-audit`, CodeQL | 15 high-severity advisories remain in transitive trees; see `DEPENDENCIES.md` |
 | 8 | Detector evasion | None claimed. The scorer judges each sample against a static baseline, so slow drift or small coordinated changes inside normal ranges can pass | The BATADAL study measures hour-level detection and time-to-detect for seven methods, including three temporal ones that did not improve on the test file; it does not model an adaptive attacker |
-| 9 | Feedback poisoning | `/api/feedback` is unauthenticated but only stores a capped in-memory list that nothing reads back | If verdicts ever tune thresholds, they need authentication and review |
+| 9 | Feedback poisoning | `/api/feedback` is unauthenticated, rate-limited (30/min per client) and validated: sensor names come from a fixed list, notes are capped at 500 characters, storage is capped (200 in memory, 10,000 SQLite rows), and the summary returns aggregates only, never notes. Nothing tunes thresholds from verdicts | Anyone who can reach the demo can skew the summary. If verdicts ever tune thresholds, they need authentication and review |
 | 10 | No authentication or authorisation | Not implemented | Anyone who can reach the app sees everything. Deploy only behind a VPN / SSO proxy |
 
 ## What the detector can and cannot say (MITRE ATT&CK for ICS)

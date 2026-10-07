@@ -61,3 +61,58 @@ describe('POST /api/feedback', () => {
     expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 });
+
+describe('feedback storage and summary', () => {
+  // Imported lazily so the module-level limiter of the summary route is fresh per file.
+  const { GET } = jest.requireActual('./summary/route') as typeof import('./summary/route');
+  const store = jest.requireActual('@/lib/feedback-store') as typeof import('@/lib/feedback-store');
+  const summary = (ip = `198.51.100.${++ipCounter}`) =>
+    GET(new NextRequest('http://localhost/api/feedback/summary', { headers: { 'x-forwarded-for': ip } }));
+
+  beforeEach(() => store.resetFeedbackStore());
+  afterAll(() => store.resetFeedbackStore());
+
+  it('stores verdicts with their detector context and reports them in the summary', async () => {
+    await post(JSON.stringify({ timestamp: 't1', verdict: 'false_alarm', top_sensor: 'temp', risk_score: 61 }));
+    await post(JSON.stringify({ timestamp: 't2', verdict: 'confirmed_threat', top_sensor: 'vibration', note: 'secret' }));
+    const res = await summary();
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    const body = await res.json();
+    expect(body).toMatchObject({
+      storage: 'memory',
+      total: 2,
+      false_alarm: 1,
+      by_top_sensor: [
+        { sensor: 'temp', total: 1, false_alarm: 1 },
+        { sensor: 'vibration', total: 1, false_alarm: 0 },
+      ],
+    });
+    expect(JSON.stringify(body)).not.toContain('secret');
+  });
+
+  it('rejects a sensor the scorer does not know, so stored keys stay bounded', async () => {
+    const res = await post(JSON.stringify({ timestamp: 't', verdict: 'false_alarm', top_sensor: 'x'.repeat(40) }));
+    expect(res.status).toBe(422);
+  });
+
+  it('rejects a risk score outside 0-100', async () => {
+    expect((await post(JSON.stringify({ timestamp: 't', verdict: 'false_alarm', risk_score: 101 }))).status).toBe(422);
+  });
+
+  it('answers 500 without internals when the database cannot be opened', async () => {
+    const original = process.env.FEEDBACK_DB_PATH;
+    process.env.FEEDBACK_DB_PATH = '/nonexistent-dir/ot-sentinel/feedback.db';
+    const quiet = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await post(JSON.stringify({ timestamp: 't', verdict: 'false_alarm' }));
+      expect(res.status).toBe(500);
+      expect(JSON.stringify(await res.json())).not.toMatch(/nonexistent|sqlite|unable/i);
+      expect((await summary()).status).toBe(500);
+    } finally {
+      if (original === undefined) delete process.env.FEEDBACK_DB_PATH;
+      else process.env.FEEDBACK_DB_PATH = original;
+      quiet.mockRestore();
+    }
+  });
+});

@@ -16,7 +16,8 @@ there is no contractual fix timeline.
 
 - Telemetry is synthetic (and, once the BATADAL replay lands, replayed public data). No real PLC, Modbus
   or OPC-UA traffic is ingested.
-- There is no authentication, persistence, or multi-tenancy.
+- There is no authentication or multi-tenancy. Operator verdicts are the only stored data (SQLite when
+  `FEEDBACK_DB_PATH` is set); they are capped and the summary endpoint returns aggregates only.
 - `GEMINI_API_KEY` is read server-side only. Never commit `.env`; `.env.example` is the template.
 - The AI layer explains a detection that the scorer has already made. It is not a detection control.
 

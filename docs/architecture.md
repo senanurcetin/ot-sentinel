@@ -76,7 +76,8 @@ sequenceDiagram
     SA-->>UI: rule-based guidance, source = fallback
   end
   UI->>UI: show dialog; operator picks "false alarm" or "confirm"
-  UI->>API: POST /api/feedback (stored in memory only)
+  UI->>API: POST /api/feedback (verdict + risk score + driving sensor)
+  API->>API: SQLite if FEEDBACK_DB_PATH is set, else memory
 ```
 
 ## Design decisions
@@ -87,7 +88,9 @@ sequenceDiagram
 - **Narrow telemetry boundary.** `TelemetrySource` is the only thing the route knows about; replay
   and read-only protocol adapters are *planned* and must stay read-only
   ([threat model](threat-model.md#telemetry-adapter-boundary)).
-- **Demo-grade state.** Feedback is an in-memory buffer; there is no database and no authentication.
+- **Small, bounded state.** Operator verdicts go to SQLite through Node's built-in `node:sqlite` when
+  `FEEDBACK_DB_PATH` is set (the Docker image sets it), otherwise to a capped in-memory buffer. Both are capped
+  because the demo has no authentication ([`src/lib/feedback-store.ts`](../src/lib/feedback-store.ts)).
 
 See also: [threat model](threat-model.md) · [model card](../MODEL_CARD.md) ·
 [analysis pipeline](../analysis/README.md) · [original spec (archived)](archive/blueprint.md)

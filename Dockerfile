@@ -18,7 +18,10 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=9002 \
     HOSTNAME=0.0.0.0
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S app && adduser -S app -G app \
+ && mkdir -p /data && chown app:app /data
+# Operator verdicts are kept in SQLite here; mount a volume to keep them across containers.
+ENV FEEDBACK_DB_PATH=/data/feedback.db
 COPY --from=build --chown=app:app /app/.next/standalone ./
 COPY --from=build --chown=app:app /app/.next/static ./.next/static
 COPY --from=build --chown=app:app /app/public ./public
