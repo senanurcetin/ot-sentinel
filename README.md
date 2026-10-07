@@ -16,7 +16,7 @@ public BATADAL attack benchmark (see [Evaluation](#evaluation)).
 
 ![Dashboard in normal operation](docs/assets/dashboard-normal.png)
 
-Walkthrough video: [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel-demo.webm) (about 35 s: normal operation → simulated attack → alert → forensic report). It was recorded without a Gemini key, so the alert shows the rule-based guidance, not an AI answer. Earlier version of the project: [YouTube walkthrough](https://www.youtube.com/watch?v=KcpTW0QM0FM).
+Walkthrough video: [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel-demo.webm) (about 35 s: normal operation → simulated attack → alert → forensic report). It was recorded without a Gemini key, so the alert shows the rule-based guidance, not an AI answer.
 
 Reviewing this project? Start with the [case study](docs/case-study.md) and the [reviewer summary](docs/hiring-summary.md).
 
