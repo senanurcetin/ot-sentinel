@@ -51,12 +51,14 @@ export default function Dashboard() {
   const [alertCooldown, setAlertCooldown] = useState(false);
   const { toast } = useToast();
 
-  // Refs to get the current value of state within callbacks without causing re-renders
+  // Refs to get the current value of state within callbacks without causing re-renders.
+  // They are synced after each commit; writing refs during render is unsafe in concurrent React.
   const showThreatAlertRef = useRef(showThreatAlert);
-  showThreatAlertRef.current = showThreatAlert;
-
   const alertCooldownRef = useRef(alertCooldown);
-  alertCooldownRef.current = alertCooldown;
+  useEffect(() => {
+    showThreatAlertRef.current = showThreatAlert;
+    alertCooldownRef.current = alertCooldown;
+  }, [showThreatAlert, alertCooldown]);
 
   /**
    * Toggles the attack simulation mode on and off.

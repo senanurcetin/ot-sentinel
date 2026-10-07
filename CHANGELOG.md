@@ -10,6 +10,9 @@ All notable changes to this project are documented here.
   unused `@genkit-ai/next`; 39 fewer installed packages
 
 ### Changed
+- Next.js 16 (Turbopack build) with `eslint-config-next` 16 as a native flat config; `@eslint/eslintrc` removed.
+  Next 16's `react-hooks/refs` rule found the dashboard writing refs during render; they are now synced in an effect.
+  `AGENTS.md` is the agent guidance file Next 16 generates and asks to be committed
 - lucide-react 1.x (every imported icon still resolves), `@testing-library/jest-dom` 7, CodeQL action v4
 - Node 24 (active LTS) in CI and the Docker image; Node 20 reached end of life on 2026-04-30
 - Dependency updates from the first Dependabot run: React and React DOM 19.3 (together; Dependabot's PR bumped

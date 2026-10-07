@@ -2,7 +2,7 @@
 
 | Area | Package | Why |
 |---|---|---|
-| Framework | `next` 15, `react` 19, `typescript` 5 | App Router UI and `/api/metrics` route |
+| Framework | `next` 16, `react` 19, `typescript` 5 | App Router UI and `/api/metrics` route |
 | AI | `genkit`, `@genkit-ai/google-genai` (Gemini 2.5 Flash), `zod` | Structured, schema-validated threat explanations |
 | UI | `tailwindcss`, 13 shadcn/ui components on 7 `@radix-ui/*` packages, `recharts`, `lucide-react` | Dashboard, charts, icons |
 | Dev | `jest`, `@testing-library/*`, `eslint` + `eslint-config-next` | Tests and lint |
@@ -36,8 +36,8 @@ together with the packages only they used: 14 `@radix-ui/*` packages, `react-hoo
 
 ## Known advisories
 
-Last checked on 2026-10-07 with `npm audit --omit=dev` (Next.js 15.5.27, Genkit 1.42):
-0 critical, 13 high, 58 moderate (59 moderate before the unused packages were removed on 2026-10-07). A critical
+Last checked on 2026-10-07 with `npm audit --omit=dev` (Next.js 16.4, Genkit 1.42):
+0 critical, 12 high, 57 moderate (13 high / 59 moderate on Next.js 15.5 before the unused packages were removed). A critical
 advisory in `proxy-addr` (transitive, via Genkit's Express dependency) appeared on 2026-10-06 and was cleared with
 `npm audit fix`; the CI gate caught it. The remaining ones sit in transitive trees:
 
