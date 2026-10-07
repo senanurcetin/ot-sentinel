@@ -4,7 +4,16 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-07
+
+### Added
+- `GET /api/health` liveness endpoint (no rate limit, no telemetry); the Docker `HEALTHCHECK` uses it instead of
+  `/api/metrics`, which is rate-limited and generates a sample on every probe
+- `E2E_BASE_URL` runs the Playwright suite against a deployed instance instead of a local server
+
 ### Removed
+- Unused remote image hosts (placehold.co, Unsplash, picsum) from `next.config.ts` and the CSP `img-src`, and the
+  empty `placeholder-images` module; the app loads no remote images
 - 23 shadcn/ui components the app never rendered and the packages only they used (14 `@radix-ui/*` packages,
   `react-hook-form`, `@hookform/resolvers`, `react-day-picker`, `date-fns`, `embla-carousel-react`), plus the
   unused `@genkit-ai/next`; 39 fewer installed packages

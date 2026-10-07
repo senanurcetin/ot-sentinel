@@ -8,8 +8,6 @@
  */
 export type HeaderRule = { key: string; value: string };
 
-const IMAGE_HOSTS = ['https://placehold.co', 'https://images.unsplash.com', 'https://picsum.photos'];
-
 export function buildCsp(isDev: boolean): string {
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
@@ -17,7 +15,8 @@ export function buildCsp(isDev: boolean): string {
     'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])],
     'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     'font-src': ["'self'", 'https://fonts.gstatic.com'],
-    'img-src': ["'self'", 'data:', 'blob:', ...IMAGE_HOSTS],
+    // No remote images: every icon is inline SVG and charts render locally.
+    'img-src': ["'self'", 'data:', 'blob:'],
     // Telemetry and feedback are same-origin; Gemini is called server-side only.
     'connect-src': ["'self'", ...(isDev ? ['ws:', 'http:'] : [])],
     'object-src': ["'none'"],

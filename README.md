@@ -127,6 +127,7 @@ npm run typecheck        # includes test files
 npm run test:coverage    # Jest + coverage thresholds
 npm run build
 npm run test:e2e         # Playwright; run `npx playwright install chromium` once
+E2E_BASE_URL=https://your-deployment npm run test:e2e   # same suite against a deployed instance
 cd analysis && pip install -r requirements-dev.txt && ruff check . && pytest
 ```
 
@@ -143,7 +144,7 @@ ICS mapping: [`docs/threat-model.md`](docs/threat-model.md). Report issues via [
 
 | Path | What |
 |---|---|
-| `src/app/` | pages and API routes (`/api/metrics`, `/api/feedback`) |
+| `src/app/` | pages and API routes (`/api/metrics`, `/api/feedback`, `/api/health`) |
 | `src/lib/` | scorer, telemetry source, fallback guidance, rate limiter, security headers, CSV export |
 | `src/ai/flows/` | Genkit flow behind the alert dialog |
 | `src/components/` | dashboard UI |

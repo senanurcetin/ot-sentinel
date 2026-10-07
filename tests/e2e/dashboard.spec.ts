@@ -107,4 +107,11 @@ test.describe('OT-Sentinel dashboard', () => {
     const bad = await request.get('/api/metrics?attack=maybe');
     expect(bad.status()).toBe(400);
   });
+
+  test('health endpoint used by the container HEALTHCHECK answers ok', async ({ request }) => {
+    const res = await request.get('/api/health');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['cache-control']).toBe('no-store');
+    expect(await res.json()).toMatchObject({ status: 'ok', version: expect.any(String) });
+  });
 });

@@ -26,9 +26,7 @@ describe('buildCsp', () => {
     const csp = buildCsp(false);
     expect(directive(csp, 'style-src')).toContain('https://fonts.googleapis.com');
     expect(directive(csp, 'font-src')).toContain('https://fonts.gstatic.com');
-    expect(directive(csp, 'img-src')).toEqual(
-      expect.arrayContaining(['https://placehold.co', 'https://images.unsplash.com', 'https://picsum.photos'])
-    );
+    expect(directive(csp, 'img-src')).toEqual(["'self'", 'data:', 'blob:']);
     expect(csp).not.toMatch(/\*/); // no wildcards
   });
 });

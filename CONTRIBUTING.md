@@ -18,6 +18,7 @@ End-to-end tests (Playwright) start the app themselves:
 ```bash
 npx playwright install chromium   # once
 npm run test:e2e
+E2E_BASE_URL=https://your-deployment npm run test:e2e   # against a deployed instance, no local server
 ```
 
 Documentation is tested too (`analysis/tests/test_docs.py`): links must resolve, and numbers about
