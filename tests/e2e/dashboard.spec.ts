@@ -44,7 +44,29 @@ test.describe('OT-Sentinel dashboard', () => {
     await page.getByRole('button', { name: 'Mark as false alarm' }).click();
     await expect(page.getByText('CRITICAL THREAT DETECTED')).toBeHidden();
     expect(bodies).toHaveLength(1);
-    expect(bodies[0]).toMatchObject({ verdict: 'false_alarm', timestamp: expect.any(String) });
+    expect(bodies[0]).toMatchObject({
+      verdict: 'false_alarm',
+      timestamp: expect.any(String),
+      risk_score: expect.any(Number),
+      top_sensor: expect.stringMatching(/^(temp|pressure|vibration)$/),
+    });
+  });
+
+  test('verdicts are stored and summarised in the forensic report', async ({ page }) => {
+    await page.goto('/');
+    await attackSwitch(page).click();
+    await expect(page.getByText('CRITICAL THREAT DETECTED')).toBeVisible({ timeout: 10_000 });
+    const stored = page.waitForResponse(
+      (res) => res.url().endsWith('/api/feedback') && res.request().method() === 'POST'
+    );
+    await page.getByRole('button', { name: 'Mark as false alarm' }).click();
+    expect((await stored).status()).toBe(202);
+
+    await page.getByRole('button', { name: /View Report/i }).click();
+    const verdicts = page.getByLabel('Operator verdicts');
+    await expect(verdicts).toContainText(/\d+ false alarms?/);
+    // The server keeps verdicts in memory unless FEEDBACK_DB_PATH is set; the page says which.
+    await expect(verdicts).toContainText(/kept in memory|stored in SQLite/);
   });
 
   test('forensic report downloads a CSV of the audit log', async ({ page }) => {

@@ -5,6 +5,10 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- Persistent operator feedback: verdicts carry the risk score and the sensor that drove the alert, are stored in
+  SQLite through Node's built-in `node:sqlite` when `FEEDBACK_DB_PATH` is set (the Docker image sets it to
+  `/data/feedback.db`) and in a capped memory buffer otherwise; `GET /api/feedback/summary` returns aggregates
+  (never notes), and the forensic report shows the false-alarm share per sensor
 - **Evaluation protocol v3** ([`docs/protocol-v3.md`](docs/protocol-v3.md)), committed before its first run: three
   causal temporal detectors with fixed textbook parameters (EWMA of z-scores, two-sided CUSUM, 24 h rolling
   residual), day-block bootstrap 95 % intervals, a paired PR-AUC comparison with the z-score, explanation accuracy

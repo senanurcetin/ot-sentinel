@@ -20,12 +20,31 @@ import { AlertTriangle, ListChecks, ShieldCheck, Activity } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { Button } from '@/components/ui/button';
 
-async function sendFeedback(timestamp: string, verdict: 'confirmed_threat' | 'false_alarm') {
+/** The verdict plus the detector context, so false-alarm rates can be reported per sensor. */
+export function feedbackBody(
+  threat: ThreatMitigationAlertInput,
+  verdict: 'confirmed_threat' | 'false_alarm'
+) {
+  const top = [...(threat.per_sensor_contributions ?? [])].sort(
+    (a, b) => b.contribution_pct - a.contribution_pct
+  )[0];
+  return {
+    timestamp: threat.timestamp,
+    verdict,
+    ...(threat.risk_score !== undefined && { risk_score: threat.risk_score }),
+    ...(top && { top_sensor: top.sensor }),
+  };
+}
+
+async function sendFeedback(
+  threat: ThreatMitigationAlertInput,
+  verdict: 'confirmed_threat' | 'false_alarm'
+) {
   try {
     await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ timestamp, verdict }),
+      body: JSON.stringify(feedbackBody(threat, verdict)),
     });
   } catch (error) {
     console.error('Failed to send alert feedback:', error);
@@ -145,7 +164,7 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
           <Button
             variant="outline"
             onClick={() => {
-              if (threatData) void sendFeedback(threatData.timestamp, 'false_alarm');
+              if (threatData) void sendFeedback(threatData, 'false_alarm');
               onOpenChange(false);
             }}
           >
@@ -153,7 +172,7 @@ export default function ThreatAlertDialog({ open, onOpenChange, threatData }: Th
           </Button>
           <AlertDialogAction 
             onClick={() => {
-              if (threatData) void sendFeedback(threatData.timestamp, 'confirmed_threat');
+              if (threatData) void sendFeedback(threatData, 'confirmed_threat');
               onOpenChange(false);
             }} 
             className="bg-primary hover:bg-primary/90 text-primary-foreground"

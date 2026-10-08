@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AlertFeedbackSchema, type AlertFeedback } from '@/lib/types';
+import { AlertFeedbackSchema } from '@/lib/types';
 import { RateLimiter, enforceRateLimit } from '@/lib/rate-limit';
+import { getFeedbackStore } from '@/lib/feedback-store';
 
 /**
  * Operator verdicts on raised alerts ("confirmed threat" / "false alarm").
  *
- * Demo-grade by design: verdicts live in a capped in-memory buffer and are lost on restart.
- * A real deployment would persist them and feed false-alarm rates back into threshold tuning.
+ * Stored in SQLite when FEEDBACK_DB_PATH is set, otherwise in a capped in-memory buffer that is
+ * lost on restart (see src/lib/feedback-store.ts). Aggregates: GET /api/feedback/summary.
  */
-const MAX_STORED = 200;
 const MAX_BODY_BYTES = 4096;
-const store: (AlertFeedback & { received_at: string })[] = [];
 const limiter = new RateLimiter(30, 60_000);
 const NO_STORE = { 'Cache-Control': 'no-store' };
 
@@ -40,7 +39,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  store.push({ ...parsed.data, received_at: new Date().toISOString() });
-  if (store.length > MAX_STORED) store.shift();
-  return NextResponse.json({ received: true, stored: store.length }, { status: 202, headers: NO_STORE });
+  try {
+    const store = await getFeedbackStore();
+    store.add({ ...parsed.data, received_at: new Date().toISOString() });
+    return NextResponse.json({ received: true, storage: store.kind }, { status: 202, headers: NO_STORE });
+  } catch (error) {
+    // Log the cause server-side; never return internals (paths, SQL) to the client.
+    console.error('feedback store failed:', error);
+    return NextResponse.json({ error: 'Could not store feedback' }, { status: 500, headers: NO_STORE });
+  }
 }

@@ -27,7 +27,8 @@ Reviewing this project? Start with the [case study](docs/case-study.md) and the 
 | Dashboard, detector, explanation, fallback, operator feedback | working, tested |
 | Live demo telemetry | **synthetic**; the BATADAL evaluation is offline: its results are shown on the app's `/case-study` page, the live scorer does not use it |
 | Detector comparison on BATADAL (14 real-benchmark attacks) | run, results below; honest reading: modest, see caveats |
-| Authentication, persistence, real protocol adapters | not implemented |
+| Operator verdict storage | SQLite when `FEEDBACK_DB_PATH` is set (default in the Docker image), memory otherwise |
+| Authentication, real protocol adapters | not implemented |
 
 Portfolio role: `OT-security case study`.
 
@@ -42,7 +43,9 @@ and auditable, make the reason for every alert visible, and use an LLM only to e
 - Streams (simulated) temperature, pressure, vibration and traffic readings once a second.
 - Scores every sample against an attack-free baseline and shows **why**: per-sensor z-score and each sensor's share of the risk score.
 - On a CRITICAL sample, opens an alert with a summary and suggested actions. Gemini writes it when available; otherwise a rule-based fallback does, and the dialog says which one you are reading.
-- Lets the operator mark each alert as a confirmed threat or a false alarm (`POST /api/feedback`, in-memory demo storage).
+- Lets the operator mark each alert as a confirmed threat or a false alarm (`POST /api/feedback`). Each verdict keeps the
+  risk score and the sensor that drove the alert; the forensic report shows the false-alarm share per sensor
+  (`GET /api/feedback/summary`, aggregates only). Stored in SQLite when `FEEDBACK_DB_PATH` is set, in memory otherwise.
 - Simulates an attack on demand, and exports a forensic report as CSV (spreadsheet-formula safe).
 
 | Alert with rule-based guidance | Why this score? |
@@ -140,7 +143,7 @@ Docker:
 
 ```bash
 docker build -t ot-sentinel .
-docker run --rm -p 9002:9002 -e GEMINI_API_KEY=your-key ot-sentinel
+docker run --rm -p 9002:9002 -e GEMINI_API_KEY=your-key -v ot-sentinel-data:/data ot-sentinel  # volume keeps verdicts
 ```
 
 ## Quality checks
@@ -186,7 +189,7 @@ tool from the telemetry detector in this repository.
 
 Synthetic live telemetry; per-sample static baseline in the dashboard (temporal variants were evaluated and did
 not help on the test file; no missing-data or stuck-value detection);
-three sensors in the live demo; 7 attacks per evaluation file; in-memory feedback; no authentication.
+three sensors in the live demo; 7 attacks per evaluation file; verdicts are not yet used to tune anything; no authentication.
 See the [model card](MODEL_CARD.md) and the [case study](docs/case-study.md).
 
 ## License

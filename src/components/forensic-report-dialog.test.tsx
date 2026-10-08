@@ -28,6 +28,8 @@ const readBlob = (blob: Blob) =>
 
 beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {}); // recharts: zero-size container
+  // The dialog shows the operator-verdict summary (tested in operator-verdicts.test.tsx).
+  global.fetch = jest.fn(async () => ({ ok: false, status: 503, json: async () => ({}) })) as never;
 });
 afterEach(() => jest.restoreAllMocks());
 
