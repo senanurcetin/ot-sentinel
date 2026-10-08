@@ -90,7 +90,10 @@ sequenceDiagram
   ([threat model](threat-model.md#telemetry-adapter-boundary)).
 - **Small, bounded state.** Operator verdicts go to SQLite through Node's built-in `node:sqlite` when
   `FEEDBACK_DB_PATH` is set (the Docker image sets it), otherwise to a capped in-memory buffer. Both are capped
-  because the demo has no authentication ([`src/lib/feedback-store.ts`](../src/lib/feedback-store.ts)).
+  because the demo is usually open ([`src/lib/feedback-store.ts`](../src/lib/feedback-store.ts)).
+- **One optional gate, in front of everything.** `src/proxy.ts` (Next.js 16's renamed middleware) enforces
+  `DEMO_BASIC_AUTH` before any page, route handler or server action runs, so no route has to remember to check.
+  The value is read per request, so the same build runs open or protected.
 
 See also: [threat model](threat-model.md) · [model card](../MODEL_CARD.md) ·
 [analysis pipeline](../analysis/README.md) · [original spec (archived)](archive/blueprint.md)

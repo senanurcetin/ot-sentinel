@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- Optional demo password: with `DEMO_BASIC_AUTH=user:password` set, a Next.js 16 `proxy.ts` puts every page, API
+  route and server action behind HTTP Basic auth (`/api/health` stays open). Unset leaves the demo open; a malformed
+  value or a password under 12 characters fails closed with 503. Wrong guesses are limited to 10 per minute per
+  client. Unit tests cover the parser and the proxy; an E2E project runs against a second CI server started with
+  the variable
 - Persistent operator feedback: verdicts carry the risk score and the sensor that drove the alert, are stored in
   SQLite through Node's built-in `node:sqlite` when `FEEDBACK_DB_PATH` is set (the Docker image sets it to
   `/data/feedback.db`) and in a capped memory buffer otherwise; `GET /api/feedback/summary` returns aggregates

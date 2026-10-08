@@ -27,7 +27,8 @@ my word for it.
 - The BATADAL result is modest and rests on 7 attacks per file; it evaluates the method on 43 signals, not the live dashboard's 3-signal scorer.
 - One of my own metrics was flawed (an always-on alarm looked perfect) until the first run exposed it; the amendment is documented, not hidden.
 - The live detector is per-sample and static; temporal variants did not help on the test file. The [model card](../MODEL_CARD.md) lists what it cannot see.
-- There is no authentication, and no real protocol adapter (only an interface and rules for one).
+- Access control is one optional shared password (`DEMO_BASIC_AUTH`), not user accounts; there is no real protocol
+  adapter (only an interface and rules for one).
 
 ## Run it in two minutes
 

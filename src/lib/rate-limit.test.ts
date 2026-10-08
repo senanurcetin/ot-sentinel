@@ -39,6 +39,20 @@ describe('RateLimiter', () => {
     expect(limiter.check('a').allowed).toBe(true); // existing clients are unaffected
   });
 
+  it('isLimited reports an exhausted window without counting', () => {
+    let now = 0;
+    const limiter = new RateLimiter(2, 1_000, () => now);
+    expect(limiter.isLimited('a')).toBe(false);
+    limiter.check('a');
+    expect(limiter.isLimited('a')).toBe(false);
+    limiter.check('a');
+    expect(limiter.isLimited('a')).toBe(true);
+    expect(limiter.isLimited('a')).toBe(true); // peeking does not add to the count
+    expect(limiter.isLimited('b')).toBe(false);
+    now = 1_000;
+    expect(limiter.isLimited('a')).toBe(false);
+  });
+
   it('evicts expired windows to make room', () => {
     let now = 0;
     const limiter = new RateLimiter(5, 1_000, () => now, 2);
