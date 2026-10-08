@@ -16,14 +16,16 @@ there is no contractual fix timeline.
 
 - Telemetry is synthetic (and, once the BATADAL replay lands, replayed public data). No real PLC, Modbus
   or OPC-UA traffic is ingested.
-- There is no authentication or multi-tenancy. Operator verdicts are the only stored data (SQLite when
+- Access control is optional and coarse: with `DEMO_BASIC_AUTH` set, the whole app sits behind one shared
+  password (HTTP Basic, so HTTPS only); without it the demo is open. There are no user accounts, roles or
+  multi-tenancy. Operator verdicts are the only stored data (SQLite when
   `FEEDBACK_DB_PATH` is set); they are capped and the summary endpoint returns aggregates only.
 - `GEMINI_API_KEY` is read server-side only. Never commit `.env`; `.env.example` is the template.
 - The AI layer explains a detection that the scorer has already made. It is not a detection control.
 
 ## Built-in protections
 
-Security headers and a Content-Security-Policy on every route, per-client rate limits on the API
+Security headers and a Content-Security-Policy on every route, an optional shared-password gate, per-client rate limits on the API
 and on the AI server action, input validation (zod) with a body-size cap, a 20 s model timeout with
 deterministic rule-based fallback, and CSV formula-injection protection. What they do and do not
 cover is in [docs/threat-model.md](docs/threat-model.md).

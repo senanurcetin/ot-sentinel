@@ -41,6 +41,12 @@ export class RateLimiter {
     };
   }
 
+  /** True when `key` has used up its window, without counting this call. */
+  isLimited(key: string): boolean {
+    const w = this.windows.get(key);
+    return !!w && w.resetAt > this.now() && w.count >= this.limit;
+  }
+
   private evictExpired(t: number) {
     for (const [key, w] of this.windows) if (w.resetAt <= t) this.windows.delete(key);
   }

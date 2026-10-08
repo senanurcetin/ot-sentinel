@@ -28,7 +28,8 @@ Reviewing this project? Start with the [case study](docs/case-study.md) and the 
 | Live demo telemetry | **synthetic**; the BATADAL evaluation is offline: its results are shown on the app's `/case-study` page, the live scorer does not use it |
 | Detector comparison on BATADAL (14 real-benchmark attacks) | run, results below; honest reading: modest, see caveats |
 | Operator verdict storage | SQLite when `FEEDBACK_DB_PATH` is set (default in the Docker image), memory otherwise |
-| Authentication, real protocol adapters | not implemented |
+| Access control | optional shared password for the whole demo (`DEMO_BASIC_AUTH`); no user accounts or roles |
+| Real protocol adapters | not implemented |
 
 Portfolio role: `OT-security case study`.
 
@@ -146,6 +147,11 @@ docker build -t ot-sentinel .
 docker run --rm -p 9002:9002 -e GEMINI_API_KEY=your-key -v ot-sentinel-data:/data ot-sentinel  # volume keeps verdicts
 ```
 
+To put a public deployment behind one shared password, set `DEMO_BASIC_AUTH=user:password` (password of at
+least 12 characters; serve over HTTPS). Every page, API route and server action then asks for HTTP Basic
+credentials; `/api/health` stays open for the container probe. Unset, the demo is open. A malformed value
+locks the app (503) rather than opening it.
+
 ## Quality checks
 
 ```bash
@@ -163,8 +169,8 @@ CI runs all of the above plus a Docker build, CodeQL, `npm audit`, `pip-audit` a
 ## Security
 
 Security headers and CSP, per-client rate limits, validated inputs, a model timeout with fallback,
-and CSV formula-injection protection. The demo has **no authentication**; do not expose it to an
-untrusted network or connect it to a live control system. Scope, residual risks and an ATT&CK for
+and CSV formula-injection protection. Access control is limited to an optional shared password
+(`DEMO_BASIC_AUTH`); there are no user accounts or roles, so do not connect it to a live control system. Scope, residual risks and an ATT&CK for
 ICS mapping: [`docs/threat-model.md`](docs/threat-model.md). Report issues via [`SECURITY.md`](SECURITY.md).
 
 ## Repository map
