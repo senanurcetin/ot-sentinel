@@ -25,6 +25,11 @@ jobs:
           paths:
             - ~/.npm
       - run:
+          name: Audit production dependencies for critical advisories
+          # Mirrors the currently passing GitHub Security checks job.
+          # npm ci above disables implicit audits, so this is the only audit.
+          command: npm audit --omit=dev --audit-level=critical
+      - run:
           name: Lint
           command: npm run lint
       - run:
