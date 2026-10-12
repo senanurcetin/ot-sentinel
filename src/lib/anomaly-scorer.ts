@@ -57,11 +57,23 @@ export function scoreMetrics(readings: SensorReadings): AnomalyScoreResult {
   let totalZ = 1e-10;
   let maxZ = 0;
   for (const name of SENSOR_NAMES) {
+    // A malformed adapter or a runtime caller can supply NaN/Infinity even
+    // though SensorReadings is typed. NaN would otherwise produce a SECURE
+    // status because comparisons with NaN are always false.
+    if (!readings || !Number.isFinite(readings[name])) {
+      throw new RangeError(`Invalid ${name} sensor reading: expected a finite number`);
+    }
     const sensor = params.sensors[name];
     z[name] = computeZScore(readings[name], sensor.mean, sensor.std);
+    if (!Number.isFinite(z[name])) {
+      throw new RangeError(`Invalid ${name} sensor reading: z-score overflow`);
+    }
     compositeZ += z[name] * sensor.weight;
     totalZ += z[name];
     maxZ = Math.max(maxZ, z[name]);
+  }
+  if (!Number.isFinite(compositeZ) || !Number.isFinite(totalZ)) {
+    throw new RangeError('Sensor scores overflowed');
   }
 
   const riskScore = Math.round(
