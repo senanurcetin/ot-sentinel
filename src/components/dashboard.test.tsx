@@ -186,23 +186,35 @@ describe('Dashboard', () => {
   });
 
   it('keeps at most 100 audit log entries', async () => {
-    mockFetch(() => sample());
+    const fetchMock = mockFetch(() => sample());
     render(<Dashboard />);
-    await advance(105_000);
+    // There is no alert/cooldown interaction for SECURE samples. Advancing
+    // 105 seconds in one act avoids 105 expensive React render cycles and
+    // Jest's 5-second wall-clock timeout while still exercising 105 polls.
+    await act(async () => {
+      jest.advanceTimersByTime(105_000);
+    });
+    expect(metricsCalls(fetchMock)).toHaveLength(105);
     expect(screen.getByText('Showing last 100 events')).toBeInTheDocument();
   });
 
   it('survives a failing metrics request and recovers on the next tick', async () => {
-    let calls = 0;
-    global.fetch = jest.fn(async () => {
-      calls += 1;
-      if (calls === 1) throw new Error('network down');
-      return { ok: true, json: async () => sample() };
+    const normalFetch = mockFetch(() => sample());
+    let metricCalls = 0;
+    // Other dashboard components fetch their own endpoints during mount.
+    // Only the first *metrics* request should fail, independent of ordering.
+    global.fetch = jest.fn(async (url: string, init?: RequestInit) => {
+      if (url.startsWith('/api/metrics') && metricCalls++ === 0) {
+        throw new Error('network down');
+      }
+      return normalFetch(url, init);
     }) as unknown as typeof fetch;
     render(<Dashboard />);
     await advance(1000);
+    expect(metricCalls).toBe(1);
     expect(screen.getByText('N/A')).toBeInTheDocument();
     await advance(1000);
+    expect(metricCalls).toBe(2);
     expect(screen.getByText('12/100')).toBeInTheDocument();
   });
 });
