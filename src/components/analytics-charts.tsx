@@ -34,9 +34,9 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <CardTitle className="text-base font-semibold">Real-time Analytics</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="h-64">
+        <div className="flex h-64 min-h-0 flex-col">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Temperature (°C)</h3>
-          <ChartContainer config={chartConfig} className="h-full w-full">
+          <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 !aspect-auto">
             <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
@@ -69,9 +69,9 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
             </LineChart>
           </ChartContainer>
         </div>
-        <div className="h-64">
+        <div className="flex h-64 min-h-0 flex-col">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Network Traffic (KB/s)</h3>
-          <ChartContainer config={chartConfig} className="h-full w-full">
+          <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 !aspect-auto">
             <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
@@ -86,7 +86,7 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                domain={[0, 'dataMax + 1000']}
+                domain={[0, (maximum: number) => Math.max(10, Math.ceil(maximum * 1.15))]}
                  className='text-xs'
               />
               <ChartTooltip

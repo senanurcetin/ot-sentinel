@@ -88,6 +88,16 @@ afterEach(() => {
 });
 
 describe('Dashboard', () => {
+  it('shows neutral loading states before the first sample, never a false alarm', () => {
+    mockFetch(() => sample());
+    render(<Dashboard />);
+    expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for first telemetry sample')).toBeInTheDocument();
+    expect(screen.getByText('Topology status pending telemetry')).toBeInTheDocument();
+    expect(screen.queryByText('Anomaly detected!')).not.toBeInTheDocument();
+    expect(screen.getByText('UNKNOWN').className).toContain('text-muted-foreground');
+  });
+
   it('polls /api/metrics every second and shows the detector risk score', async () => {
     const fetchMock = mockFetch(() => sample());
     render(<Dashboard />);
