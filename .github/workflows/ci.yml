@@ -1,15 +1,10 @@
 name: OT-Sentinel CI
 
+# Automatic PR/push verification is handled by .circleci/config.yml.
+# GitHub-hosted Actions minutes are unavailable; this workflow remains
+# available only to deliberate manual invocations after budget restoration.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -17,6 +12,7 @@ permissions:
 jobs:
   web:
     name: Lint, typecheck, test, build
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -45,6 +41,7 @@ jobs:
 
   analysis:
     name: Analysis (ruff, pytest)
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -69,6 +66,7 @@ jobs:
 
   docker:
     name: Docker image builds
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     needs: web
     steps:
