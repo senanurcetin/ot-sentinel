@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AlertFeedbackSchema } from '@/lib/types';
 import { RateLimiter, enforceRateLimit } from '@/lib/rate-limit';
 import { getFeedbackStore } from '@/lib/feedback-store';
+import { readTextWithinLimit } from '@/lib/limited-request-body';
 
 /**
  * Operator verdicts on raised alerts ("confirmed threat" / "false alarm").
@@ -17,10 +18,19 @@ export async function POST(req: NextRequest) {
   const limited = enforceRateLimit(req, limiter);
   if (limited) return limited;
 
-  // Cheap rejection first (declared length), then the real check on what was actually sent.
+  // Check the claimed size first, then enforce the *actual* byte limit while
+  // streaming. Request.text() would buffer the entire body before rejecting it.
   const declared = Number(req.headers.get('content-length') ?? 0);
-  const text = declared > MAX_BODY_BYTES ? null : await req.text();
-  if (text === null || Buffer.byteLength(text) > MAX_BODY_BYTES) {
+  if (declared > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Body too large' }, { status: 413, headers: NO_STORE });
+  }
+  let text: string | null;
+  try {
+    text = await readTextWithinLimit(req, MAX_BODY_BYTES);
+  } catch {
+    return NextResponse.json({ error: 'Could not read body' }, { status: 400, headers: NO_STORE });
+  }
+  if (text === null) {
     return NextResponse.json({ error: 'Body too large' }, { status: 413, headers: NO_STORE });
   }
 
