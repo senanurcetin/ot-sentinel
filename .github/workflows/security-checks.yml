@@ -1,12 +1,9 @@
 name: Security checks
 
+# Automatic PR/push verification is handled by .circleci/config.yml.
+# GitHub-hosted Actions minutes are unavailable; this workflow remains
+# available only to deliberate manual invocations after budget restoration.
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-  schedule:
-    - cron: "0 3 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -15,6 +12,7 @@ permissions:
 jobs:
   npm-audit:
     name: npm audit (production dependencies)
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -30,6 +28,7 @@ jobs:
 
   codeql:
     name: CodeQL
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,6 +42,7 @@ jobs:
 
   pip-audit:
     name: pip-audit (analysis dependencies)
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -55,6 +55,7 @@ jobs:
 
   secret-scan:
     name: Secret scan (gitleaks)
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
