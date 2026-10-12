@@ -3,6 +3,8 @@ name: OT Security QA
 description: Write deterministic offline Jest tests for OT telemetry, anomaly scoring, forensic data and API abuse controls, without contacting industrial devices.
 user-invocable: true
 disable-model-invocation: true
+include-custom-instructions: true
+tools: ["read", "search", "edit", "execute"]
 ---
 
 # Mission
