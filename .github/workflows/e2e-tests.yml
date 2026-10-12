@@ -1,15 +1,10 @@
 name: E2E tests
 
+# Automatic PR/push verification is handled by .circleci/config.yml.
+# GitHub-hosted Actions minutes are unavailable; this workflow remains
+# available only to deliberate manual invocations after budget restoration.
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: e2e-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -17,6 +12,7 @@ permissions:
 jobs:
   playwright:
     name: Playwright (chromium)
+    if: vars.ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
