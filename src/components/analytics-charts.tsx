@@ -36,7 +36,7 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
       <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="flex h-64 min-h-0 flex-col">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Temperature (°C)</h3>
-          <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 aspect-auto">
+          <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 !aspect-auto">
             <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
@@ -71,7 +71,7 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         </div>
         <div className="flex h-64 min-h-0 flex-col">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Network Traffic (KB/s)</h3>
-          <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 aspect-auto">
+          <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 !aspect-auto">
             <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
