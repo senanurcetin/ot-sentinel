@@ -1,0 +1,72 @@
+version: 2.1
+
+# Secondary CI: the GitHub repository stays canonical. This workflow uses no
+# production credentials, persistent volume or training-data downloads.
+jobs:
+  web-quality:
+    docker:
+      - image: cimg/node:24.13
+    resource_class: medium
+    working_directory: ~/repo
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      GEMINI_API_KEY: "ci-placeholder"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - ot-sentinel-node-v1-{{ checksum "package-lock.json" }}
+            - ot-sentinel-node-v1-
+      - run:
+          name: Install dependencies from lockfile
+          command: npm ci --no-audit --no-fund
+      - save_cache:
+          key: ot-sentinel-node-v1-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Type check
+          command: npm run typecheck
+      - run:
+          name: Jest with coverage thresholds
+          command: npm run test:coverage -- --runInBand
+          no_output_timeout: 15m
+      - run:
+          name: Next.js production build
+          command: npm run build
+          no_output_timeout: 15m
+
+  analysis-quality:
+    docker:
+      - image: cimg/python:3.11
+    resource_class: small
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - ot-sentinel-pip-v1-{{ checksum "analysis/requirements-dev.txt" }}
+            - ot-sentinel-pip-v1-
+      - run:
+          name: Install analysis dependencies
+          command: python -m pip install -r analysis/requirements-dev.txt
+      - save_cache:
+          key: ot-sentinel-pip-v1-{{ checksum "analysis/requirements-dev.txt" }}
+          paths:
+            - ~/.cache/pip
+      - run:
+          name: Ruff
+          command: cd analysis && ruff check .
+      - run:
+          name: Offline analysis pytest suite
+          command: cd analysis && python -m pytest -q
+          no_output_timeout: 15m
+
+workflows:
+  verify:
+    jobs:
+      - web-quality
+      - analysis-quality
