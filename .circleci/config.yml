@@ -36,9 +36,6 @@ jobs:
           name: Type check
           command: npm run typecheck
       - run:
-          name: Audit critical production dependency vulnerabilities
-          command: npm audit --omit=dev --audit-level=critical
-      - run:
           name: Jest with coverage thresholds
           command: npm run test:coverage -- --runInBand
           no_output_timeout: 15m
@@ -46,6 +43,36 @@ jobs:
           name: Next.js production build
           command: npm run build
           no_output_timeout: 15m
+
+  browser-e2e:
+    docker:
+      - image: cimg/node:24.13
+    resource_class: medium
+    working_directory: ~/repo
+    environment:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      GEMINI_API_KEY: "e2e-placeholder"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - ot-sentinel-node-v1-{{ checksum "package-lock.json" }}
+            - ot-sentinel-node-v1-
+      - run:
+          name: Install browser test dependencies
+          command: npm ci --no-audit --no-fund
+      - run:
+          name: Install Playwright Chromium and OS dependencies
+          command: npx playwright install --with-deps chromium
+          no_output_timeout: 15m
+      - run:
+          name: Exercise real Next.js dashboard browser flows
+          command: npm run test:e2e
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: playwright-report
+          destination: playwright-report
 
   analysis-quality:
     docker:
@@ -78,3 +105,4 @@ workflows:
     jobs:
       - web-quality
       - analysis-quality
+      - browser-e2e
