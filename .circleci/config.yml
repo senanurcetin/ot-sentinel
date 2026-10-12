@@ -36,6 +36,9 @@ jobs:
           name: Type check
           command: npm run typecheck
       - run:
+          name: Audit critical production dependency vulnerabilities
+          command: npm audit --omit=dev --audit-level=critical
+      - run:
           name: Jest with coverage thresholds
           command: npm run test:coverage -- --runInBand
           no_output_timeout: 15m
