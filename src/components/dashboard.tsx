@@ -183,8 +183,8 @@ export default function Dashboard() {
               title="System Status"
               value={systemStatus}
               icon={systemStatus === 'SECURE' ? ShieldCheck : ShieldAlert}
-              valueClassName={systemStatus === 'SECURE' ? 'text-emerald-500' : 'text-rose-500'}
-              description={systemStatus === 'SECURE' ? 'All systems nominal' : 'Anomaly detected!'}
+              valueClassName={systemStatus === 'SECURE' ? 'text-emerald-500' : systemStatus === 'CRITICAL' ? 'text-rose-500' : 'text-muted-foreground'}
+              description={systemStatus === 'SECURE' ? 'All systems nominal' : systemStatus === 'CRITICAL' ? 'Anomaly detected!' : 'Waiting for first telemetry sample'}
               className="xl:col-span-2"
             />
              <MetricCard
@@ -215,7 +215,7 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
             <div className="lg:col-span-2">
-              <NetworkTopology status={systemStatus as 'SECURE' | 'CRITICAL'} />
+              <NetworkTopology status={systemStatus} />
             </div>
             <div className="lg:col-span-3">
               <AnalyticsCharts data={chartData} />

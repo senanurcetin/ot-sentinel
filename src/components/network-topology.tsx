@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Globe, Shield, Router, Server } from 'lucide-react';
 
 type NetworkTopologyProps = {
-  status: 'SECURE' | 'CRITICAL';
+  status: 'SECURE' | 'CRITICAL' | 'UNKNOWN';
 };
 
 export default function NetworkTopology({ status }: NetworkTopologyProps) {
@@ -19,6 +19,11 @@ export default function NetworkTopology({ status }: NetworkTopologyProps) {
     <Card className="shadow-sm h-full">
       <CardHeader>
         <CardTitle className="text-base font-semibold">Network Topology</CardTitle>
+        {status === 'UNKNOWN' && (
+          <p className="text-xs text-muted-foreground" role="status">
+            Topology status pending telemetry
+          </p>
+        )}
       </CardHeader>
       <CardContent className="flex items-center justify-center">
         <svg width="100%" height="150" viewBox="0 0 400 150">
