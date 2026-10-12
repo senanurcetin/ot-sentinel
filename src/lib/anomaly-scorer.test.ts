@@ -66,6 +66,40 @@ describe('scoreMetrics', () => {
     expect(warn.per_sensor_contributions.find((x) => x.sensor === 'temp')?.status).toBe('warning');
   });
 
+  it('rejects NaN and infinite readings for every sensor rather than returning SECURE', () => {
+    for (const sensor of ['temp', 'pressure', 'vibration'] as const) {
+      for (const invalid of [NaN, Infinity, -Infinity]) {
+        const readings = { ...atSigma(0), [sensor]: invalid };
+        expect(() => scoreMetrics(readings))
+          .toThrow(`Invalid ${sensor} sensor reading: expected a finite number`);
+      }
+    }
+  });
+
+  it('rejects missing and non-numeric runtime readings', () => {
+    const baseline = atSigma(0);
+    for (const sensor of ['temp', 'pressure', 'vibration'] as const) {
+      const missing = { ...baseline } as Partial<SensorReadings>;
+      delete missing[sensor];
+      expect(() => scoreMetrics(missing as SensorReadings))
+        .toThrow(`Invalid ${sensor} sensor reading: expected a finite number`);
+
+      const stringValue = { ...baseline, [sensor]: '100' } as unknown as SensorReadings;
+      expect(() => scoreMetrics(stringValue))
+        .toThrow(`Invalid ${sensor} sensor reading: expected a finite number`);
+    }
+    expect(() => scoreMetrics(null as unknown as SensorReadings))
+      .toThrow('Invalid temp sensor reading: expected a finite number');
+  });
+
+  it('rejects numerical overflow instead of exporting non-finite sensor contributions', () => {
+    expect(() => scoreMetrics({
+      temp: Number.MAX_VALUE,
+      pressure: Number.MAX_VALUE,
+      vibration: Number.MAX_VALUE,
+    })).toThrow(RangeError);
+  });
+
   it('stays finite and saturates at 100 for absurdly large readings', () => {
     const result = scoreMetrics({ temp: 1e9, pressure: -1e9, vibration: 1e9 });
     expect(Number.isNaN(result.risk_score)).toBe(false);
