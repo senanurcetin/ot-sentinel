@@ -105,3 +105,17 @@
 .nexus-panel .recharts-cartesian-grid-horizontal line { stroke:rgba(119,159,206,.17); }
 .nexus-panel .recharts-cartesian-axis-tick-value { fill:#abc5df; }
 @media (max-width:680px) { .nexus-chart-count { font-size:.64rem; } }
+
+/* Distinguish detector risk (SECURE/CRITICAL) from network/transport health. */
+.nexus-connection-indicator {
+  display:inline-flex; align-items:center; gap:7px;
+  border:1px solid rgba(144,182,223,.35); border-radius:7px;
+  background:rgba(6,25,43,.78); padding:7px 10px;
+  color:#b7cae3; letter-spacing:.055em; font-size:.66rem; font-weight:760;
+}
+.nexus-connection-dot { width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#9eb3cb; }
+.nexus-connection-indicator[data-state="active"] { color:#8ce8bf;border-color:rgba(67,201,157,.43); }
+.nexus-connection-indicator[data-state="active"] .nexus-connection-dot { background:#43c99d; }
+.nexus-connection-indicator[data-state="unavailable"] { color:#f9ce8d;border-color:rgba(246,185,95,.5); }
+.nexus-connection-indicator[data-state="unavailable"] .nexus-connection-dot { background:#f6b95f; }
+@media(max-width:680px) { .nexus-connection-indicator { line-height:1.35; font-size:.62rem; } }

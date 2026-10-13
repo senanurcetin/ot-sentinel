@@ -92,6 +92,7 @@ describe('Dashboard', () => {
     mockFetch(() => sample());
     render(<Dashboard />);
     expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
+    expect(screen.getByText('CONNECTING TO DEMO STREAM')).toBeInTheDocument();
     expect(screen.getByText('Waiting for first telemetry sample')).toBeInTheDocument();
     expect(screen.getByText('Topology status pending telemetry')).toBeInTheDocument();
     expect(screen.queryByText('Anomaly detected!')).not.toBeInTheDocument();
@@ -107,6 +108,17 @@ describe('Dashboard', () => {
     expect(screen.getByText('Industrial Security Overview')).toBeInTheDocument();
     expect(screen.getByText('SIMULATED OT STREAM')).toBeInTheDocument();
     expect(screen.getByText('NOT PHYSICAL PLANT DATA')).toBeInTheDocument();
+  });
+
+  it('marks a failed stream unavailable rather than displaying stale SECURE metrics', async () => {
+    const api = jest.fn(async () => { throw new Error('simulated demo outage'); });
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+    await advance(1000);
+    expect(screen.getByText('TELEMETRY INTERRUPTED')).toBeInTheDocument();
+    expect(screen.getByText('Telemetry unavailable — verdict not current')).toBeInTheDocument();
+    expect(screen.queryByText('SECURE')).not.toBeInTheDocument();
+    expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('does not overlap slow telemetry requests', async () => {
@@ -161,6 +173,7 @@ describe('Dashboard', () => {
     await advance(1000);
     expect(metricsCalls(fetchMock)).toEqual(['/api/metrics?attack=false']);
     expect(screen.getByText('12/100')).toBeInTheDocument();
+    expect(screen.getByText('DEMO TELEMETRY CONNECTED')).toBeInTheDocument();
     expect(screen.queryByText('Waiting for temperature samples')).not.toBeInTheDocument();
     expect(screen.queryByText('Waiting for network samples')).not.toBeInTheDocument();
     expect(screen.getAllByText('SECURE').length).toBeGreaterThan(0);

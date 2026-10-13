@@ -35,6 +35,7 @@ const ALERT_COOLDOWN_MS = 5000;
 export default function Dashboard() {
   // Core state for the latest metrics received from the API
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [connectionState, setConnectionState] = useState<'connecting' | 'active' | 'unavailable'>('connecting');
   // State for time-series data for the analytics charts
   const [chartData, setChartData] = useState<{ time: string; temp?: number; traffic?: number }[]>([]);
   // State for the audit log entries
@@ -65,6 +66,10 @@ export default function Dashboard() {
    * @param checked - The new state of the attack mode switch.
    */
   const handleAttackModeChange = (checked: boolean) => {
+    // Do not show SECURE risk readings from a previous simulation mode.
+    setMetrics(null);
+    setChartData([]);
+    setConnectionState('connecting');
     setAttackMode(checked);
     toast({
       title: `Attack Simulation ${checked ? 'Enabled' : 'Disabled'}`,
@@ -85,6 +90,7 @@ export default function Dashboard() {
    */
   const processNewMetrics = useCallback((newMetrics: Metrics) => {
     setMetrics(newMetrics);
+    setConnectionState('active');
 
     // Update chart data, keeping it within MAX_CHART_POINTS
     setChartData((prev) => [
@@ -136,6 +142,7 @@ export default function Dashboard() {
         if (!controller.signal.aborted) processNewMetrics(data);
       } catch (error) {
         if (!controller.signal.aborted) {
+          setConnectionState('unavailable');
           console.error('Failed to fetch metrics:', error);
         }
       } finally {
@@ -166,9 +173,11 @@ export default function Dashboard() {
     }
   };
 
-  // Derived state for system status and the detector's risk score
-  const systemStatus = metrics?.status || 'UNKNOWN';
-  const riskScore = metrics ? `${metrics.risk_score}/100` : 'N/A';
+  // Do not treat cached readings as a current security verdict when
+  // the simulated telemetry transport is unavailable.
+  const visibleMetrics = connectionState === 'unavailable' ? null : metrics;
+  const systemStatus = visibleMetrics?.status || 'UNKNOWN';
+  const riskScore = visibleMetrics ? `${visibleMetrics.risk_score}/100` : 'N/A';
 
   // Data sent to the LLM: the detector's verdict and the sensors behind it.
   const threatDataForAI: ThreatMitigationAlertInput | null = metrics
@@ -201,6 +210,11 @@ export default function Dashboard() {
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">Live application simulation · statistical anomaly scoring · explainable industrial telemetry</p>
               </div>
               <div className="flex flex-wrap gap-2" aria-label="Source and status">
+                <span className="nexus-connection-indicator" data-state={connectionState} role="status" aria-live="polite">
+                  <span className="nexus-connection-dot" aria-hidden="true" />
+                  {connectionState === 'active' ? 'DEMO TELEMETRY CONNECTED'
+                    : connectionState === 'unavailable' ? 'TELEMETRY INTERRUPTED' : 'CONNECTING TO DEMO STREAM'}
+                </span>
                 <span className="nexus-source-tag">SIMULATED OT STREAM</span>
                 <span className="nexus-source-tag">STATISTICAL DETECTOR</span>
                 <span className="nexus-source-tag">NOT PHYSICAL PLANT DATA</span>
@@ -214,26 +228,26 @@ export default function Dashboard() {
               value={systemStatus}
               icon={systemStatus === 'SECURE' ? ShieldCheck : systemStatus === 'CRITICAL' ? ShieldAlert : Activity}
               valueClassName={systemStatus === 'SECURE' ? 'text-emerald-500' : systemStatus === 'CRITICAL' ? 'text-rose-500' : 'text-muted-foreground'}
-              description={systemStatus === 'SECURE' ? 'All systems nominal' : systemStatus === 'CRITICAL' ? 'Anomaly detected!' : 'Waiting for first telemetry sample'}
+              description={systemStatus === 'SECURE' ? 'All systems nominal' : systemStatus === 'CRITICAL' ? 'Anomaly detected!' : connectionState === 'unavailable' ? 'Telemetry unavailable — verdict not current' : 'Waiting for first telemetry sample'}
               className="xl:col-span-2"
             />
              <MetricCard
               title="Temperature"
-              value={`${metrics?.metrics.temp.toFixed(1) ?? 'N/A'} °C`}
+              value={`${visibleMetrics?.metrics.temp.toFixed(1) ?? 'N/A'} °C`}
               icon={Thermometer}
-              valueClassName={metrics && metrics.metrics.temp > 80 ? 'text-rose-500' : 'text-foreground'}
+              valueClassName={visibleMetrics && visibleMetrics.metrics.temp > 80 ? 'text-rose-500' : 'text-foreground'}
             />
             <MetricCard
               title="Vibration"
-              value={`${metrics?.metrics.vibration.toFixed(3) ?? 'N/A'} g`}
+              value={`${visibleMetrics?.metrics.vibration.toFixed(3) ?? 'N/A'} g`}
               icon={Waves}
-               valueClassName={metrics && metrics.metrics.vibration > 0.5 ? 'text-rose-500' : 'text-foreground'}
+               valueClassName={visibleMetrics && visibleMetrics.metrics.vibration > 0.5 ? 'text-rose-500' : 'text-foreground'}
             />
             <MetricCard
               title="Risk Score"
               value={riskScore}
               icon={Gauge}
-              valueClassName={metrics && metrics.status === 'CRITICAL' ? 'text-rose-500' : 'text-foreground'}
+              valueClassName={visibleMetrics && visibleMetrics.status === 'CRITICAL' ? 'text-rose-500' : 'text-foreground'}
               description="Statistical detector, 0 = nominal"
             />
             <MetricCard
@@ -254,8 +268,8 @@ export default function Dashboard() {
           </div>
           <div className="nexus-section-label">03 / Detector evidence and incident history</div>
           <SensorContributions
-            contributions={metrics?.per_sensor_contributions ?? []}
-            riskScore={metrics?.risk_score ?? null}
+            contributions={visibleMetrics?.per_sensor_contributions ?? []}
+            riskScore={visibleMetrics?.risk_score ?? null}
           />
           <div>
             <AuditLog logs={logs} />
