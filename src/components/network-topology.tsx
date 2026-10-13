@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
 
 type NetworkTopologyProps = {
@@ -22,7 +22,7 @@ export default function NetworkTopology({ status }: NetworkTopologyProps) {
       <CardHeader className="space-y-2">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-base font-semibold">Network Topology</CardTitle>
+            <h2 className="text-base font-semibold">Network Topology</h2>
             <p className="mt-1 text-xs text-muted-foreground">Conceptual OT route · illustrative, not discovered assets</p>
           </div>
           <span className="nexus-map-verdict" data-status={status} role="status">
