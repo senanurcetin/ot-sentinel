@@ -12,6 +12,7 @@ type ChartDataPoint = {
 
 type AnalyticsChartsProps = {
   data: ChartDataPoint[];
+  connectionState: 'connecting' | 'active' | 'unavailable';
 };
 
 const chartConfig = {
@@ -27,16 +28,20 @@ const chartConfig = {
 
 const formatTime = (time: string) => new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit'});
 
-export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
+export default function AnalyticsCharts({ data, connectionState }: AnalyticsChartsProps) {
   return (
     <Card className="nexus-panel h-full">
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle className="text-base font-semibold">Real-time Analytics</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">Simulated telemetry · latest 60 monitoring samples</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {connectionState === 'unavailable'
+                ? 'Historical simulated readings · stream interrupted'
+                : 'Simulated telemetry · latest 60 monitoring samples'}
+            </p>
           </div>
-          <span className="nexus-chart-count" aria-label={`${data.length} telemetry samples received`}>
+          <span className="nexus-chart-count" data-state={connectionState} aria-label={`${data.length} telemetry samples received`}>
             {data.length} samples
           </span>
         </div>
@@ -45,7 +50,9 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <div className="flex h-64 min-h-0 flex-col">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Temperature (°C)</h3>
           {data.length === 0 ? (
-            <div className="nexus-chart-placeholder" role="status">Waiting for temperature samples</div>
+            <div className="nexus-chart-placeholder" role="status">
+              {connectionState === 'unavailable' ? 'Temperature telemetry unavailable' : 'Waiting for temperature samples'}
+            </div>
           ) : (
           <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 !aspect-auto">
             <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
@@ -84,7 +91,9 @@ export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <div className="flex h-64 min-h-0 flex-col">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Network Traffic (KB/s)</h3>
           {data.length === 0 ? (
-            <div className="nexus-chart-placeholder" role="status">Waiting for network samples</div>
+            <div className="nexus-chart-placeholder" role="status">
+              {connectionState === 'unavailable' ? 'Network telemetry unavailable' : 'Waiting for network samples'}
+            </div>
           ) : (
           <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 !aspect-auto">
             <LineChart data={data} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>

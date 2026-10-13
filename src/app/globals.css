@@ -148,3 +148,12 @@
 .nexus-map-pulse { animation:nexus-map-alert 1.9s ease-in-out infinite; transform-origin:center; }
 @keyframes nexus-map-alert { 0%,100% { opacity:.35; } 55% { opacity:1; } }
 @media(prefers-reduced-motion:reduce) { .nexus-map-pulse { animation:none; } }
+
+/* Keep disconnected historical samples valuable without calling them live. */
+.nexus-chart-count[data-state="unavailable"] {
+ border-color:rgba(246,185,95,.52); color:#f9ce8d;
+ background:rgba(107,75,37,.19);
+}
+.nexus-chart-count[data-state="active"] {
+ border-color:rgba(67,201,157,.39);color:#9aefce;
+}

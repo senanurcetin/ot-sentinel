@@ -263,7 +263,7 @@ export default function Dashboard() {
               <NetworkTopology status={systemStatus} />
             </div>
             <div className="lg:col-span-3">
-              <AnalyticsCharts data={chartData} />
+              <AnalyticsCharts data={chartData} connectionState={connectionState} />
             </div>
           </div>
           <div className="nexus-section-label">03 / Detector evidence and incident history</div>

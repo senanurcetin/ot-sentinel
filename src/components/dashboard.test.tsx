@@ -120,6 +120,8 @@ describe('Dashboard', () => {
     await advance(1000);
     expect(screen.getByText('TELEMETRY INTERRUPTED')).toBeInTheDocument();
     expect(screen.getByText('Telemetry unavailable — verdict not current')).toBeInTheDocument();
+    expect(screen.getByText('Temperature telemetry unavailable')).toBeInTheDocument();
+    expect(screen.getByText('Network telemetry unavailable')).toBeInTheDocument();
     expect(screen.queryByText('SECURE')).not.toBeInTheDocument();
     expect(screen.getByText('N/A')).toBeInTheDocument();
   });
@@ -177,6 +179,7 @@ describe('Dashboard', () => {
     expect(metricsCalls(fetchMock)).toEqual(['/api/metrics?attack=false']);
     expect(screen.getByText('12/100')).toBeInTheDocument();
     expect(screen.getByText('DEMO TELEMETRY CONNECTED')).toBeInTheDocument();
+    expect(screen.getByText('Simulated telemetry · latest 60 monitoring samples')).toBeInTheDocument();
     expect(screen.queryByText('Waiting for temperature samples')).not.toBeInTheDocument();
     expect(screen.queryByText('Waiting for network samples')).not.toBeInTheDocument();
     expect(screen.getAllByText('SECURE').length).toBeGreaterThan(0);
