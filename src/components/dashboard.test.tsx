@@ -113,6 +113,7 @@ describe('Dashboard', () => {
     render(<Dashboard />);
     expect(screen.getByText('NEXUS')).toBeInTheDocument();
     expect(screen.getByText('Industrial Security Overview')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'VIEW CASE STUDY →' })).toHaveAttribute('href', '/case-study');
     expect(screen.getByText('SIMULATED OT STREAM')).toBeInTheDocument();
     expect(screen.getByText('NOT PHYSICAL PLANT DATA')).toBeInTheDocument();
   });
@@ -124,6 +125,7 @@ describe('Dashboard', () => {
     await advance(1000);
     expect(screen.getByText('TELEMETRY INTERRUPTED')).toBeInTheDocument();
     expect(screen.getByText('Telemetry unavailable — verdict not current')).toBeInTheDocument();
+    expect(screen.getByText('Historical Analytics')).toBeInTheDocument();
     expect(screen.getByText('Temperature telemetry unavailable')).toBeInTheDocument();
     expect(screen.getByText('Network telemetry unavailable')).toBeInTheDocument();
     expect(screen.queryByText('SECURE')).not.toBeInTheDocument();

@@ -34,7 +34,7 @@ export default function AnalyticsCharts({ data, connectionState }: AnalyticsChar
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <CardTitle className="text-base font-semibold">Real-time Analytics</CardTitle>
+            <CardTitle className="text-base font-semibold">{connectionState === 'unavailable' ? 'Historical Analytics' : 'Real-time Analytics'}</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
               {connectionState === 'unavailable'
                 ? 'Historical simulated readings · stream interrupted'

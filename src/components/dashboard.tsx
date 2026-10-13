@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import type { Metrics, LogEntry, ThreatMitigationAlertInput } from '@/lib/types';
 import Header from '@/components/header';
 import MetricCard from '@/components/metric-card';
@@ -220,6 +221,7 @@ export default function Dashboard() {
                 <span className="nexus-source-tag">SIMULATED OT STREAM</span>
                 <span className="nexus-source-tag">STATISTICAL DETECTOR</span>
                 <span className="nexus-source-tag">NOT PHYSICAL PLANT DATA</span>
+                <Link href="/case-study" className="nexus-source-tag inline-flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:hidden">VIEW CASE STUDY →</Link>
               </div>
             </div>
           </section>
