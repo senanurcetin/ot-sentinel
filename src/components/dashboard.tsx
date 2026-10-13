@@ -197,7 +197,7 @@ export default function Dashboard() {
             <MetricCard
               title="System Status"
               value={systemStatus}
-              icon={systemStatus === 'SECURE' ? ShieldCheck : ShieldAlert}
+              icon={systemStatus === 'SECURE' ? ShieldCheck : systemStatus === 'CRITICAL' ? ShieldAlert : Activity}
               valueClassName={systemStatus === 'SECURE' ? 'text-emerald-500' : systemStatus === 'CRITICAL' ? 'text-rose-500' : 'text-muted-foreground'}
               description={systemStatus === 'SECURE' ? 'All systems nominal' : systemStatus === 'CRITICAL' ? 'Anomaly detected!' : 'Waiting for first telemetry sample'}
               className="xl:col-span-2"

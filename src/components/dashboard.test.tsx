@@ -96,6 +96,8 @@ describe('Dashboard', () => {
     expect(screen.getByText('Topology status pending telemetry')).toBeInTheDocument();
     expect(screen.queryByText('Anomaly detected!')).not.toBeInTheDocument();
     expect(screen.getByText('UNKNOWN').className).toContain('text-muted-foreground');
+    expect(screen.getByText('Waiting for temperature samples')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for network samples')).toBeInTheDocument();
   });
 
   it('renders the NEXUS visual identity with truthful demo provenance', () => {
@@ -116,6 +118,8 @@ describe('Dashboard', () => {
     await advance(1000);
     expect(metricsCalls(fetchMock)).toEqual(['/api/metrics?attack=false']);
     expect(screen.getByText('12/100')).toBeInTheDocument();
+    expect(screen.queryByText('Waiting for temperature samples')).not.toBeInTheDocument();
+    expect(screen.queryByText('Waiting for network samples')).not.toBeInTheDocument();
     expect(screen.getAllByText('SECURE').length).toBeGreaterThan(0);
 
     await advance(2000);

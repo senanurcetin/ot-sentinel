@@ -98,3 +98,10 @@
 @media (prefers-reduced-motion: reduce) {
   .nexus-dashboard *, .nexus-dashboard *::before, .nexus-dashboard *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Source-aware chart capsules and honest empty monitoring state. */
+.nexus-chart-count { display:inline-flex;flex-shrink:0;border:1px solid rgba(143,155,255,.35);border-radius:7px;padding:5px 9px;background:rgba(17,39,69,.78);color:#d4d9ff;font-size:.69rem;font-variant-numeric:tabular-nums;font-weight:740; }
+.nexus-chart-placeholder { display:flex;flex:1 1 auto;min-height:0;width:100%;align-items:center;justify-content:center;text-align:center;padding:16px;border:1px dashed rgba(113,159,206,.3);border-radius:11px;background:linear-gradient(120deg,rgba(9,30,52,.42),rgba(15,42,70,.38));color:#b4c9e1;font-size:.78rem;font-weight:600; }
+.nexus-panel .recharts-cartesian-grid-horizontal line { stroke:rgba(119,159,206,.17); }
+.nexus-panel .recharts-cartesian-axis-tick-value { fill:#abc5df; }
+@media (max-width:680px) { .nexus-chart-count { font-size:.64rem; } }
