@@ -229,7 +229,8 @@ describe('Dashboard', () => {
     await advance(1000);
     expect(screen.getByText('CRITICAL THREAT DETECTED')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Simulate Attack' }));
+    // The critical dialog marks background controls aria-hidden. Simulate an external mode change.
+    fireEvent.click(screen.getByRole('switch', { name: 'Simulate Attack', hidden: true }));
     expect(screen.queryByText('CRITICAL THREAT DETECTED')).not.toBeInTheDocument();
     expect(screen.getByText('CONNECTING TO DEMO STREAM')).toBeInTheDocument();
 
