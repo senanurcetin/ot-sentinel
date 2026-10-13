@@ -98,6 +98,15 @@ describe('Dashboard', () => {
     expect(screen.getByText('UNKNOWN').className).toContain('text-muted-foreground');
   });
 
+  it('renders the NEXUS visual identity with truthful demo provenance', () => {
+    mockFetch(() => sample());
+    render(<Dashboard />);
+    expect(screen.getByText('NEXUS')).toBeInTheDocument();
+    expect(screen.getByText('Industrial Security Overview')).toBeInTheDocument();
+    expect(screen.getByText('SIMULATED OT STREAM')).toBeInTheDocument();
+    expect(screen.getByText('NOT PHYSICAL PLANT DATA')).toBeInTheDocument();
+  });
+
   it('polls /api/metrics every second and shows the detector risk score', async () => {
     const fetchMock = mockFetch(() => sample());
     render(<Dashboard />);

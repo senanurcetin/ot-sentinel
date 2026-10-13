@@ -170,14 +170,29 @@ export default function Dashboard() {
     : null;
 
   return (
-    <div className="flex h-screen w-full flex-col bg-background font-body">
+    <div className="nexus-dashboard flex h-screen w-full flex-col bg-background font-body">
       <Header 
         isAttackMode={isAttackMode} 
         onAttackModeChange={handleAttackModeChange} 
         onShowReport={() => setShowForensicReport(true)}
       />
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-        <div className="mx-auto w-full space-y-6">
+        <div className="mx-auto w-full max-w-[1740px] space-y-6">
+          <section className="nexus-hero" aria-label="OT security monitoring overview">
+            <div className="nexus-kicker mb-3">NEXUS / OT SECURITY INTELLIGENCE · 02</div>
+            <div className="relative z-[1] flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Industrial Security Overview</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">Live application simulation · statistical anomaly scoring · explainable industrial telemetry</p>
+              </div>
+              <div className="flex flex-wrap gap-2" aria-label="Source and status">
+                <span className="nexus-source-tag">SIMULATED OT STREAM</span>
+                <span className="nexus-source-tag">STATISTICAL DETECTOR</span>
+                <span className="nexus-source-tag">NOT PHYSICAL PLANT DATA</span>
+              </div>
+            </div>
+          </section>
+          <div className="nexus-section-label">01 / Operational security posture</div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <MetricCard
               title="System Status"
@@ -213,6 +228,7 @@ export default function Dashboard() {
               description="Critical events in this session"
             />
           </div>
+          <div className="nexus-section-label">02 / Network and anomaly observability</div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <NetworkTopology status={systemStatus} />
@@ -221,6 +237,7 @@ export default function Dashboard() {
               <AnalyticsCharts data={chartData} />
             </div>
           </div>
+          <div className="nexus-section-label">03 / Detector evidence and incident history</div>
           <SensorContributions
             contributions={metrics?.per_sensor_contributions ?? []}
             riskScore={metrics?.risk_score ?? null}

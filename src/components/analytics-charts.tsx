@@ -29,11 +29,11 @@ const formatTime = (time: string) => new Date(time).toLocaleTimeString([], { hou
 
 export default function AnalyticsCharts({ data }: AnalyticsChartsProps) {
   return (
-    <Card className="shadow-sm h-full">
+    <Card className="nexus-panel h-full">
       <CardHeader>
         <CardTitle className="text-base font-semibold">Real-time Analytics</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <CardContent className="nexus-chart-surface grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="flex h-64 min-h-0 flex-col">
           <h3 className="mb-2 text-sm font-medium text-muted-foreground">Temperature (°C)</h3>
           <ChartContainer config={chartConfig} className="min-h-0 w-full flex-1 !aspect-auto">

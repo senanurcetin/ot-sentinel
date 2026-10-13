@@ -20,7 +20,7 @@ export default function MetricCard({
   valueClassName,
 }: MetricCardProps) {
   return (
-    <Card className={cn('shadow-sm', className)}>
+    <Card className={cn('nexus-panel nexus-metric', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}

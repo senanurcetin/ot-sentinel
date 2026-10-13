@@ -16,7 +16,7 @@ export default function NetworkTopology({ status }: NetworkTopologyProps) {
   const attackIconColor = 'text-rose-500';
 
   return (
-    <Card className="shadow-sm h-full">
+    <Card className="nexus-panel h-full">
       <CardHeader>
         <CardTitle className="text-base font-semibold">Network Topology</CardTitle>
         {status === 'UNKNOWN' && (
