@@ -1,9 +1,57 @@
 import { expect, test } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 
 const attackSwitch = (page: import('@playwright/test').Page) =>
   page.getByRole('switch', { name: 'Simulate Attack' });
 
 test.describe('OT-Sentinel dashboard', () => {
+  test('NEXUS executive SOC is navigable on a 375px phone', async ({ browser }) => {
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true,
+    });
+    try {
+      const page = await context.newPage();
+      await page.goto('/');
+      await expect(page.getByRole('heading', { name: 'Industrial Security Overview' })).toBeVisible();
+      const caseStudy = page.getByRole('link', { name: 'VIEW CASE STUDY →' });
+      await expect(caseStudy).toBeVisible();
+      await expect(caseStudy).toHaveAttribute('href', '/case-study');
+      await expect(page.getByText('NOT PHYSICAL PLANT DATA')).toBeVisible();
+
+      const map = page.getByRole('region', { name: 'Scrollable illustrative network map' });
+      await map.scrollIntoViewIfNeeded();
+      await expect(map).toBeVisible();
+      const layout = await page.evaluate(() => ({
+        width: document.documentElement.scrollWidth,
+        viewport: document.documentElement.clientWidth,
+      }));
+      expect(layout.width).toBeLessThanOrEqual(layout.viewport + 1);
+
+      const output = process.env.E2E_SCREENSHOT_DIR;
+      if (output) {
+        await mkdir(output, { recursive: true });
+        await page.screenshot({ path: join(output, 'ot-sentinel-mobile-375.png'), fullPage: true });
+      }
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('NEXUS executive SOC desktop screenshot acceptance', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await expect(page.getByText('SIMULATED OT STREAM')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Industrial Security Overview' })).toBeVisible();
+    await expect(page.locator('.nexus-hero')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Network Topology' })).toBeVisible();
+    const output = process.env.E2E_SCREENSHOT_DIR;
+    if (output) {
+      await mkdir(output, { recursive: true });
+      await page.screenshot({ path: join(output, 'ot-sentinel-desktop-1440.png'), fullPage: true });
+    }
+  });
+
   test('loads and streams telemetry with a detector risk score', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'OT-Sentinel' })).toBeVisible();
