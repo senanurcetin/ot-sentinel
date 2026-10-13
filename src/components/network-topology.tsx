@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Globe, Shield, Router, Server, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 type NetworkTopologyProps = {
   status: 'SECURE' | 'CRITICAL' | 'UNKNOWN';
@@ -68,12 +68,22 @@ export default function NetworkTopology({ status }: NetworkTopologyProps) {
                 </g>
               );
             })}
-            <g className="nexus-map-icon" style={{ color: nodeColor }}>
-              <foreignObject x="39" y="67" width="30" height="32"><Globe size={30} /></foreignObject>
-              <foreignObject x="149" y="69" width="30" height="30"><Shield size={29} /></foreignObject>
-              <foreignObject x="258" y="70" width="28" height="28"><Router size={27} /></foreignObject>
-              <foreignObject x="385" y="50" width="24" height="24"><Server size={23} /></foreignObject>
-              <foreignObject x="385" y="106" width="24" height="24"><Server size={23} /></foreignObject>
+            {/* Native SVG strokes remain visible in browsers that do not render
+                HTML/Lucide nodes inside SVG foreignObject elements. */}
+            <g className="nexus-map-icon" fill="none" stroke={nodeColor} strokeWidth="1.9"
+              strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="54" cy="86" r="14" />
+              <path d="M40 86h28M54 72c-8 6-8 22 0 28M54 72c8 6 8 22 0 28M42 80h24M42 92h24" />
+              <path d="M164 71l13 5v10c0 9-6 14-13 17-7-3-13-8-13-17V76z" />
+              <path d="M158 86l4 4 9-10" />
+              <rect x="258" y="76" width="28" height="18" rx="4" />
+              <path d="M262 99h20M272 94v5M263 82h5M272 82h9" />
+              <rect x="385" y="51" width="24" height="20" rx="3" />
+              <path d="M390 56h8M390 62h13" />
+              <circle cx="405" cy="56" r="1" fill={nodeColor} stroke="none" />
+              <rect x="385" y="107" width="24" height="20" rx="3" />
+              <path d="M390 112h8M390 118h13" />
+              <circle cx="405" cy="112" r="1" fill={nodeColor} stroke="none" />
             </g>
             {[
               ['Internet', 54, 131], ['Firewall', 164, 131], ['Gateway', 272, 131],

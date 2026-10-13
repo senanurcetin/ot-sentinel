@@ -98,6 +98,10 @@ describe('Dashboard', () => {
     expect(screen.getByText('DETECTOR STATUS PENDING')).toBeInTheDocument();
     expect(screen.getByText('Conceptual OT route · illustrative, not discovered assets')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Scrollable illustrative network map' })).toBeInTheDocument();
+    const topologySvg = screen.getByRole('img', { name: /Simulated Internet, firewall, gateway and two PLCs/ });
+    expect(topologySvg).toBeInTheDocument();
+    expect(topologySvg.querySelector('foreignObject')).toBeNull();
+    expect(topologySvg.querySelectorAll('circle, rect, path').length).toBeGreaterThan(10);
     expect(screen.queryByText('Anomaly detected!')).not.toBeInTheDocument();
     expect(screen.getByText('UNKNOWN').className).toContain('text-muted-foreground');
     expect(screen.getByText('Waiting for temperature samples')).toBeInTheDocument();
