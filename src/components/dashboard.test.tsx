@@ -223,6 +223,22 @@ describe('Dashboard', () => {
     expect(screen.getByText(/z = 0\.50/)).toBeInTheDocument();
   });
 
+  it('closes a stale modal when the simulated operating mode changes', async () => {
+    const fetchMock = mockFetch((attack) => attack ? sample() : critical());
+    render(<Dashboard />);
+    await advance(1000);
+    expect(screen.getByText('CRITICAL THREAT DETECTED')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Simulate Attack' }));
+    expect(screen.queryByText('CRITICAL THREAT DETECTED')).not.toBeInTheDocument();
+    expect(screen.getByText('CONNECTING TO DEMO STREAM')).toBeInTheDocument();
+
+    await advance(1000);
+    expect(metricsCalls(fetchMock).at(-1)).toBe('/api/metrics?attack=true');
+    expect(screen.getByText('12/100')).toBeInTheDocument();
+    expect(screen.queryByText('CRITICAL THREAT DETECTED')).not.toBeInTheDocument();
+  });
+
   it('switching on attack simulation toasts and requests attack data', async () => {
     const fetchMock = mockFetch((attack) => (attack ? critical() : sample()));
     render(<Dashboard />);

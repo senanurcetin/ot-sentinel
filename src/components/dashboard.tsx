@@ -71,6 +71,10 @@ export default function Dashboard() {
     setMetrics(null);
     setChartData([]);
     setConnectionState('connecting');
+    // Any dialog or cooldown belongs to the previous simulation mode.
+    // Explicitly dismiss it so an old alert cannot reopen in the new mode.
+    setShowThreatAlert(false);
+    setAlertCooldown(false);
     setAttackMode(checked);
     toast({
       title: `Attack Simulation ${checked ? 'Enabled' : 'Disabled'}`,
