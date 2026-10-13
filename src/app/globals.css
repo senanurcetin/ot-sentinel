@@ -119,3 +119,32 @@
 .nexus-connection-indicator[data-state="unavailable"] { color:#f9ce8d;border-color:rgba(246,185,95,.5); }
 .nexus-connection-indicator[data-state="unavailable"] .nexus-connection-dot { background:#f6b95f; }
 @media(max-width:680px) { .nexus-connection-indicator { line-height:1.35; font-size:.62rem; } }
+
+/* Portfolio-grade security map: descriptive route, not actual asset discovery. */
+.nexus-map-card { min-width:0; overflow:hidden; }
+.nexus-map-verdict {
+ display:inline-flex; align-items:center; gap:7px; padding:6px 9px;
+ border:1px solid #426487; border-radius:7px; background:#0a223b;
+ font-size:.61rem; font-weight:760; letter-spacing:.065em; color:#a8cce9;
+}
+.nexus-map-led { width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#87a9ce; }
+.nexus-map-verdict[data-status="SECURE"] { color:#a1eacb; border-color:rgba(67,201,157,.43); }
+.nexus-map-verdict[data-status="SECURE"] .nexus-map-led { background:#43c99d; }
+.nexus-map-verdict[data-status="CRITICAL"] { color:#ffafb9; border-color:rgba(243,122,136,.48); }
+.nexus-map-verdict[data-status="CRITICAL"] .nexus-map-led { background:#f37a88; }
+.nexus-map-viewport {
+ overflow-x:auto; overflow-y:hidden; border-radius:13px; min-width:0;
+ background:#091d32; scrollbar-color:#315b81 #091d32;
+}
+.nexus-map-viewport:focus-visible { outline:2px solid #4ea8ff; outline-offset:3px; }
+.nexus-map-svg { width:100%; min-width:440px; height:auto; display:block; }
+.nexus-map-icon { display:block; }
+.nexus-map-footer {
+ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+ gap:8px; padding:12px 2px 0; color:#a5c1df; font-size:.67rem; font-weight:610;
+}
+.nexus-map-footer span { display:inline-flex; align-items:center; gap:7px; }
+.nexus-map-key { width:16px;height:3px; border-radius:2px; }
+.nexus-map-pulse { animation:nexus-map-alert 1.9s ease-in-out infinite; transform-origin:center; }
+@keyframes nexus-map-alert { 0%,100% { opacity:.35; } 55% { opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .nexus-map-pulse { animation:none; } }

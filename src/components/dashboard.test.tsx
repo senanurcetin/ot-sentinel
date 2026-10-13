@@ -95,6 +95,9 @@ describe('Dashboard', () => {
     expect(screen.getByText('CONNECTING TO DEMO STREAM')).toBeInTheDocument();
     expect(screen.getByText('Waiting for first telemetry sample')).toBeInTheDocument();
     expect(screen.getByText('Topology status pending telemetry')).toBeInTheDocument();
+    expect(screen.getByText('DETECTOR STATUS PENDING')).toBeInTheDocument();
+    expect(screen.getByText('Conceptual OT route · illustrative, not discovered assets')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Scrollable illustrative network map' })).toBeInTheDocument();
     expect(screen.queryByText('Anomaly detected!')).not.toBeInTheDocument();
     expect(screen.getByText('UNKNOWN').className).toContain('text-muted-foreground');
     expect(screen.getByText('Waiting for temperature samples')).toBeInTheDocument();
