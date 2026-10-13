@@ -126,6 +126,27 @@ describe('Dashboard', () => {
     expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
+  it('closes a stale critical alert on a subsequent telemetry disconnect', async () => {
+    let calls = 0;
+    const api = jest.fn(async () => {
+      calls += 1;
+      if (calls === 1) return { ok: true, json: async () => critical() };
+      throw new Error('offline after threat');
+    });
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+
+    await advance(1000);
+    expect(screen.getByText('88/100')).toBeInTheDocument();
+    expect(screen.getByText('CRITICAL THREAT DETECTED')).toBeInTheDocument();
+
+    await advance(1000);
+    expect(screen.getByText('TELEMETRY INTERRUPTED')).toBeInTheDocument();
+    expect(screen.getByText('N/A')).toBeInTheDocument();
+    expect(screen.queryByText('88/100')).not.toBeInTheDocument();
+    expect(screen.queryByText('CRITICAL THREAT DETECTED')).not.toBeInTheDocument();
+  });
+
   it('does not overlap slow telemetry requests', async () => {
     let resolveFirst: ((value: { ok: boolean; json: () => Promise<Metrics> }) => void) | null = null;
     const pending = new Promise<{ ok: boolean; json: () => Promise<Metrics> }>((resolve) => {

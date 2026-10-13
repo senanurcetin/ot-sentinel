@@ -143,6 +143,8 @@ export default function Dashboard() {
       } catch (error) {
         if (!controller.signal.aborted) {
           setConnectionState('unavailable');
+          // Disconnects must close an alert based on no-longer-current data.
+          setShowThreatAlert(false);
           console.error('Failed to fetch metrics:', error);
         }
       } finally {
@@ -180,16 +182,16 @@ export default function Dashboard() {
   const riskScore = visibleMetrics ? `${visibleMetrics.risk_score}/100` : 'N/A';
 
   // Data sent to the LLM: the detector's verdict and the sensors behind it.
-  const threatDataForAI: ThreatMitigationAlertInput | null = metrics
+  const threatDataForAI: ThreatMitigationAlertInput | null = visibleMetrics
     ? {
-        timestamp: metrics.timestamp,
-        metrics: metrics.metrics,
-        network_traffic: metrics.network_traffic,
-        status: metrics.status,
-        anomaly_score: metrics.anomaly_score,
-        risk_score: metrics.risk_score,
-        per_sensor_contributions: metrics.per_sensor_contributions,
-        log_entry: metrics.log_entry,
+        timestamp: visibleMetrics.timestamp,
+        metrics: visibleMetrics.metrics,
+        network_traffic: visibleMetrics.network_traffic,
+        status: visibleMetrics.status,
+        anomaly_score: visibleMetrics.anomaly_score,
+        risk_score: visibleMetrics.risk_score,
+        per_sensor_contributions: visibleMetrics.per_sensor_contributions,
+        log_entry: visibleMetrics.log_entry,
       }
     : null;
 
@@ -277,7 +279,7 @@ export default function Dashboard() {
         </div>
       </main>
       <ThreatAlertDialog 
-        open={showThreatAlert} 
+        open={showThreatAlert && connectionState === 'active'} 
         onOpenChange={handleAlertOpenChange}
         threatData={threatDataForAI}
       />
