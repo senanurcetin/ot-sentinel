@@ -52,6 +52,22 @@ test.describe('OT-Sentinel dashboard', () => {
     }
   });
 
+  test('network outage gives truthful amber status, not a nominal security verdict', async ({ page }) => {
+    await page.route('**/api/metrics**', route => route.abort('failed'));
+    await page.goto('/');
+    await expect(page.getByText('TELEMETRY INTERRUPTED')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Telemetry unavailable — verdict not current')).toBeVisible();
+    await expect(page.getByText('Historical Analytics')).toBeVisible();
+    await expect(page.getByText('Temperature telemetry unavailable')).toBeVisible();
+    await expect(page.getByText('Network telemetry unavailable')).toBeVisible();
+    await expect(page.locator('.nexus-connection-indicator')).toHaveAttribute('data-state', 'unavailable');
+    const output = process.env.E2E_SCREENSHOT_DIR;
+    if (output) {
+      await mkdir(output, { recursive: true });
+      await page.screenshot({ path: join(output, 'ot-sentinel-telemetry-outage.png'), fullPage: true });
+    }
+  });
+
   test('loads and streams telemetry with a detector risk score', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'OT-Sentinel' })).toBeVisible();
