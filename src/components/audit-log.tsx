@@ -19,7 +19,7 @@ type AuditLogProps = {
 
 export default function AuditLog({ logs }: AuditLogProps) {
   return (
-    <Card className="shadow-sm">
+    <Card className="nexus-panel">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold">Audit Log</CardTitle>
         <span className="text-xs text-muted-foreground">Showing last {logs.length} events</span>
@@ -36,6 +36,9 @@ export default function AuditLog({ logs }: AuditLogProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {logs.length === 0 && (
+                <TableRow><TableCell colSpan={4} className="py-12 text-center text-sm text-muted-foreground">Awaiting the first monitored security event</TableCell></TableRow>
+              )}
               {logs.map((log) => (
                 <TableRow key={log.id} className="font-code text-xs">
                   <TableCell>

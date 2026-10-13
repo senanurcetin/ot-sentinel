@@ -92,10 +92,108 @@ describe('Dashboard', () => {
     mockFetch(() => sample());
     render(<Dashboard />);
     expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
+    expect(screen.getByText('CONNECTING TO DEMO STREAM')).toBeInTheDocument();
     expect(screen.getByText('Waiting for first telemetry sample')).toBeInTheDocument();
     expect(screen.getByText('Topology status pending telemetry')).toBeInTheDocument();
+    expect(screen.getByText('DETECTOR STATUS PENDING')).toBeInTheDocument();
+    expect(screen.getByText('Conceptual OT route · illustrative, not discovered assets')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Scrollable illustrative network map' })).toBeInTheDocument();
+    const topologySvg = screen.getByRole('img', { name: /Simulated Internet, firewall, gateway and two PLCs/ });
+    expect(topologySvg).toBeInTheDocument();
+    expect(topologySvg.querySelector('foreignObject')).toBeNull();
+    expect(topologySvg.querySelectorAll('circle, rect, path').length).toBeGreaterThan(10);
     expect(screen.queryByText('Anomaly detected!')).not.toBeInTheDocument();
     expect(screen.getByText('UNKNOWN').className).toContain('text-muted-foreground');
+    expect(screen.getByText('Waiting for temperature samples')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for network samples')).toBeInTheDocument();
+  });
+
+  it('renders the NEXUS visual identity with truthful demo provenance', () => {
+    mockFetch(() => sample());
+    render(<Dashboard />);
+    expect(screen.getByText('NEXUS')).toBeInTheDocument();
+    expect(screen.getByText('Industrial Security Overview')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'VIEW CASE STUDY →' })).toHaveAttribute('href', '/case-study');
+    expect(screen.getByText('SIMULATED OT STREAM')).toBeInTheDocument();
+    expect(screen.getByText('NOT PHYSICAL PLANT DATA')).toBeInTheDocument();
+  });
+
+  it('marks a failed stream unavailable rather than displaying stale SECURE metrics', async () => {
+    const api = jest.fn(async () => { throw new Error('simulated demo outage'); });
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+    await advance(1000);
+    expect(screen.getByText('TELEMETRY INTERRUPTED')).toBeInTheDocument();
+    expect(screen.getByText('Telemetry unavailable — verdict not current')).toBeInTheDocument();
+    expect(screen.getByText('Historical Analytics')).toBeInTheDocument();
+    expect(screen.getByText('Temperature telemetry unavailable')).toBeInTheDocument();
+    expect(screen.getByText('Network telemetry unavailable')).toBeInTheDocument();
+    expect(screen.queryByText('SECURE')).not.toBeInTheDocument();
+    expect(screen.getByText('N/A')).toBeInTheDocument();
+  });
+
+  it('closes a stale critical alert on a subsequent telemetry disconnect', async () => {
+    let calls = 0;
+    const api = jest.fn(async () => {
+      calls += 1;
+      if (calls === 1) return { ok: true, json: async () => critical() };
+      throw new Error('offline after threat');
+    });
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+
+    await advance(1000);
+    expect(screen.getByText('88/100')).toBeInTheDocument();
+    expect(screen.getByText('CRITICAL THREAT DETECTED')).toBeInTheDocument();
+
+    await advance(1000);
+    expect(screen.getByText('TELEMETRY INTERRUPTED')).toBeInTheDocument();
+    expect(screen.getByText('N/A')).toBeInTheDocument();
+    expect(screen.queryByText('88/100')).not.toBeInTheDocument();
+    expect(screen.queryByText('CRITICAL THREAT DETECTED')).not.toBeInTheDocument();
+  });
+
+  it('does not overlap slow telemetry requests', async () => {
+    let resolveFirst: ((value: { ok: boolean; json: () => Promise<Metrics> }) => void) | null = null;
+    const pending = new Promise<{ ok: boolean; json: () => Promise<Metrics> }>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const api = jest.fn().mockImplementationOnce(() => pending)
+      .mockImplementation(async () => ({ ok: true, json: async () => sample() }));
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+
+    await advance(3000);
+    expect(metricsCalls(api)).toHaveLength(1);
+
+    await act(async () => {
+      resolveFirst!({ ok: true, json: async () => sample() });
+      await Promise.resolve();
+    });
+    await advance(1000);
+    expect(metricsCalls(api)).toHaveLength(2);
+  });
+
+  it('discards a late nonattack response after attack simulation starts', async () => {
+    let resolveOld: ((value: { ok: boolean; json: () => Promise<Metrics> }) => void) | null = null;
+    const oldRequest = new Promise<{ ok: boolean; json: () => Promise<Metrics> }>((resolve) => {
+      resolveOld = resolve;
+    });
+    const api = jest.fn((url: string) => url.includes('attack=false')
+      ? oldRequest
+      : Promise.resolve({ ok: true, json: async () => critical() }));
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+    await advance(1000);
+    fireEvent.click(screen.getByRole('switch', { name: 'Simulate Attack' }));
+    await advance(1000);
+    expect(screen.getByText('88/100')).toBeInTheDocument();
+    await act(async () => {
+      resolveOld!({ ok: true, json: async () => sample() });
+      await Promise.resolve();
+    });
+    expect(screen.getByText('88/100')).toBeInTheDocument();
+    expect(screen.queryByText('12/100')).not.toBeInTheDocument();
   });
 
   it('polls /api/metrics every second and shows the detector risk score', async () => {
@@ -107,6 +205,10 @@ describe('Dashboard', () => {
     await advance(1000);
     expect(metricsCalls(fetchMock)).toEqual(['/api/metrics?attack=false']);
     expect(screen.getByText('12/100')).toBeInTheDocument();
+    expect(screen.getByText('DEMO TELEMETRY CONNECTED')).toBeInTheDocument();
+    expect(screen.getByText('Simulated telemetry · latest 60 monitoring samples')).toBeInTheDocument();
+    expect(screen.queryByText('Waiting for temperature samples')).not.toBeInTheDocument();
+    expect(screen.queryByText('Waiting for network samples')).not.toBeInTheDocument();
     expect(screen.getAllByText('SECURE').length).toBeGreaterThan(0);
 
     await advance(2000);
@@ -119,6 +221,23 @@ describe('Dashboard', () => {
     await advance(1000);
     expect(screen.getByText(/Current risk score: 12\/100/)).toBeInTheDocument();
     expect(screen.getByText(/z = 0\.50/)).toBeInTheDocument();
+  });
+
+  it('closes a stale modal when the simulated operating mode changes', async () => {
+    const fetchMock = mockFetch((attack) => attack ? sample() : critical());
+    render(<Dashboard />);
+    await advance(1000);
+    expect(screen.getByText('CRITICAL THREAT DETECTED')).toBeInTheDocument();
+
+    // The critical dialog marks background controls aria-hidden. Simulate an external mode change.
+    fireEvent.click(screen.getByRole('switch', { name: 'Simulate Attack', hidden: true }));
+    expect(screen.queryByText('CRITICAL THREAT DETECTED')).not.toBeInTheDocument();
+    expect(screen.getByText('CONNECTING TO DEMO STREAM')).toBeInTheDocument();
+
+    await advance(1000);
+    expect(metricsCalls(fetchMock).at(-1)).toBe('/api/metrics?attack=true');
+    expect(screen.getByText('12/100')).toBeInTheDocument();
+    expect(screen.queryByText('CRITICAL THREAT DETECTED')).not.toBeInTheDocument();
   });
 
   it('switching on attack simulation toasts and requests attack data', async () => {
@@ -198,11 +317,12 @@ describe('Dashboard', () => {
   it('keeps at most 100 audit log entries', async () => {
     const fetchMock = mockFetch(() => sample());
     render(<Dashboard />);
-    // There is no alert/cooldown interaction for SECURE samples. Advancing
-    // 105 seconds in one act avoids 105 expensive React render cycles and
-    // Jest's 5-second wall-clock timeout while still exercising 105 polls.
+    // Polling permits only one in-flight request. Async timer advancement
+    // flushes promise continuations between ticks, unlike the synchronous
+    // advancement which misleadingly observes just the first pending fetch.
+    // Keep the 105 React state updates batched in one act.
     await act(async () => {
-      jest.advanceTimersByTime(105_000);
+      await jest.advanceTimersByTimeAsync(105_000);
     });
     expect(metricsCalls(fetchMock)).toHaveLength(105);
     expect(screen.getByText('Showing last 100 events')).toBeInTheDocument();
