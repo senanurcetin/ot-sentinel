@@ -300,11 +300,12 @@ describe('Dashboard', () => {
   it('keeps at most 100 audit log entries', async () => {
     const fetchMock = mockFetch(() => sample());
     render(<Dashboard />);
-    // There is no alert/cooldown interaction for SECURE samples. Advancing
-    // 105 seconds in one act avoids 105 expensive React render cycles and
-    // Jest's 5-second wall-clock timeout while still exercising 105 polls.
+    // Polling permits only one in-flight request. Async timer advancement
+    // flushes promise continuations between ticks, unlike the synchronous
+    // advancement which misleadingly observes just the first pending fetch.
+    // Keep the 105 React state updates batched in one act.
     await act(async () => {
-      jest.advanceTimersByTime(105_000);
+      await jest.advanceTimersByTimeAsync(105_000);
     });
     expect(metricsCalls(fetchMock)).toHaveLength(105);
     expect(screen.getByText('Showing last 100 events')).toBeInTheDocument();
