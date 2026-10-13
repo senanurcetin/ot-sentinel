@@ -119,20 +119,35 @@ export default function Dashboard() {
    * The attack mode status is passed as a query parameter to the API.
    */
   useEffect(() => {
+    // A slow or reordered response must never replace fresh detector evidence.
+    // Abort the previous mode's request on mode change and unmount.
+    const controller = new AbortController();
+    let inFlight = false;
     const fetchData = async () => {
+      if (inFlight || controller.signal.aborted) return;
+      inFlight = true;
       try {
-        const response = await fetch(`/api/metrics?attack=${isAttackMode}`);
+        const response = await fetch(`/api/metrics?attack=${isAttackMode}`, {
+          signal: controller.signal,
+          cache: 'no-store',
+        });
         if (!response.ok) throw new Error('Network response was not ok');
         const data: Metrics = await response.json();
-        processNewMetrics(data);
+        if (!controller.signal.aborted) processNewMetrics(data);
       } catch (error) {
-        console.error('Failed to fetch metrics:', error);
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch metrics:', error);
+        }
+      } finally {
+        inFlight = false;
       }
     };
 
     const intervalId = setInterval(fetchData, 1000);
-    // Cleanup function to clear the interval when the component unmounts
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      controller.abort();
+    };
   }, [processNewMetrics, isAttackMode]);
 
   /**

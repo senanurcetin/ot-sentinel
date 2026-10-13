@@ -109,6 +109,49 @@ describe('Dashboard', () => {
     expect(screen.getByText('NOT PHYSICAL PLANT DATA')).toBeInTheDocument();
   });
 
+  it('does not overlap slow telemetry requests', async () => {
+    let resolveFirst: ((value: { ok: boolean; json: () => Promise<Metrics> }) => void) | null = null;
+    const pending = new Promise<{ ok: boolean; json: () => Promise<Metrics> }>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const api = jest.fn().mockImplementationOnce(() => pending)
+      .mockImplementation(async () => ({ ok: true, json: async () => sample() }));
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+
+    await advance(3000);
+    expect(metricsCalls(api)).toHaveLength(1);
+
+    await act(async () => {
+      resolveFirst!({ ok: true, json: async () => sample() });
+      await Promise.resolve();
+    });
+    await advance(1000);
+    expect(metricsCalls(api)).toHaveLength(2);
+  });
+
+  it('discards a late nonattack response after attack simulation starts', async () => {
+    let resolveOld: ((value: { ok: boolean; json: () => Promise<Metrics> }) => void) | null = null;
+    const oldRequest = new Promise<{ ok: boolean; json: () => Promise<Metrics> }>((resolve) => {
+      resolveOld = resolve;
+    });
+    const api = jest.fn((url: string) => url.includes('attack=false')
+      ? oldRequest
+      : Promise.resolve({ ok: true, json: async () => critical() }));
+    global.fetch = api as unknown as typeof fetch;
+    render(<Dashboard />);
+    await advance(1000);
+    fireEvent.click(screen.getByRole('switch', { name: 'Simulate Attack' }));
+    await advance(1000);
+    expect(screen.getByText('88/100')).toBeInTheDocument();
+    await act(async () => {
+      resolveOld!({ ok: true, json: async () => sample() });
+      await Promise.resolve();
+    });
+    expect(screen.getByText('88/100')).toBeInTheDocument();
+    expect(screen.queryByText('12/100')).not.toBeInTheDocument();
+  });
+
   it('polls /api/metrics every second and shows the detector risk score', async () => {
     const fetchMock = mockFetch(() => sample());
     render(<Dashboard />);
