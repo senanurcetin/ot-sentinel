@@ -30,6 +30,21 @@ describe('buildForensicCsv', () => {
     expect(csv).toContain(`"'${payload}"`);
   });
 
+  it.each([
+    '  =SUM(A1)',
+    '\\t=HYPERLINK(\"http://example.invalid\")',
+    '\\n+1+1',
+    '\\u200B@cmd',
+    '\\u2060-2',
+  ])('neutralises formula-like payloads after whitespace %s', (payload) => {
+    expect(buildForensicCsv([entry({ payload })])).toContain(`"'${payload}"`);
+  });
+
+  it('preserves ordinary leading whitespace without an executable prefix', () => {
+    expect(buildForensicCsv([entry({ payload: '  normal message' })]))
+      .toContain('"  normal message"');
+  });
+
   it('does not alter a hyphen that is not the first character', () => {
     expect(buildForensicCsv([entry({ payload: 'risk 5 - ok' })])).toContain('"risk 5 - ok"');
   });
@@ -46,7 +61,7 @@ describe('buildForensicCsv', () => {
 describe('forensicCsvFilename', () => {
   it('embeds the timestamp', () => {
     expect(forensicCsvFilename(new Date('2026-01-02T03:04:05.000Z'))).toBe(
-      'otsentinel-forensic-report-2026-01-02T03:04:05.000Z.csv'
+      'otsentinel-forensic-report-2026-01-02T03-04-05.000Z.csv'
     );
   });
 });
