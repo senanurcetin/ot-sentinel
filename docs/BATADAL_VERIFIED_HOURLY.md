@@ -69,6 +69,18 @@ artifact using the pinned official source. Synthetic unit-test frames can
 test exporter validation, but can **never pass source SHA-256 verification**.
 Neither command fetches untrusted mirrors nor makes network calls.
 
+## Retrospective detector context
+
+A detector selector overlays the **first benchmark alarm** as a dashed
+source-local timestamp. This is computed only as the published start
+time plus the already reported per-attack `hours_to_detect`, using
+measured offline results from `src/data/batadal-case-study/results.json`.
+It does not calculate detector scores from the displayed sensor rows
+and does not report a continuous anomaly-score trace. The supervised
+gradient-boosting reference is intentionally absent on this training
+period. False alarm metrics appear next to the marker so that a first
+alarm cannot be mistaken for validated cyberattack classification.
+
 ## Analytical contract and limitations
 
 - Attack labels and durations come from `analysis/batadal_attacks.json`,
