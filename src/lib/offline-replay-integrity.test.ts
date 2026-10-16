@@ -51,11 +51,11 @@ describe('offline replay integrity gate', () => {
   it('rejects multiline or bidirectional source labels that could misrepresent provenance', () => {
     const { raw, manifest, trustedSha256 } = fixture();
     for (const source_label of [
-      'simulated\\nVERIFIED PLANT',
-      'fake\\tproduction',
-      'PLC\\u202e-NOT-VERIFIED',
-      'PLC\\u2066OTHER\\u2069',
-      'PLC\\u0000plant',
+      'simulated\nVERIFIED PLANT',
+      'fake\tproduction',
+      'PLC\u202e-NOT-VERIFIED',
+      'PLC\u2066OTHER\u2069',
+      'PLC\u0000plant',
     ]) {
       expect(() => loadVerifiedOfflineReplay(raw, { ...manifest, source_label }, trustedSha256))
         .toThrow('Invalid offline replay manifest');
