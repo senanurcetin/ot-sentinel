@@ -3,9 +3,10 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import type { Metrics } from '@/lib/types';
+import { MAX_OFFLINE_TREND_SAMPLES } from '@/lib/offline-replay-trend-limit';
 
 /** Only samples the operator has actually stepped through appear in these plots. */
-export const MAX_OFFLINE_TREND_SAMPLES = 120;
+export { MAX_OFFLINE_TREND_SAMPLES } from '@/lib/offline-replay-trend-limit';
 
 const chartConfig = {
   temp: { label: 'Temperature (°C)', color: 'hsl(var(--chart-2))' },

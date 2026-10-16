@@ -14,6 +14,16 @@ context (HTTPS or localhost) and makes **no file uploads** or Gemini requests.
    into the verification field; do not copy it solely from the untrusted manifest.
 4. Select **Verify and open replay**, then step through the recorded samples.
    **Restart** rechecks the original raw bytes and the independent checksum.
+5. After reviewing at least one sample, use **Download reviewed JSON report** to
+   save a local `ot-sentinel-reviewed-window.json` file. This file records the
+   independently pinned recording digest, unverified source label, recording
+   period, the number of samples stepped through since restart, and only the
+   **last 120 inspected rows** with demonstration risk scores and explanations.
+
+   This export is a *review note*, not a signed forensic artifact or complete
+   recording export. It never includes uninspected samples or fabricates network
+   traffic data. Restarting clears the review window and disables export again.
+   The JSON format avoids spreadsheet formula execution risks.
 
 ## Synthetic test fixture
 

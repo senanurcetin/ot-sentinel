@@ -70,6 +70,16 @@ metric); the chart never interpolates missing intervals or plots a synthetic
 network trace. Restart clears the reviewed history; EOF does not convert an
 old historical SECURE verdict into a current security state.
 
+A local JSON review export is available after at least one inspected sample.
+Its schema is `ot-sentinel/local-reviewed-window/v1`. Only the current
+**120-sample maximum reviewed window** appears in `reviewed_samples`; the
+`inspected_rows_since_last_restart` field distinguishes this display scope
+from the recording's total row count. The report explicitly states that the
+physical source is **NOT VERIFIED**, network traffic was **NOT RECORDED**,
+and decisions come from a **synthetic three-sensor demo model**. The export is
+neither cryptographically signed nor a complete forensic chain of custody.
+No file bytes are uploaded by this feature.
+
 The UI requires a *separately sourced* 64-character lowercase SHA-256 digest.
 Copying the hash from the submitted manifest alone does not establish trust.
 The label of the recording remains unverified metadata; the three-sensor
