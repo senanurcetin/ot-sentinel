@@ -6,22 +6,26 @@ import {
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import {
-  HISTORICAL_SOURCE, HISTORICAL_SIGNAL_GROUPS, historicalAttackPoints,
-  historicalSignalOptions, signalGroup, signalUnit, type HistoricalSignalGroup,
+  HISTORICAL_SIGNAL_GROUPS, getHistoricalSource, historicalAttackPoints,
+  historicalSignalOptions, signalGroup, signalUnit, type HistoricalDataset,
+  type HistoricalSignalGroup,
 } from '@/lib/batadal-history';
 
 const chartConfig = {
   value: { label: 'Published hourly measurement', color: 'hsl(var(--chart-2))' },
 } satisfies ChartConfig;
 
-export function BatadalHistoricalWorkbench() {
-  const [attackId, setAttackId] = useState(1);
+export function BatadalHistoricalWorkbench({ dataset = 'dataset04' }: { dataset?: HistoricalDataset }) {
+  const source = getHistoricalSource(dataset);
+  const isTest = dataset === 'test';
+  const year = isTest ? '2017' : '2016';
+  const [attackId, setAttackId] = useState(isTest ? 8 : 1);
   const [group, setGroup] = useState<HistoricalSignalGroup>('all');
-  const [signal, setSignal] = useState('L_T7');
+  const [signal, setSignal] = useState(isTest ? 'L_T3' : 'L_T7');
   const options = historicalSignalOptions(group);
   const selectedSignal = options.includes(signal) ? signal : options[0];
-  const interval = HISTORICAL_SOURCE.attack_intervals.find(a => a.id === attackId)!;
-  const rows = historicalAttackPoints(attackId, selectedSignal);
+  const interval = source.attack_intervals.find(a => a.id === attackId)!;
+  const rows = historicalAttackPoints(attackId, selectedSignal, dataset);
   const attackRows = rows.filter(r => r.publishedAttackInterval);
   const min = Math.min(...rows.map(r => r.value));
   const max = Math.max(...rows.map(r => r.value));
@@ -34,10 +38,10 @@ export function BatadalHistoricalWorkbench() {
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-500">
           NEXUS / BATADAL / Source-measured history
         </p>
-        <h1 className="text-3xl font-semibold">Verified 2016 hourly sensor history</h1>
+        <h1 className="text-3xl font-semibold">Verified {year} hourly sensor history</h1>
         <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-          Genuine BATADAL Dataset 04 measurements from the publisher source,
-          confirmed against the independently pinned SHA-256. Seven recorded
+          Genuine BATADAL {isTest ? 'unseen 2017 test ZIP' : '2016 Dataset 04'} measurements
+          from the publisher source, confirmed against the independently pinned SHA-256. Seven recorded
           attack windows include twelve unmodified hours on either side.
           <strong> No interpolation, simulated telemetry or new detector inference.</strong>
         </p>
@@ -45,14 +49,14 @@ export function BatadalHistoricalWorkbench() {
       <section aria-label="Data integrity and provenance" className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4">
         <div className="grid gap-3 text-sm sm:grid-cols-3">
           <div><p className="text-xs text-muted-foreground">Original dataset</p>
-            <p className="font-semibold">2016 / BATADAL dataset04</p></div>
+            <p className="font-semibold">{year} / BATADAL {isTest ? 'unseen test ZIP' : 'dataset04'}</p></div>
           <div><p className="text-xs text-muted-foreground">Available measured signals</p>
-            <p className="font-semibold">{HISTORICAL_SOURCE.feature_names.length} real channels</p></div>
+            <p className="font-semibold">{source.feature_names.length} real channels</p></div>
           <div><p className="text-xs text-muted-foreground">Source-recorded samples in view</p>
             <p className="font-semibold">{rows.length} contiguous hourly rows</p></div>
         </div>
         <p className="mt-3 break-all font-mono text-xs text-muted-foreground">
-          Official CSV SHA-256: {HISTORICAL_SOURCE.provenance.source_sha256}
+          Original {isTest ? 'ZIP' : 'CSV'} SHA-256: {source.provenance.source_sha256}
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
           Timestamp timezone is unspecified in the original source; displayed clock
@@ -66,7 +70,7 @@ export function BatadalHistoricalWorkbench() {
           <select aria-label="Published attack interval" value={attackId}
             onChange={e => setAttackId(Number(e.target.value))}
             className="w-full rounded-md border border-border bg-background p-2">
-            {HISTORICAL_SOURCE.attack_intervals.map(a =>
+            {source.attack_intervals.map(a =>
               <option key={a.id} value={a.id}>Attack #{a.id} ({a.duration_hours} h)</option>
             )}
           </select>
@@ -170,18 +174,28 @@ export function BatadalHistoricalWorkbench() {
         Licensed under{' '}
         <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer"
           className="text-cyan-600 hover:underline">CC BY 4.0</a>.
-        Adapted by selecting seven attack windows with 12 hours of original
+        Adapted by selecting seven published attack windows with 12 hours of original
         surrounding measurements and reformatting source-local timestamps.
-        <a href="https://github.com/scy-phy/www.batadal.net/blob/master/data/BATADAL_dataset04.csv"
+        <a href={isTest
+            ? "https://github.com/scy-phy/www.batadal.net/blob/master/data/BATADAL_test_dataset.zip"
+            : "https://github.com/scy-phy/www.batadal.net/blob/master/data/BATADAL_dataset04.csv"}
           rel="noreferrer" className="ml-1 text-cyan-600 hover:underline">Publisher source</a>.
       </p>
       <aside role="note" aria-label="Limitations of verified history"
         className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-        These are **2016 secondary/training-period measurements**, not the untouched
-        2017 test set. The 2017 original ZIP has not been independently retrieved
-        and verified for this feature. Historical charting is restricted to genuine
-        2016 attack windows. It does not claim a live plant connection, security
-        certification or a new ML evaluation.
+        {isTest ? (
+          <>These are genuine **2017 unseen test-period measurements**. Ground-truth
+            interval labels come from the separately published BATADAL attack table,
+            not from the original unlabelled test ZIP. The shaded region is
+            not an alarm or model output. No training, threshold fitting, or new
+            model evaluation was performed on the unseen test measurements.</>
+        ) : (
+          <>These are genuine **2016 secondary/training-period measurements**,
+            not the 2017 holdout. The verified 2017 original test measurements
+            are separately available at /batadal-test-history and must not be
+            confused with the 2016 source.</>
+        )}
+        {' '}No live plant connection, security certification or new ML inference.
       </aside>
     </div>
   );

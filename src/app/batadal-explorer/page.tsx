@@ -17,6 +17,9 @@ export default function BatadalExplorerPage() {
         <Link href="/batadal-history" className="text-cyan-600 underline-offset-4 hover:underline">
           Real verified 2016 hourly graphs
         </Link>
+        <Link href="/batadal-test-history" className="text-cyan-600 underline-offset-4 hover:underline">
+          Real verified 2017 unseen-test hourly graphs
+        </Link>
         <Link href="/case-study" className="text-cyan-600 underline-offset-4 hover:underline">
           Offline benchmark case study
         </Link>

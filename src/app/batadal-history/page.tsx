@@ -13,6 +13,7 @@ export default function VerifiedBatadalHistoryPage() {
       <nav aria-label="Research navigation" className="flex flex-wrap gap-4 text-sm">
         <Link className="text-cyan-600 hover:underline" href="/batadal-explorer">← Benchmark evidence</Link>
         <Link className="text-cyan-600 hover:underline" href="/case-study">Detector evaluation</Link>
+        <Link className="text-cyan-600 hover:underline" href="/batadal-test-history">Verified 2017 test history →</Link>
       </nav>
       <BatadalHistoricalWorkbench />
     </main>

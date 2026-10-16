@@ -14,6 +14,6 @@ test('source verified 2016 hourly BATADAL shows genuine attacker windows and all
   await page.getByRole('combobox', { name: 'Published attack interval' }).selectOption('7');
   await expect(chart.getByText('110 / 134 in published attack interval')).toBeVisible();
   await expect(page.getByText('134 contiguous hourly rows')).toBeVisible();
-  await expect(page.getByText(/2017 original ZIP has not been independently retrieved/)).toBeVisible();
+  await expect(page.getByText(/verified 2017 original test measurements/)).toBeVisible();
   await expect(page.getByText(/not a live water plant/i)).toBeVisible();
 });

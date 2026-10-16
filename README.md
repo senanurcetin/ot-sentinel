@@ -75,6 +75,16 @@ All adaptations to the public dataset are disclosed in the linked documentation.
 Regenerate/verify using `analysis/export_verified_hourly.py` with your
 own original matching BATADAL_dataset04.csv; no raw original CSV is stored.
 
+The distinct [`/batadal-test-history`](docs/BATADAL_VERIFIED_TEST_HOURLY.md)
+route shows **575 genuine 2017 unseen-test hourly readings** derived from the
+SHA-256-verified publisher ZIP, around seven attacks 8–14. It retains all
+43 source channels and 12 hours of context on each side; the ZIP is
+**unlabelled**, so attack intervals are independently published annotations,
+not test-file predictions. Source timezone is unspecified, no values are
+interpolated, and there is **no new model inference**. Re-check with
+`python3 analysis/export_official_test_hourly.py --check`.
+
+
 ## BATADAL evidence explorer
 
 Open [`/batadal-explorer`](docs/BATADAL_EVIDENCE_EXPLORER.md) through the
