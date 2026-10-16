@@ -2,8 +2,9 @@
 
 Read-only source acquisition from the publisher's repository. No backup mirror,
 synthetic fallback, training, model claims, deployment access or writable token.
---emit-log emits data only after SHA-256 + archive + chronology pass; use only
-in a reviewable, deliberately temporary source-verification workflow.
+--write explicitly regenerates the small derived artifact from verified official
+source bytes; --check compares it byte-independently with the checked-in JSON.
+Neither command writes or downloads unverified data.
 """
 from __future__ import annotations
 
@@ -126,28 +127,25 @@ def build_verified_test_artifact(source: bytes) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--emit-log", action="store_true",
-                        help="log the verified compact JSON in bounded chunks for manual PR import")
+    parser.add_argument("--write", action="store_true",
+                        help="write the checked-in excerpt only after verifying publisher ZIP")
     parser.add_argument("--check", action="store_true",
                         help="compare with the published checked-in derived test JSON")
     args = parser.parse_args()
-    if args.emit_log == args.check:
-        parser.error("choose exactly one of --emit-log or --check")
+    if args.write == args.check:
+        parser.error("choose exactly one of --write or --check")
     source = fetch_pinned_zip()
     result = build_verified_test_artifact(source)
-    text = json.dumps(result, separators=(",", ":"), ensure_ascii=True)
     print("SOURCE_ZIP_SHA256_VALIDATED", PINNED)
     print("RECORDS", sum(len(window["rows"]) for window in result["windows"]))
+    dest = ROOT.parent / "src/data/batadal-case-study/verified-hourly-test.json"
     if args.check:
-        dest = ROOT.parent / "src/data/batadal-case-study/verified-hourly-test.json"
         if json.loads(dest.read_text()) != result:
             raise ValueError("checked-in 2017 hourly artifact does not match genuine test ZIP")
         print("PASS: checked-in 2017 artifact fully matches pinned original bytes")
     else:
-        print("BATADAL_ARTIFACT_BEGIN")
-        for offset in range(0, len(text), 1500):
-            print("BATADAL_CHUNK:" + text[offset:offset + 1500])
-        print("BATADAL_ARTIFACT_END")
+        dest.write_text(json.dumps(result, separators=(",", ":"), ensure_ascii=True) + "\n")
+        print("PASS: wrote only SHA-256-verified 2017 source-measured excerpt")
 
 
 if __name__ == "__main__":
