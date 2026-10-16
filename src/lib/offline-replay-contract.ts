@@ -19,6 +19,8 @@ export type OfflineReplayManifest = {
 export const MAX_OFFLINE_REPLAY_BYTES = 2 * 1024 * 1024;
 export const MAX_OFFLINE_MANIFEST_BYTES = 16 * 1024;
 const SHA256_HEX = /^[a-f0-9]{64}$/;
+// Control, direction-override and isolate characters can spoof displayed provenance.
+const UNSAFE_SOURCE_LABEL = /[\u0000-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069]/u;
 const SCHEMA = 'ot-sentinel/offline-three-sensor/v1';
 const FIELDS = [
   'schema', 'source_label', 'sha256', 'row_count',
@@ -37,6 +39,7 @@ function validateManifest(value: unknown): asserts value is OfflineReplayManifes
       typeof obj.sha256 !== 'string' || !SHA256_HEX.test(obj.sha256) ||
       typeof obj.source_label !== 'string' ||
       !obj.source_label.trim() || obj.source_label.length > 120 ||
+      UNSAFE_SOURCE_LABEL.test(obj.source_label) ||
       typeof obj.start_utc !== 'string' || typeof obj.end_utc !== 'string' ||
       !Number.isSafeInteger(obj.row_count) ||
       (obj.row_count as number) < 1 || (obj.row_count as number) > MAX_REPLAY_ROWS ||

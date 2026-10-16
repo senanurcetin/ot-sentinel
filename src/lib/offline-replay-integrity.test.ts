@@ -48,6 +48,21 @@ describe('offline replay integrity gate', () => {
       .toThrow('checksum mismatch');
   });
 
+  it('rejects multiline or bidirectional source labels that could misrepresent provenance', () => {
+    const { raw, manifest, trustedSha256 } = fixture();
+    for (const source_label of [
+      'simulated\nVERIFIED PLANT',
+      'fake\tproduction',
+      'PLC\u202e-NOT-VERIFIED',
+      'PLC\u2066OTHER\u2069',
+      'PLC\u0000plant',
+    ]) {
+      expect(() => loadVerifiedOfflineReplay(raw, { ...manifest, source_label }, trustedSha256))
+        .toThrow('Invalid offline replay manifest');
+    }
+    expect(loadVerifiedOfflineReplay(raw, manifest, trustedSha256).next('normal').metrics.temp).toBe(50);
+  });
+
   it('rejects missing trust anchors and unsupported manifest keys', () => {
     const { raw, manifest, trustedSha256 } = fixture();
     expect(() => loadVerifiedOfflineReplay(raw, manifest, '')).toThrow('independently trusted');
