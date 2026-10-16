@@ -7,11 +7,14 @@ const HEADERS = ['Timestamp', 'Status', 'Source IP', 'Payload'] as const;
  * generated server-side today, but the export should stay safe if they ever carry untrusted text
  * (OWASP "CSV injection"), so such cells are prefixed with a single quote.
  */
-const FORMULA_PREFIX = /^[=+\-@\t\r]/;
+// Some spreadsheet importers skip leading whitespace / invisible characters
+// before evaluating a formula, so check the first non-whitespace character.
+const FORMULA_PREFIX = /^[\s\u200B-\u200D\u2060]*[=+\-@]/u;
+const CONTROL_PREFIX = /^[\t\r\n]/;
 
 function escapeCell(value: unknown): string {
   let text = String(value ?? '');
-  if (FORMULA_PREFIX.test(text)) text = `'${text}`;
+  if (FORMULA_PREFIX.test(text) || CONTROL_PREFIX.test(text)) text = `'${text}`;
   return `"${text.replace(/"/g, '""')}"`;
 }
 
@@ -26,5 +29,6 @@ export function buildForensicCsv(logs: LogEntry[]): string {
 }
 
 export function forensicCsvFilename(now: Date = new Date()): string {
-  return `otsentinel-forensic-report-${now.toISOString()}.csv`;
+  // Colons in an ISO timestamp are illegal in Windows filenames.
+  return `otsentinel-forensic-report-${now.toISOString().replace(/:/g, '-')}.csv`;
 }
