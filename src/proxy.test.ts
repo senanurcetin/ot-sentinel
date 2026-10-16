@@ -74,11 +74,11 @@ describe('opt-in synthetic demonstration proxy', () => {
     const matcher = new RegExp(`^${config.matcher[0]}$`);
     for (const path of ['/', '/case-study', '/offline-replay', '/api/metrics',
       '/api/feedback', '/api/feedback/summary', '/api/healthcheck']) {
-      expect(matcher.test(path)).toBe(true);
+      expect(matcher.test(new URL(path, 'http://localhost:9002').pathname)).toBe(true);
     }
     for (const path of ['/api/health', '/_next/static/chunk.js',
       '/_next/image?url=x', '/favicon.ico']) {
-      expect(matcher.test(path)).toBe(false);
+      expect(matcher.test(new URL(path, 'http://localhost:9002').pathname)).toBe(false);
     }
   });
 });
