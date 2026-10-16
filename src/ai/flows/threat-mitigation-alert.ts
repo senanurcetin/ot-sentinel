@@ -9,6 +9,7 @@ import {headers} from 'next/headers';
 import {ai} from '@/ai/genkit';
 import {buildFallbackAlert} from '@/lib/fallback-mitigation';
 import {RateLimiter, clientKey} from '@/lib/rate-limit';
+import { assertDemoServerActionAuthorized } from '@/lib/demo-auth-action';
 import {withTimeout} from '@/lib/with-timeout';
 import {
   ThreatMitigationAlertInputSchema,
@@ -33,6 +34,8 @@ async function callerKey(): Promise<string> {
 export async function generateThreatMitigationAlert(
   rawInput: ThreatMitigationAlertInput
 ): Promise<ThreatMitigationAlertResult> {
+  // Apply server-side demo auth independent of Next.js Proxy matcher.
+  await assertDemoServerActionAuthorized();
   // Server action arguments come from the client: validate instead of trusting the TS type.
   const input = ThreatMitigationAlertInputSchema.parse(rawInput);
 
