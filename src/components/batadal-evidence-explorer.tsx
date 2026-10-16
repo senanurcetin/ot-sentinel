@@ -35,7 +35,8 @@ export function BatadalEvidenceExplorer() {
           Explore the published 43-signal inventory, documented attack targets,
           detector outcomes and measured benchmark drift. This is a <strong>read-only
           view of offline evaluation results</strong>, not a live SCADA feed or a
-          replay of hourly raw measurements.
+          replay of hourly raw measurements. A separately verified 2016 history
+          viewer at /batadal-history contains measured hourly attack windows.
         </p>
       </header>
       <section className="grid gap-3 sm:grid-cols-3" aria-label="Benchmark provenance">

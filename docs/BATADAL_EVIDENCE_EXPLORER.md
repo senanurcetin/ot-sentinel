@@ -5,6 +5,22 @@ read-only **offline** inspection view. It does not replace the synthetic
 3-sensor live demonstration on `/` or its browser-only three-sensor
 `/offline-replay` workflow.
 
+## Separate 2016 source-measured hourly history
+
+The `/batadal-history` page is a separate verified-data surface: authentic,
+published dataset04 2016 attack windows with all 43 signals, 12 original
+hours before and after each of 7 published attacks. It is deliberately
+**not** the unseen 2017 test file and it does not re-run detector inference.
+The official original dataset04 CSV was retrieved from the publisher-owned
+`scy-phy/www.batadal.net` repository and its exact byte-level SHA-256
+matched the original pinned benchmark hash. The source's timestamps do not
+declare a timezone; the history graph does not label them UTC.
+
+The main `/batadal-explorer` remains a metrics-and-inventory summary, not
+itself a replay of original measurements. See
+[`docs/BATADAL_VERIFIED_HOURLY.md`](BATADAL_VERIFIED_HOURLY.md)
+for provenance, reproducibility, and limitations.
+
 ## Data provenance and capabilities
 
 The view reads the committed `src/data/batadal-case-study/results.json`
