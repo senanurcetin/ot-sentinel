@@ -47,7 +47,7 @@ describe('browser offline replay verifier', () => {
   it('rejects source-label control characters identically to the Node verifier', async () => {
     const { raw, manifest, checksum } = fixture();
     await expect(loadVerifiedOfflineReplayInBrowser(
-      raw, { ...manifest, source_label: 'offline\\nPLANT VERIFIED' }, checksum
+      raw, { ...manifest, source_label: 'offline\nPLANT VERIFIED' }, checksum
     )).rejects.toThrow('Invalid offline replay manifest');
   });
 
