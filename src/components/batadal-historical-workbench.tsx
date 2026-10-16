@@ -169,7 +169,7 @@ export function BatadalHistoricalWorkbench({ dataset = 'dataset04' }: { dataset?
         aria-label="Retrospective model evidence">
         <h2 className="text-lg font-semibold">Published detector result (retrospective)</h2>
         <p className="text-sm text-muted-foreground">
-          The selected benchmark model&apos;s **historical first alarm** is shown as a
+          The selected benchmark model&apos;s <strong>historical first alarm</strong> is shown as a
           dashed line; this comes from the independently evaluated summary,
           not from fitting or recomputing a risk score using the displayed sensors.
         </p>
