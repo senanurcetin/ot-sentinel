@@ -12,13 +12,22 @@ import type { AlertFeedback } from '@/lib/types';
  */
 export type StoredFeedback = AlertFeedback & { received_at: string };
 
+export type VerdictCounts = {
+  total: number;
+  confirmed_threat: number;
+  false_alarm: number;
+  false_alarm_share: number | null;
+};
+
 export type FeedbackSummary = {
   storage: 'sqlite' | 'memory';
   total: number;
   confirmed_threat: number;
   false_alarm: number;
-  /** Share of verdicts that were false alarms; null when there are none yet. */
+  /** Share of submitted verdicts marked false alarms, NOT detector false-positive rate. */
   false_alarm_share: number | null;
+  /** Verdicts received by the server in the last 24h, based on received_at (not client event time). */
+  recent_24h: VerdictCounts;
   /** Verdicts grouped by the sensor that drove the alert (only verdicts that reported one). */
   by_top_sensor: { sensor: string; total: number; false_alarm: number }[];
 };
@@ -32,8 +41,26 @@ export interface FeedbackStore {
 export const MEMORY_LIMIT = 200;
 export const SQLITE_LIMIT = 10_000;
 
-function summarize(kind: FeedbackSummary['storage'], rows: StoredFeedback[]): FeedbackSummary {
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function countVerdicts(rows: StoredFeedback[]): VerdictCounts {
   const falseAlarms = rows.filter((r) => r.verdict === 'false_alarm').length;
+  return {
+    total: rows.length,
+    confirmed_threat: rows.length - falseAlarms,
+    false_alarm: falseAlarms,
+    false_alarm_share: rows.length ? falseAlarms / rows.length : null,
+  };
+}
+
+function summarize(kind: FeedbackSummary['storage'], rows: StoredFeedback[]): FeedbackSummary {
+  const now = Date.now();
+  // Use the server ingestion time, not the caller-controlled event timestamp.
+  // Bad or future dates cannot inflate the rolling-window counts.
+  const recent = rows.filter((r) => {
+    const received = Date.parse(r.received_at);
+    return Number.isFinite(received) && received >= now - DAY_MS && received <= now;
+  });
   const bySensor = new Map<string, { total: number; false_alarm: number }>();
   for (const r of rows) {
     if (!r.top_sensor) continue;
@@ -44,10 +71,8 @@ function summarize(kind: FeedbackSummary['storage'], rows: StoredFeedback[]): Fe
   }
   return {
     storage: kind,
-    total: rows.length,
-    confirmed_threat: rows.length - falseAlarms,
-    false_alarm: falseAlarms,
-    false_alarm_share: rows.length ? falseAlarms / rows.length : null,
+    ...countVerdicts(rows),
+    recent_24h: countVerdicts(recent),
     by_top_sensor: [...bySensor.entries()]
       .map(([sensor, s]) => ({ sensor, ...s }))
       .sort((a, b) => a.sensor.localeCompare(b.sensor)),
