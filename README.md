@@ -68,6 +68,10 @@ pinned analysis source digest. Source timestamp timezone is unspecified;
 timestamps are not declared UTC. This is offline simulated water-network
 research data, **not** live PLC readings, model predictions or 2017 test replay.
 
+Source credit and license: BATADAL / Taormina et al. (2018), publisher
+[CC BY 4.0](https://github.com/scy-phy/www.batadal.net/blob/master/LICENSE.md).
+All adaptations to the public dataset are disclosed in the linked documentation.
+
 Regenerate/verify using `analysis/export_verified_hourly.py` with your
 own original matching BATADAL_dataset04.csv; no raw original CSV is stored.
 
