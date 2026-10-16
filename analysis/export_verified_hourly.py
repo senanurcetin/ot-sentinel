@@ -36,7 +36,8 @@ def validate_hourly_frame(frame: pd.DataFrame, features: list[str], expected_row
         raise bd.SchemaError("timestamps must be strictly ordered and unique")
     if frame.index.tz is not None:
         raise bd.SchemaError("source BATADAL timestamps have no declared timezone")
-    if len(frame) > 1 and not (frame.index.to_series().diff().iloc[1:] == pd.Timedelta(hours=1)).all():
+    deltas = frame.index.to_series().diff().iloc[1:]
+    if len(frame) > 1 and not (deltas == pd.Timedelta(hours=1)).all():
         raise bd.SchemaError("non-hourly or gapped chronology")
     if not np.isfinite(frame[features].to_numpy(dtype=float)).all():
         raise bd.SchemaError("nonfinite or missing measurement")
@@ -79,7 +80,10 @@ def build_export(frame: pd.DataFrame, expected_features: list[str],
         "dataset": "dataset04",
         "provenance": {
             "publisher": "BATADAL / scy-phy official source repository",
-            "source_url": "https://github.com/scy-phy/www.batadal.net/blob/master/data/BATADAL_dataset04.csv",
+            "source_url": (
+                "https://github.com/scy-phy/www.batadal.net/blob/master/data/"
+                "BATADAL_dataset04.csv"
+            ),
             "source_sha256": digest,
             "source_git_blob": GIT_BLOB,
             "pinned_in_repo": "analysis/batadal_data.py",
