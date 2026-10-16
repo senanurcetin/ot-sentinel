@@ -36,7 +36,7 @@ text.
 | 7 | Vulnerable dependencies | Dependabot (npm, pip, Actions), `npm audit` gate on critical, `pip-audit`, CodeQL | 15 high-severity advisories remain in transitive trees; see `DEPENDENCIES.md` |
 | 8 | Detector evasion | None claimed. The scorer judges each sample against a static baseline, so slow drift or small coordinated changes inside normal ranges can pass | The BATADAL study measures hour-level detection and time-to-detect for seven methods, including three temporal ones that did not improve on the test file; it does not model an adaptive attacker |
 | 9 | Feedback poisoning | `/api/feedback` is unauthenticated, rate-limited (30/min per client) and validated: sensor names come from a fixed list, notes are capped at 500 characters, storage is capped (200 in memory, 10,000 SQLite rows), and the summary returns aggregates only, never notes. Nothing tunes thresholds from verdicts | Anyone who can reach the demo can skew the summary. If verdicts ever tune thresholds, they need authentication and review |
-| 10 | No authentication or authorisation | Not implemented | Anyone who can reach the app sees everything. Deploy only behind a VPN / SSO proxy |
+| 10 | Unauthorized public demo access | Optional `DEMO_BASIC_AUTH` verifies the shared password in Next.js Proxy and independently in the Genkit server action; invalid configuration fails closed. Health and build assets remain public. Auth failure counter uses a fixed per-process key, never untrusted forwarding headers. | One shared secret, no distinct accounts/roles or attribution, no cross-instance/global WAF; attacker can force a global one-minute denial after repeated failures. HTTPS, trusted ingress and SSO/VPN are recommended for public deployments. |
 
 ## What the detector can and cannot say (MITRE ATT&CK for ICS)
 
@@ -73,6 +73,6 @@ No protocol adapter is implemented; this is the interface and the rules, not a c
 
 ## Hardening backlog (not done)
 
-Per-request CSP nonces (drop `'unsafe-inline'`); authentication and role separation; a shared rate
+Per-request CSP nonces (drop `'unsafe-inline'`); individual authentication and role separation; a shared rate
 limiter; persistent, integrity-protected audit log and feedback store; checksum or signature for
 `scorer-params.json`; missing-data and stuck-value detectors; temporal and cross-sensor models.
