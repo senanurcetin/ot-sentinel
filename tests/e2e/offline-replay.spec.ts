@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { test, expect } from '@playwright/test';
 
 const fixtures = join(process.cwd(), 'tests', 'fixtures');
@@ -33,9 +34,27 @@ test('local verified replay steps through historical samples without uploading f
   await expect(page.getByRole('heading', { name: 'Why this historical score?' })).toBeVisible();
   await expect(page.getByText('End of verified recording.', { exact: false })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Next recorded sample' })).toBeDisabled();
+  // Download a local JSON snapshot, not an uploaded file or fabricated entire-log report.
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download reviewed JSON report' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('ot-sentinel-reviewed-window.json');
+  const report = JSON.parse(await readFile(await download.path(), 'utf8'));
+  expect(report.schema).toBe('ot-sentinel/local-reviewed-window/v1');
+  expect(report.origin_authentication).toBe('NOT VERIFIED');
+  expect(report.detector).toBe('synthetic-three-sensor-demo');
+  expect(report.recording.sha256).toBe(independentlyPinnedDigest);
+  expect(report.review.exported_rows).toBe(2);
+  expect(report.review.inspected_rows_since_last_restart).toBe(2);
+  expect(report.review.critical_rows_in_export).toBe(1);
+  expect(report.reviewed_samples.map((row: { demo_verdict: string }) => row.demo_verdict))
+    .toEqual(['SECURE', 'CRITICAL']);
+  expect(uploads).toEqual([]);
+
 
   await page.getByRole('button', { name: 'Restart from first sample' }).click();
   await expect(page.getByText('Verified and ready.', { exact: false })).toBeVisible();
   await expect(page.getByRole('heading', { name: '03 / Historical sample trends' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Download reviewed JSON report' })).toBeDisabled();
   expect(uploads).toEqual([]);
 });
