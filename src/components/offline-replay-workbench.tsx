@@ -224,6 +224,23 @@ export default function OfflineReplayWorkbench() {
                     <div className="rounded-lg border border-border p-4"><dt className="text-xs text-muted-foreground">Vibration</dt><dd className="mt-2 text-2xl font-semibold">{current.metrics.vibration.toFixed(3)} g</dd></div>
                     <div className="rounded-lg border border-border p-4"><dt className="text-xs text-muted-foreground">Risk (demo model)</dt><dd className="mt-2 text-2xl font-semibold">{current.risk_score}/100</dd></div>
                   </dl>
+                  <section className="rounded-lg border border-border p-4" aria-label="Historical anomaly explanation">
+                    <h4 className="mb-3 font-semibold">Why this historical score?</h4>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {current.per_sensor_contributions.map((item) => (
+                        <div key={item.sensor} className="space-y-2">
+                          <div className="flex items-center justify-between gap-2 text-sm">
+                            <span className="font-medium capitalize">{item.sensor}</span>
+                            <span className="text-xs text-muted-foreground">z = {item.z_score.toFixed(2)}</span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-muted">
+                            <div className="h-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, item.contribution_pct))}%` }} />
+                          </div>
+                          <p className="text-xs text-muted-foreground">{item.contribution_pct.toFixed(1)}% of total z-score · {item.status}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
                   <p className="text-sm text-muted-foreground">
                     Network traffic: NOT RECORDED. A placeholder value of zero is not a measured absence of traffic.
                   </p>
