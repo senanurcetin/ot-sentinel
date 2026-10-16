@@ -35,6 +35,30 @@ const second = source.next('normal');
 - **No network-traffic data is supplied.** The required metrics shape carries `traffic_volume: 0` as a placeholder, labels `network_traffic` as *not recorded*, and states that limitation in the log. Never interpret that zero as a measured absence of network traffic.
 - The `attack` toggle is intentionally ignored: historical readings are not modified to satisfy a demonstration switch.
 
+## Recorded byte integrity and cadence gate
+
+The offline-only `loadVerifiedOfflineReplay(raw, manifest, trustedSha256)` helper
+(`src/lib/offline-replay-integrity.ts`) validates **the original UTF-8 JSON
+byte sequence** before creating the in-memory replay source.
+
+- Input size is capped at **2 MiB**, with **1–10,000 rows**.
+- The manifest has a strict v1 schema, informational `source_label`,
+  SHA-256 digest, row count, first and last UTC timestamps, and expected cadence.
+- An **independently trusted SHA-256 digest** must also be supplied by the
+  caller (for example, a separately reviewed or signed release document).
+  Calculating this digest from the same untrusted recording/manifest is **not**
+  an authenticity check; SHA-256 alone is not a signature.
+- The computed hash must match both the manifest and the independent digest.
+  Every timestamp gap or irregular interval is rejected, not filled or interpolated.
+- The existing strict row parser rejects unexpected fields and invalid readings;
+  the replay stops at EOF instead of falsely reporting `SECURE` telemetry.
+- `source_label` is display-only metadata and does **not** establish that
+  measurements originated from a PLC, historian or physical asset.
+
+This is a developer/API-layer primitive, **not** a public upload endpoint, a file
+picker or a live dashboard data source. The application remains synthetic until a
+separate end-to-end UI/API security and availability release gate is completed.
+
 ### Separate release gate for any actual dashboard or BATADAL replay
 
 Before wiring this to `/api/metrics`, define and verify the input schema, trusted source identity, hash, timestamp cadence and missing-data representation. In particular, **do not** down-project BATADAL 43 signals to these three fabricated demo sensor names or imply that an untested adapter observes live control equipment. Browser and service tests must prove stale/exhausted readings appear as unavailable instead of secure. Physical PLC write access is out of scope.
