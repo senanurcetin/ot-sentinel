@@ -1,10 +1,8 @@
 name: E2E tests
 
+# Browser E2E runs automatically in CircleCI browser-e2e. This GitHub
+# workflow remains available for a deliberate manual cross-check.
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
