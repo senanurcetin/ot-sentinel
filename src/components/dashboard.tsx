@@ -226,6 +226,7 @@ export default function Dashboard() {
                 <span className="nexus-source-tag">STATISTICAL DETECTOR</span>
                 <span className="nexus-source-tag">NOT PHYSICAL PLANT DATA</span>
                 <Link href="/case-study" className="nexus-source-tag inline-flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:hidden">VIEW CASE STUDY →</Link>
+                <Link href="/offline-replay" className="nexus-source-tag inline-flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:hidden">OFFLINE REPLAY →</Link>
               </div>
             </div>
           </section>

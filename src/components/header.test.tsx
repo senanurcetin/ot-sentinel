@@ -5,6 +5,7 @@ describe('Header', () => {
   it('links to the case study', () => {
     render(<Header isAttackMode={false} onAttackModeChange={jest.fn()} onShowReport={jest.fn()} />);
     expect(screen.getByRole('link', { name: 'Case study' })).toHaveAttribute('href', '/case-study');
+    expect(screen.getByRole('link', { name: 'Offline replay' })).toHaveAttribute('href', '/offline-replay');
   });
 
   it('keeps the attack switch and report button working', () => {

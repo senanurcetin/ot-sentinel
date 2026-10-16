@@ -49,6 +49,7 @@ and auditable, make the reason for every alert visible, and use an LLM only to e
   risk score and the sensor that drove the alert; the forensic report shows the false-alarm share per sensor
   (`GET /api/feedback/summary`, aggregates only). Stored in SQLite when `FEEDBACK_DB_PATH` is set, in memory otherwise.
 - Simulates an attack on demand, and exports a forensic report as CSV (spreadsheet-formula safe).
+- Includes a [local browser-only offline replay workbench](https://github.com/senanurcetin/ot-sentinel/blob/main/docs/LOCAL_REPLAY_WORKBENCH.md) (`/offline-replay` in the running app) for independently checksummed three-sensor JSON recordings; it never uploads a file or connects to an OT network, and is separate from the BATADAL 43-signal evaluation.
 
 | Alert with rule-based guidance | Why this score? |
 |---|---|

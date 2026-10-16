@@ -55,9 +55,19 @@ byte sequence** before creating the in-memory replay source.
 - `source_label` is display-only metadata and does **not** establish that
   measurements originated from a PLC, historian or physical asset.
 
-This is a developer/API-layer primitive, **not** a public upload endpoint, a file
-picker or a live dashboard data source. The application remains synthetic until a
-separate end-to-end UI/API security and availability release gate is completed.
+The Node verification helper remains a developer/API-layer primitive. A separate
+[local browser workbench](../src/app/offline-replay/page.tsx) (served at `/offline-replay`) now implements the same strict schema
+and independent SHA-256 verification using browser Web Crypto. It reads the two
+user-selected local files, processes them in browser memory and does **not**
+send them to a server endpoint, Gemini, or an OT network. It lets operators
+step through recorded samples (never inferring an ongoing live safety status).
+There is no public upload endpoint or live dashboard replay source.
+
+The UI requires a *separately sourced* 64-character lowercase SHA-256 digest.
+Copying the hash from the submitted manifest alone does not establish trust.
+The label of the recording remains unverified metadata; the three-sensor
+demo model does not acquire the BATADAL benchmark's 43-signal provenance.
+The live dashboard stays synthetic until a separate API/availability release gate.
 
 ### Separate release gate for any actual dashboard or BATADAL replay
 
