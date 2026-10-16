@@ -9,8 +9,12 @@ import {
 // Genkit is replaced by a stub that captures how the prompt and flow are defined.
 const promptFn = jest.fn();
 let callerIp = '192.0.2.1';
+let demoAuthorization: string | null = null;
 jest.mock('next/headers', () => ({
-  headers: jest.fn(async () => new Headers({ 'x-forwarded-for': callerIp })),
+  headers: jest.fn(async () => new Headers({
+    'x-forwarded-for': callerIp,
+    ...(demoAuthorization ? { authorization: demoAuthorization } : {}),
+  })),
 }));
 jest.mock('@/ai/genkit', () => ({
   ai: {
@@ -39,6 +43,7 @@ describe('threat mitigation flow', () => {
   beforeEach(() => {
     promptFn.mockReset();
     callerIp = `192.0.2.${++ipCounter}`; // fresh rate-limit bucket per test
+    demoAuthorization = null;
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
   afterEach(() => jest.restoreAllMocks());
@@ -80,6 +85,23 @@ describe('threat mitigation flow', () => {
     expect(sources.slice(0, 10).every((s) => s === 'ai')).toBe(true);
     expect(sources.slice(10)).toEqual(['fallback', 'fallback']);
     expect(promptFn).toHaveBeenCalledTimes(10);
+  });
+
+  it('rejects a direct protected server-action POST before invoking the paid model', async () => {
+    const before = process.env.DEMO_BASIC_AUTH;
+    try {
+      process.env.DEMO_BASIC_AUTH = 'operator:correct-horse-battery';
+      promptFn.mockResolvedValue({ output: { summary: 'S', suggestedActions: ['A'] } });
+      await expect(generateThreatMitigationAlert(input)).rejects.toThrow('Demo authorization required');
+      expect(promptFn).not.toHaveBeenCalled();
+
+      demoAuthorization = 'Basic ' + Buffer.from('operator:correct-horse-battery').toString('base64');
+      await expect(generateThreatMitigationAlert(input)).resolves.toMatchObject({ source: 'ai' });
+      expect(promptFn).toHaveBeenCalledTimes(1);
+    } finally {
+      if (before === undefined) delete process.env.DEMO_BASIC_AUTH;
+      else process.env.DEMO_BASIC_AUTH = before;
+    }
   });
 
   it('rejects malformed client input before spending a model call', async () => {
