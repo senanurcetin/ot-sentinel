@@ -50,6 +50,17 @@ The independent attack intervals are from
 The source DATETIME format does not specify a timezone. Display timestamps
 are source-local calendar labels, not asserted UTC.
 
+## Retrospective detector context
+
+The chart can overlay the **first previously measured alarm** reported
+by the offline detector evaluation for the selected attack and detector.
+The marker uses the source-local published attack start plus the reported
+`hours_to_detect`; it is **not** a rescore or newly trained model on the
+2017 holdout. False alarms/day and the number of attack events expected
+from false alarms alone accompany the marker. No per-hour model score
+curve is stored or invented. The supervised detector is included here
+only because it was trained on the separate 2016 period.
+
 ## Scientific and security limits
 
 - This is 2017 holdout **source telemetry**, not previously unseen
