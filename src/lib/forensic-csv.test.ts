@@ -43,6 +43,25 @@ describe('buildForensicCsv', () => {
     expect(csv).toContain('"' + "'" + encodedPayload + '"');
   });
 
+  it.each([
+    '\u200E=HYPERLINK("http://example.invalid")',
+    '\u200F+1+1',
+    '\u202E@cmd',
+    '\u2066-3',
+    '\u2069=1+1',
+    '\u0000=1+1',
+  ])('neutralises bidirectional and C0-prefixed spreadsheet formulas (%s)', (payload) => {
+    const csv = buildForensicCsv([entry({ payload })]);
+    const encoded = payload.replace(/"/g, '""');
+    expect(csv).toContain('"' + "'" + encoded + '"');
+  });
+
+  it('protects untrusted source IP cells as well as log payloads', () => {
+    const sourceIp = '\u202E=1+1';
+    const csv = buildForensicCsv([entry({ sourceIp })]);
+    expect(csv).toContain('"' + "'" + sourceIp + '"');
+  });
+
   it('preserves ordinary leading whitespace without an executable prefix', () => {
     expect(buildForensicCsv([entry({ payload: '  normal message' })]))
       .toContain('"  normal message"');
