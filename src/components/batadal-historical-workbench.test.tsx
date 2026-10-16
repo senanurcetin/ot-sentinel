@@ -23,7 +23,7 @@ describe('published BATADAL 2016 historical graph', () => {
     expect(screen.getByRole('heading', { name: 'Verified 2016 hourly sensor history' })).toBeInTheDocument();
     expect(screen.getByText(/43 real channels/i)).toBeInTheDocument();
     expect(screen.getByText(/source-local, not asserted UTC/i)).toBeInTheDocument();
-    expect(screen.getByText(/2017 original ZIP has not been independently retrieved/i)).toBeInTheDocument();
+    expect(screen.getByText(/verified 2017 original test measurements/i)).toBeInTheDocument();
     const region = screen.getByRole('region', { name: 'Real historical measurement chart' });
     expect(within(region).getByText(/50 \/ 74 in published attack interval/i)).toBeInTheDocument();
     expect(within(region).getByText(/Source measurements: L_T7/i)).toBeInTheDocument();
