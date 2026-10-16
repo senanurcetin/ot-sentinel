@@ -85,6 +85,12 @@ export function validateHistoricalExport(input: unknown, expected: HistoricalDat
   let previousAttackEnd = -Infinity;
   for (let i = 0; i < 7; i++) {
     const attack = data.attack_intervals[i];
+    // Check ordering before pin validation so overlap failures have a
+    // specific diagnostic rather than being masked by the source-table check.
+    if (hour(attack.start) <= previousAttackEnd) {
+      throw new Error(`BATADAL ${pin.year} attack #${attack.id} overlaps or precedes the previous interval`);
+    }
+    previousAttackEnd = hour(attack.end);
     const original = published[i];
     if (attack.id !== original.id ||
         attack.start !== `${original.start}:00:00` ||
@@ -92,12 +98,6 @@ export function validateHistoricalExport(input: unknown, expected: HistoricalDat
         attack.duration_hours !== original.duration_hours) {
       throw new Error(`BATADAL attack #${attack.id} differs from the published interval table`);
     }
-    // Every window can be internally valid while the source attack table
-    // still has overlapping intervals. Keep intervals mutually exclusive.
-    if (hour(attack.start) <= previousAttackEnd) {
-      throw new Error(`BATADAL ${pin.year} attack #${attack.id} overlaps or precedes the previous interval`);
-    }
-    previousAttackEnd = hour(attack.end);
     const window = data.windows[i];
     if (attack.id !== pin.firstAttack + i || window.attack_id !== attack.id ||
         !attack.start.startsWith(pin.year) || !window.window_start.startsWith(pin.year) ||
