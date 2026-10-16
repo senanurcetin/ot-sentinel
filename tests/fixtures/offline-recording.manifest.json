@@ -1,0 +1,9 @@
+{
+  "schema": "ot-sentinel/offline-three-sensor/v1",
+  "source_label": "synthetic-test-fixture (not a physical plant)",
+  "sha256": "b9d39cd41d9358d143432876db77de7ac70e315d9dc4ac1ee4972f34160b2936",
+  "row_count": 2,
+  "start_utc": "2026-10-16T10:00:00Z",
+  "end_utc": "2026-10-16T10:00:01Z",
+  "cadence_ms": 1000
+}
