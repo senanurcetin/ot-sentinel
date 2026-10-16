@@ -30,7 +30,8 @@ Reviewing this project? Start with the [case study](docs/case-study.md) and the 
 | Live demo telemetry | **synthetic**; the BATADAL evaluation is offline: its results are shown on the app's `/case-study` page, the live scorer does not use it |
 | Detector comparison on BATADAL (14 real-benchmark attacks) | run, results below; honest reading: modest, see caveats |
 | Operator verdict storage | SQLite when `FEEDBACK_DB_PATH` is set (default in the Docker image), memory otherwise |
-| Authentication, real protocol adapters | not implemented |
+| Demo access | optional shared-password gate; disabled unless explicitly configured; not SSO or OT authorization |
+| Real protocol adapters | not implemented |
 
 Portfolio role: `OT-security case study`.
 
@@ -164,11 +165,28 @@ cd analysis && pip install -r requirements-dev.txt && ruff check . && pytest
 
 CI is split across automatic CircleCI web/Python/Chromium jobs and GitHub's automatic Docker, CodeQL, `npm audit`, `pip-audit` and secret scanning (including weekly security scans). GitHub web/Python/browser workflows remain manual fallbacks; see [CI coverage contract](docs/ci-coverage-contract.md).
 
+## Optional demo access
+
+Set `DEMO_BASIC_AUTH=username:random-secret-of-at-least-16-chars` **at runtime** in
+your protected HTTPS deployment to enable a shared HTTP Basic challenge for
+application pages, API routes and the AI server action. Leave the variable
+**absent** to retain the open synthetic demo; an explicitly empty or malformed
+variable fails closed (503). The public `/api/health` endpoint and Next.js
+static assets stay available.
+
+This shared secret is only a convenience barrier for an **illustrative
+synthetic** demo. Failed guesses are capped per server instance without
+trusting spoofable forwarded-client-IP headers; since the counter is **global**,
+an attacker can temporarily lock out all users. There is no user-level
+authorization, distributed throttling, SSO, audit identity or verified PLC.
+Use deployment-provider SSO/VPN and ingress WAF for any serious public access.
+Read [demo access and deployment security](docs/demo-access.md).
+
 ## Security
 
 Security headers and CSP, per-client rate limits, validated inputs, a model timeout with fallback,
-and CSV formula-injection protection. The demo has **no authentication**; do not expose it to an
-untrusted network or connect it to a live control system. Scope, residual risks and an ATT&CK for
+and CSV formula-injection protection. Demo authentication is optional shared HTTP Basic; never treat it as OT access control. Do not
+connect this demonstration to a live control system. Scope, residual risks and an ATT&CK for
 ICS mapping: [`docs/threat-model.md`](docs/threat-model.md). Report issues via [`SECURITY.md`](SECURITY.md).
 
 ## Repository map
