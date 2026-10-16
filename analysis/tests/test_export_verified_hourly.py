@@ -7,7 +7,11 @@ import pytest
 
 import batadal_data as bd
 from export_verified_hourly import (
-    ARTIFACT, RESULTS, SOURCE, build_export, validate_hourly_frame,
+    ARTIFACT,
+    RESULTS,
+    SOURCE,
+    build_export,
+    validate_hourly_frame,
 )
 
 
@@ -28,7 +32,7 @@ def test_committed_source_provenance_and_genuine_attack_windows():
     assert actual["provenance"]["source_total_rows"] == 4177
     assert actual["feature_names"] == json.loads(RESULTS.read_text())["data"]["features"]
     assert [len(w["rows"]) for w in actual["windows"]] == [74, 48, 84, 118, 84, 118, 134]
-    for attack, window in zip(actual["attack_intervals"], actual["windows"]):
+    for attack, window in zip(actual["attack_intervals"], actual["windows"], strict=True):
         assert len(window["rows"]) == attack["duration_hours"] + 24
         assert window["attack_id"] == attack["id"]
         assert window["rows"][0]["timestamp"] == window["window_start"]
