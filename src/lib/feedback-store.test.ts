@@ -41,6 +41,22 @@ describe.each([
     });
   });
 
+  it('computes a rolling 24h window from server receipt time (not event time)', () => {
+    const store = make();
+    const now = Date.now();
+    const receivedAt = (offset: number) => new Date(now + offset).toISOString();
+    // An arbitrary/old event timestamp must not determine time-window membership.
+    store.add(entry('false_alarm', { received_at: receivedAt(-1000), timestamp: '1970-01-01' }));
+    store.add(entry('confirmed_threat', { received_at: receivedAt(-24 * 60 * 60 * 1000 + 1000) }));
+    store.add(entry('false_alarm', { received_at: receivedAt(-24 * 60 * 60 * 1000 - 1000) }));
+    store.add(entry('false_alarm', { received_at: receivedAt(60 * 1000) }));
+    store.add(entry('false_alarm', { received_at: 'invalid' }));
+    expect(store.summary()).toMatchObject({
+      total: 5,
+      recent_24h: { total: 2, confirmed_threat: 1, false_alarm: 1, false_alarm_share: 0.5 },
+    });
+  });
+
   it('has no false-alarm share before the first verdict', () => {
     expect(make().summary()).toMatchObject({ total: 0, false_alarm_share: null, by_top_sensor: [] });
   });
