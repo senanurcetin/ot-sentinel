@@ -2,7 +2,7 @@
  * HTTP security headers applied to every route (see next.config.ts).
  *
  * The CSP allows 'unsafe-inline' scripts because the Next.js App Router injects inline bootstrap
- * scripts and this app has no middleware to mint per-request nonces. That weakens script
+ * scripts and the demo proxy does not mint per-request CSP nonces. That weakens script
  * injection protection; moving to nonces is the documented next step (docs/threat-model.md).
  * Styles need 'unsafe-inline' for Radix/Recharts inline style attributes.
  */
