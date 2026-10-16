@@ -72,7 +72,7 @@ def build_export(frame: pd.DataFrame, expected_features: list[str],
                     "timestamp": timestamp.strftime("%Y-%m-%dT%H:%M:%S"),
                     "values": [float(v) for v in row],
                 }
-                for timestamp, row in zip(window.index, window.to_numpy(dtype=float))
+                for timestamp, row in zip(window.index, window.to_numpy(dtype=float), strict=True)
             ],
         })
     return {
