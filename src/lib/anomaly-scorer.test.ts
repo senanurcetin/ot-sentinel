@@ -58,6 +58,24 @@ describe('scoreMetrics', () => {
     expect(c.reduce((sum, x) => sum + x.contribution_pct, 0)).toBeCloseTo(100, 0);
   });
 
+  it('ranks weighted contributors, not raw z-scores, and keeps risk unchanged', () => {
+    const readings = atSigma(0);
+    // Pressure deviates more in sigma, but temperature has the higher weight.
+    readings.temp += 5 * params.sensors.temp.std;         // 5 * 0.4 = 2.0
+    readings.pressure += 6 * params.sensors.pressure.std; // 6 * 0.3 = 1.8
+    const result = scoreMetrics(readings);
+    const temp = result.per_sensor_contributions.find(c => c.sensor === 'temp');
+    const pressure = result.per_sensor_contributions.find(c => c.sensor === 'pressure');
+    expect(result.risk_score).toBe(Math.round(100 * (1 - Math.exp(-params.risk_score_decay * 3.8))));
+    expect(result.status).toBe('CRITICAL');
+    expect(result.per_sensor_contributions[0].sensor).toBe('temp');
+    expect(temp?.contribution_pct).toBeCloseTo(52.6, 1);
+    expect(pressure?.contribution_pct).toBeCloseTo(47.4, 1);
+    expect(result.per_sensor_contributions.reduce((sum, c) => sum + c.contribution_pct, 0))
+      .toBeCloseTo(100, 0);
+    expect(buildLogEntry(result, '10.0.0.5')).toContain('Primary driver: temp');
+  });
+
   it('classifies per-sensor status at the warning and critical z thresholds', () => {
     const warn = scoreMetrics({
       ...atSigma(0),

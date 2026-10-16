@@ -54,7 +54,6 @@ function sensorStatus(z: number, warning: number, critical: number): SensorStatu
 export function scoreMetrics(readings: SensorReadings): AnomalyScoreResult {
   const z = {} as Record<SensorName, number>;
   let compositeZ = 0;
-  let totalZ = 1e-10;
   let maxZ = 0;
   for (const name of SENSOR_NAMES) {
     // A malformed adapter or a runtime caller can supply NaN/Infinity even
@@ -69,10 +68,10 @@ export function scoreMetrics(readings: SensorReadings): AnomalyScoreResult {
       throw new RangeError(`Invalid ${name} sensor reading: z-score overflow`);
     }
     compositeZ += z[name] * sensor.weight;
-    totalZ += z[name];
+
     maxZ = Math.max(maxZ, z[name]);
   }
-  if (!Number.isFinite(compositeZ) || !Number.isFinite(totalZ)) {
+  if (!Number.isFinite(compositeZ)) {
     throw new RangeError('Sensor scores overflowed');
   }
 
@@ -87,9 +86,13 @@ export function scoreMetrics(readings: SensorReadings): AnomalyScoreResult {
   const contributions: SensorContribution[] = SENSOR_NAMES.map((name) => ({
     sensor: name,
     z_score: parseFloat(z[name].toFixed(2)),
-    contribution_pct: parseFloat(((z[name] / totalZ) * 100).toFixed(1)),
+    // Composite risk is weighted, so the displayed attribution must use the
+    // same weights rather than the unweighted z-score share.
+    contribution_pct: parseFloat((
+      compositeZ === 0 ? 0 : (z[name] * params.sensors[name].weight / compositeZ) * 100
+    ).toFixed(1)),
     status: sensorStatus(z[name], params.sensors[name].z_warning, params.sensors[name].z_critical),
-  })).sort((a, b) => b.z_score - a.z_score);
+  })).sort((a, b) => b.contribution_pct - a.contribution_pct);
 
   return {
     anomaly_score: anomalyScore,
