@@ -50,6 +50,7 @@ and auditable, make the reason for every alert visible, and use an LLM only to e
   (`GET /api/feedback/summary`, aggregates only). Stored in SQLite when `FEEDBACK_DB_PATH` is set, in memory otherwise.
 - Simulates an attack on demand, and exports a forensic report as CSV (spreadsheet-formula safe).
 - Includes a [local browser-only offline replay workbench](https://github.com/senanurcetin/ot-sentinel/blob/main/docs/LOCAL_REPLAY_WORKBENCH.md) (`/offline-replay` in the running app) for independently checksummed three-sensor JSON recordings; it never uploads a file or connects to an OT network, and is separate from the BATADAL 43-signal evaluation.
+  The workbench can also export a local **reviewed-window-only JSON report** of historical demo scores and recording checksum provenance, not a signed forensic record.
 
 | Alert with rule-based guidance | Why this score? |
 |---|---|
@@ -161,7 +162,7 @@ E2E_BASE_URL=https://your-deployment npm run test:e2e   # same suite against a d
 cd analysis && pip install -r requirements-dev.txt && ruff check . && pytest
 ```
 
-CI runs all of the above plus a Docker build, CodeQL, `npm audit`, `pip-audit` and secret scanning.
+CI is split across automatic CircleCI web/Python/Chromium jobs and GitHub's automatic Docker, CodeQL, `npm audit`, `pip-audit` and secret scanning (including weekly security scans). GitHub web/Python/browser workflows remain manual fallbacks; see [CI coverage contract](docs/ci-coverage-contract.md).
 
 ## Security
 
