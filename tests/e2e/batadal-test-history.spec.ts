@@ -7,6 +7,10 @@ test('publisher-verified 2017 hourly holdout is distinct from the 2016 training 
  await expect(page.getByText(/source-local, not asserted UTC/)).toBeVisible();
  const chart=page.getByRole('region', {name:'Real historical measurement chart'});
  await expect(chart.getByText('70 / 94 in published attack interval')).toBeVisible();
+ const model = page.getByRole('region', {name:'Retrospective model evidence'});
+ await expect(model.getByText(/11 h after published attack start/)).toBeVisible();
+ await page.getByRole('combobox', {name:'Retrospective detector'}).selectOption('static_limits');
+ await expect(model.getByText(/20 h after published attack start/)).toBeVisible();
  await expect(chart.locator('svg.recharts-surface')).toHaveCount(1);
  await page.getByRole('combobox',{name:'Measurement category'}).selectOption('pressures');
  await expect(page.getByRole('combobox',{name:'Recorded measurement'})).toHaveValue('P_J280');
