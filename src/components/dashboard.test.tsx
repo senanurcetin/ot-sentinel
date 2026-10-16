@@ -114,6 +114,7 @@ describe('Dashboard', () => {
     expect(screen.getByText('NEXUS')).toBeInTheDocument();
     expect(screen.getByText('Industrial Security Overview')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'VIEW CASE STUDY →' })).toHaveAttribute('href', '/case-study');
+    expect(screen.getByRole('link', { name: 'OFFLINE REPLAY →' })).toHaveAttribute('href', '/offline-replay');
     expect(screen.getByText('SIMULATED OT STREAM')).toBeInTheDocument();
     expect(screen.getByText('NOT PHYSICAL PLANT DATA')).toBeInTheDocument();
   });
