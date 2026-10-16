@@ -69,6 +69,16 @@ describe.each([
 });
 
 describe('bounded storage', () => {
+  it('rejects nonpositive, excessive and invalid memory/SQLite retention limits', () => {
+    for (const bad of [0, -1, 1.5, Infinity, NaN, 100_000]) {
+      expect(() => new MemoryFeedbackStore(bad)).toThrow(RangeError);
+      expect(() => new SqliteFeedbackStore(new DatabaseSync(':memory:'), bad)).toThrow(RangeError);
+    }
+    expect(new MemoryFeedbackStore(200).kind).toBe('memory');
+    expect(new SqliteFeedbackStore(new DatabaseSync(':memory:'), 10_000).kind).toBe('sqlite');
+  });
+
+
   it('memory keeps only the newest entries', () => {
     const store = new MemoryFeedbackStore(2);
     store.add(entry('confirmed_threat'));
