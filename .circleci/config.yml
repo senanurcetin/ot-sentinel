@@ -44,6 +44,38 @@ jobs:
           command: npm run build
           no_output_timeout: 15m
 
+  # Additive migration proof: E2E exercises a real production build in Chromium.
+  # Keep automatic GitHub Security/CodeQL/weekly scans enabled while transitioning.
+  browser-e2e:
+    docker:
+      - image: cimg/node:24.13
+    resource_class: medium
+    working_directory: ~/repo
+    environment:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      GEMINI_API_KEY: "e2e-placeholder"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - ot-sentinel-node-v1-{{ checksum "package-lock.json" }}
+            - ot-sentinel-node-v1-
+      - run:
+          name: Install lockfile-pinned dependencies
+          command: npm ci --no-audit --no-fund
+      - run:
+          name: Install Playwright Chromium and required system libraries
+          command: npx playwright install --with-deps chromium
+          no_output_timeout: 15m
+      - run:
+          name: Browser E2E against a locally started production build
+          command: npm run test:e2e
+          no_output_timeout: 20m
+      - store_artifacts:
+          path: playwright-report
+          destination: playwright-report
+
   analysis-quality:
     docker:
       - image: cimg/python:3.11
@@ -75,3 +107,4 @@ workflows:
     jobs:
       - web-quality
       - analysis-quality
+      - browser-e2e
