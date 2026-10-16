@@ -29,6 +29,7 @@ const second = source.next('normal');
 - **1–10,000 samples** at construction; extra rows are rejected rather than unboundedly retained.
 - Timestamps must be valid **UTC ISO-8601**, with strictly increasing time; duplicates, invalid dates, timezone-ambiguous and out-of-order rows are rejected.
 - Sensor values must be finite numbers; invalid measurements stop construction before producing an unearned `SECURE` classification.
+- Each row must contain exactly `timestamp` and `metrics`; the metrics object must contain exactly `temp`, `pressure`, and `vibration`. Unexpected fields, including claimed device identifiers, are rejected rather than laundered into evidence.
 - The scorer is the repository's existing deterministic **three-sensor demonstration** scorer; an AI model cannot alter the verdict.
 - The source preserves recorded timestamps, makes an internal copy, returns fresh copies and stops at end-of-recording.
 - **No network-traffic data is supplied.** The required metrics shape carries `traffic_volume: 0` as a placeholder, labels `network_traffic` as *not recorded*, and states that limitation in the log. Never interpret that zero as a measured absence of network traffic.
