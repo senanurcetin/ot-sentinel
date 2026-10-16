@@ -58,3 +58,36 @@ test('local verified replay steps through historical samples without uploading f
   await expect(page.getByRole('button', { name: 'Download reviewed JSON report' })).toBeDisabled();
   expect(uploads).toEqual([]);
 });
+
+test('batch navigation reviews all intervening historical rows and stops at EOF', async ({ page }) => {
+  const uploads: string[] = [];
+  page.on('request', request => {
+    if (request.method() === 'POST') uploads.push(request.url());
+  });
+  await page.goto('/offline-replay');
+  await page.locator('#recording-json')
+    .setInputFiles(join(fixtures, 'offline-recording.json'));
+  await page.locator('#manifest-json')
+    .setInputFiles(join(fixtures, 'offline-recording.manifest.json'));
+  await page.locator('#trusted-digest').fill(independentlyPinnedDigest);
+  await page.getByRole('button', { name: 'Verify and open replay' }).click();
+  await expect(page.getByText('LOCAL HASH VERIFIED')).toBeVisible();
+
+  // Fixture contains two samples; a ten-sample request must clamp to EOF.
+  await page.getByRole('button', { name: 'Review next 10 samples' }).click();
+  await expect(page.getByText('2 samples in view')).toBeVisible();
+  await expect(page.getByText('Historical detector verdict: CRITICAL')).toBeVisible();
+  await expect(page.getByText('End of verified recording.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Review next 10 samples' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Review next 100 samples' })).toBeDisabled();
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download reviewed JSON report' }).click();
+  const download = await downloadPromise;
+  const report = JSON.parse(await readFile(await download.path(), 'utf8'));
+  expect(report.review.inspected_rows_since_last_restart).toBe(2);
+  expect(report.review.exported_rows).toBe(2);
+  expect(report.reviewed_samples.map((row: { timestamp: string }) => row.timestamp))
+    .toEqual(['2026-10-16T10:00:00Z', '2026-10-16T10:00:01Z']);
+  expect(uploads).toEqual([]);
+});
