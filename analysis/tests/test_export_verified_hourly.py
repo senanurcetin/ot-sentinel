@@ -73,4 +73,4 @@ def test_export_refuses_modified_attack_intervals():
     frame, features = fixture_frame()
     attacks = bd.load_attacks()
     with pytest.raises(bd.SchemaError):
-        build_export(frame, features, attacks[:-1], SOURCE.sha256, 4177)
+        build_export(frame, features, [a for a in attacks if a.id != 7], SOURCE.sha256, 4177)
