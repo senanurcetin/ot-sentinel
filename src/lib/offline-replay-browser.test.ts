@@ -44,6 +44,13 @@ describe('browser offline replay verifier', () => {
       .rejects.toThrow('checksum mismatch');
   });
 
+  it('rejects source-label control characters identically to the Node verifier', async () => {
+    const { raw, manifest, checksum } = fixture();
+    await expect(loadVerifiedOfflineReplayInBrowser(
+      raw, { ...manifest, source_label: 'offline\\nPLANT VERIFIED' }, checksum
+    )).rejects.toThrow('Invalid offline replay manifest');
+  });
+
   it('rejects timestamp gaps even when the local checksum matches', async () => {
     const shifted = fixture([rows[0], { ...rows[1], timestamp: '2026-10-16T10:00:03Z' }]);
     await expect(loadVerifiedOfflineReplayInBrowser(
