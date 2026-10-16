@@ -15,7 +15,7 @@ import json
 import math
 import urllib.request
 import zipfile
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
