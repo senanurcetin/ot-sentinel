@@ -13,6 +13,7 @@ const summary = (over: Partial<FeedbackSummary> = {}): FeedbackSummary => ({
   false_alarm: 2,
   false_alarm_share: 2 / 3,
   by_top_sensor: [{ sensor: 'temp', total: 2, false_alarm: 2 }],
+  recent_24h: { total: 2, confirmed_threat: 1, false_alarm: 1, false_alarm_share: 0.5 },
   ...over,
 });
 
@@ -21,7 +22,9 @@ describe('OperatorVerdicts', () => {
     respond(summary());
     render(<OperatorVerdicts />);
     expect(await screen.findByText(/1 confirmed\s+threat, 2 false alarms/)).toBeInTheDocument();
-    expect(screen.getByText(/67 % false alarms/)).toBeInTheDocument();
+    expect(screen.getByText(/67 % of submitted verdicts marked false alarm/)).toBeInTheDocument();
+    expect(screen.getByText(/2 submissions, 1 marked false alarm \(50 %\)/)).toBeInTheDocument();
+    expect(screen.getByText(/not detector precision or measured false-positive rates/)).toBeInTheDocument();
     expect(screen.getByText(/kept in memory and lost on restart/)).toBeInTheDocument();
     expect(screen.getByText(/temp 2 of 2/)).toBeInTheDocument();
     expect(global.fetch).toHaveBeenCalledWith('/api/feedback/summary');
@@ -32,6 +35,13 @@ describe('OperatorVerdicts', () => {
     render(<OperatorVerdicts />);
     expect(await screen.findByText(/stored in SQLite/)).toBeInTheDocument();
     expect(screen.queryByText(/False alarms by the sensor/)).not.toBeInTheDocument();
+  });
+
+  it('reports an empty recent window without inventing recent performance', async () => {
+    respond(summary({ recent_24h: { total: 0, confirmed_threat: 0, false_alarm: 0, false_alarm_share: null } }));
+    render(<OperatorVerdicts />);
+    expect(await screen.findByText(/Past 24 hours:/)).toBeInTheDocument();
+    expect(screen.getByText(/no submitted verdicts/)).toBeInTheDocument();
   });
 
   it('handles an empty store', async () => {

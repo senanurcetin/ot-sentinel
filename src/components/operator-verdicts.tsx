@@ -38,8 +38,17 @@ export default function OperatorVerdicts() {
         <span className="font-medium">Operator verdicts:</span> {summary.confirmed_threat} confirmed
         threat{summary.confirmed_threat === 1 ? '' : 's'}, {summary.false_alarm} false alarm
         {summary.false_alarm === 1 ? '' : 's'}
-        {summary.false_alarm_share !== null && ` (${percent(summary.false_alarm_share)} false alarms)`};{' '}
+        {summary.false_alarm_share !== null && ` (${percent(summary.false_alarm_share)} of submitted verdicts marked false alarm)`};{' '}
         <span className="text-muted-foreground">{storage}.</span>
+      </p>
+      <p className="text-muted-foreground">
+        <span className="font-medium">Past 24 hours:</span>{' '}
+        {summary.recent_24h.total === 0
+          ? 'no submitted verdicts.'
+          : `${summary.recent_24h.total} submissions, ${summary.recent_24h.false_alarm} marked false alarm (${percent(summary.recent_24h.false_alarm_share ?? 0)}).`}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        Unverified, self-reported demo feedback. These shares are not detector precision or measured false-positive rates.
       </p>
       {summary.by_top_sensor.length > 0 && (
         <p className="text-muted-foreground">
