@@ -75,8 +75,15 @@ export function validateHistoricalExport(input: unknown, expected: HistoricalDat
       new Set(data.feature_names).size !== 43) {
     throw new Error('BATADAL official source hash, dataset or 43-signal inventory mismatch');
   }
+  let previousAttackEnd = -Infinity;
   for (let i = 0; i < 7; i++) {
     const attack = data.attack_intervals[i];
+    // Every window can be internally valid while the source attack table
+    // still has overlapping intervals. Keep intervals mutually exclusive.
+    if (hour(attack.start) <= previousAttackEnd) {
+      throw new Error(`BATADAL ${pin.year} attack #${attack.id} overlaps or precedes the previous interval`);
+    }
+    previousAttackEnd = hour(attack.end);
     const window = data.windows[i];
     if (attack.id !== pin.firstAttack + i || window.attack_id !== attack.id ||
         !attack.start.startsWith(pin.year) || !window.window_start.startsWith(pin.year) ||
