@@ -8,6 +8,7 @@ import { loadVerifiedOfflineReplayInBrowser } from '@/lib/offline-replay-browser
 import type { RecordedTelemetrySource } from '@/lib/recorded-telemetry';
 import type { Metrics } from '@/lib/types';
 import OfflineReplayTrends, { MAX_OFFLINE_TREND_SAMPLES } from '@/components/offline-replay-trends';
+import { buildOfflineReviewReport, serializeOfflineReviewReport } from '@/lib/offline-replay-report';
 
 type VerifiedInput = { raw: Uint8Array; manifest: OfflineReplayManifest; checksum: string };
 
@@ -96,6 +97,31 @@ export default function OfflineReplayWorkbench() {
       setError(cause instanceof Error ? cause.message : 'Replay verification failed.');
     } finally {
       setVerifying(false);
+    }
+  };
+
+  const exportReviewedWindow = () => {
+    const session = verifiedInputRef.current;
+    if (!session || !manifest || trendSamples.length === 0) return;
+    let url: string | undefined;
+    try {
+      const report = buildOfflineReviewReport(
+        manifest, session.checksum, cursor, trendSamples
+      );
+      const data = serializeOfflineReviewReport(report);
+      const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
+      url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'ot-sentinel-reviewed-window.json';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setError('');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not export local review');
+    } finally {
+      if (url) URL.revokeObjectURL(url);
     }
   };
 
@@ -211,6 +237,11 @@ export default function OfflineReplayWorkbench() {
                   className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-50">
                   Restart from first sample
                 </button>
+                <button type="button" onClick={exportReviewedWindow}
+                  disabled={verifying || trendSamples.length === 0}
+                  className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-50">
+                  Download reviewed JSON report
+                </button>
               </div>
               {finished && <p role="status" className="text-sm text-muted-foreground">
                 End of verified recording. No live telemetry is available; restart to review history.
@@ -251,6 +282,13 @@ export default function OfflineReplayWorkbench() {
                   </p>
                 </div>
               ) : <p className="text-sm text-muted-foreground">Verified and ready. Select “Next recorded sample” to start.</p>}
+              {trendSamples.length > 0 && (
+                <p className="text-xs leading-5 text-muted-foreground">
+                  Report includes only the last {trendSamples.length} inspected samples out of {cursor}
+                  {' '}reviewed since restart, never unseen recording rows. It records checksum agreement,
+                  not authenticated device origin. JSON stays local.
+                </p>
+              )}
               {trendSamples.length > 0 && <OfflineReplayTrends samples={trendSamples} />}
             </div>
           ) : <p className="text-sm text-muted-foreground">
