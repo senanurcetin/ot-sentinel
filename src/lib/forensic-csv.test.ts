@@ -32,12 +32,15 @@ describe('buildForensicCsv', () => {
 
   it.each([
     '  =SUM(A1)',
-    '\\t=HYPERLINK(\"http://example.invalid\")',
-    '\\n+1+1',
-    '\\u200B@cmd',
-    '\\u2060-2',
-  ])('neutralises formula-like payloads after whitespace %s', (payload) => {
-    expect(buildForensicCsv([entry({ payload })])).toContain(`"'${payload}"`);
+    '\t=HYPERLINK("http://example.invalid")',
+    '\n+1+1',
+    '\u200B@cmd',
+    '\u2060-2',
+  ])('neutralises actual whitespace and invisible-character formula prefixes %s', (payload) => {
+    const csv = buildForensicCsv([entry({ payload })]);
+    // The CSV writer quotes double-quotes inside formula arguments.
+    const encodedPayload = payload.replace(/"/g, '""');
+    expect(csv).toContain('"' + "'" + encodedPayload + '"');
   });
 
   it('preserves ordinary leading whitespace without an executable prefix', () => {
