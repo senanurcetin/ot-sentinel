@@ -5,6 +5,24 @@ Purpose: show *original* hourly 2016 C-Town simulation sensor readings in
 attack windows, not pretend an online 3-sensor demo or a model's predictions
 are actual plant events.
 
+## Data license, credit and adaptations
+
+The publisher repository contains a
+[Creative Commons Attribution 4.0 International license](https://github.com/scy-phy/www.batadal.net/blob/master/LICENSE.md)
+([license text](https://creativecommons.org/licenses/by/4.0/)).
+Credit: BATADAL, Riccardo Taormina, Stefano Galelli, Nils Ole
+Tippenhauer, Elad Salomons, Avi Ostfeld, et al.,
+*The Battle of the Attack Detection Algorithms: Disclosing Cyber
+Attacks on Water Distribution Networks*, J. Water Resources
+Planning and Management, 144(8), 2018.
+
+**Changes to the published dataset:** retained only 12 genuine hours of
+context on either side of seven published 2016 attack intervals (660 out
+of 4,177 total 2016 records); parsed the 43 numeric columns; expressed
+unmodified DD/MM/YY HH source-local timestamps in ISO-shaped strings
+without asserting UTC. No sensor values were interpolated, modified,
+averaged or imputed. This is a derived excerpt attributed under CC BY 4.0.
+
 ## Source identity and integrity
 
 The authoritative public source is BATADAL's own published download page:
