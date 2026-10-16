@@ -205,6 +205,18 @@ export default function CaseStudyPage() {
         </Link>
       </div>
 
+      <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 text-sm">
+        <p className="font-semibold">Explore the evaluated 43-signal inventory</p>
+        <p className="mt-1 text-muted-foreground">
+          Compare actual offline benchmark detector outcomes, documented attack
+          targets and measured distribution shift; raw 43-signal hourly traces
+          are not part of this report.
+        </p>
+        <Link href="/batadal-explorer" className="mt-3 inline-block font-semibold text-cyan-600 underline-offset-4 hover:underline">
+          Open BATADAL evidence explorer →
+        </Link>
+      </div>
+
       <Card role="note" aria-label="How to read these results">
         <CardHeader>
           <h2 className="text-base font-semibold leading-none tracking-tight">Read this first</h2>
