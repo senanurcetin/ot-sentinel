@@ -56,7 +56,7 @@ byte sequence** before creating the in-memory replay source.
   measurements originated from a PLC, historian or physical asset.
 
 The Node verification helper remains a developer/API-layer primitive. A separate
-[local browser workbench](/offline-replay) now implements the same strict schema
+[local browser workbench](../src/app/offline-replay/page.tsx) (served at `/offline-replay`) now implements the same strict schema
 and independent SHA-256 verification using browser Web Crypto. It reads the two
 user-selected local files, processes them in browser memory and does **not**
 send them to a server endpoint, Gemini, or an OT network. It lets operators
