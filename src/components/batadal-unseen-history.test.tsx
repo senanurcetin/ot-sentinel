@@ -27,6 +27,10 @@ describe('verified 2017 test period hourly workbench', () => {
   const chart=screen.getByRole('region',{name:'Real historical measurement chart'});
   expect(within(chart).getByText(/70 \/ 94 in published attack interval/)).toBeInTheDocument();
   expect(screen.getByText(/94 contiguous hourly rows/)).toBeInTheDocument();
+  const retro=screen.getByRole('region',{name:'Retrospective model evidence'});
+  expect(within(retro).getByText(/11 h after published attack start/)).toBeInTheDocument();
+  expect(within(screen.getByRole('combobox',{name:'Retrospective detector'}))
+    .getByRole('option',{name:/Gradient boosting/})).toBeInTheDocument();
  });
  it('switches to attack 14 and source-measured physical units',()=>{
   render(<BatadalHistoricalWorkbench dataset="test" />);
