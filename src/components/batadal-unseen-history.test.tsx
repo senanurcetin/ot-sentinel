@@ -6,6 +6,7 @@ jest.mock('recharts', () => ({
  Line: () => null,
  LineChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
  ReferenceArea: () => null,
+ ReferenceLine: () => null,
  XAxis: () => null,
  YAxis: () => null,
 }));
