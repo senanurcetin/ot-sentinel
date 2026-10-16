@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import type { LogEntry } from '@/lib/types';
 import { buildForensicCsv, forensicCsvFilename } from '@/lib/forensic-csv';
+import { forensicStatusColor } from '@/lib/forensic-status-colors';
 import OperatorVerdicts from '@/components/operator-verdicts';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useMemo } from 'react';
@@ -19,7 +20,7 @@ type ForensicReportDialogProps = {
   logs: LogEntry[];
 };
 
-const COLORS = ['hsl(var(--destructive))', 'hsl(var(--chart-1))']; // Red for CRITICAL, Green for SECURE
+
 
 export default function ForensicReportDialog({ open, onOpenChange, logs }: ForensicReportDialogProps) {
   const analysis = useMemo(() => {
@@ -118,7 +119,7 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
              <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Secure Events</CardTitle>
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+                <CheckCircle className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">{analysis.secureEvents}</div>
@@ -160,7 +161,7 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
                       label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                     >
                       {analysis.pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={forensicStatusColor(entry.name)} />
                       ))}
                     </Pie>
                       <Tooltip
