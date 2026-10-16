@@ -12,11 +12,20 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = class {
     constructor(private readonly notify: ResizeObserverCallback) {}
     observe(target: Element) {
-      this.notify([{
+      const box: ResizeObserverSize = { inlineSize: 640, blockSize: 360 };
+      const rect: DOMRectReadOnly = {
+        x: 0, y: 0, width: 640, height: 360,
+        top: 0, left: 0, bottom: 360, right: 640,
+        toJSON: () => ({}),
+      };
+      const entry: ResizeObserverEntry = {
         target,
-        contentRect: { width: 640, height: 360 },
-        contentBoxSize: [{ inlineSize: 640, blockSize: 360 }],
-      } as ResizeObserverEntry], this as ResizeObserver);
+        contentRect: rect,
+        contentBoxSize: [box],
+        borderBoxSize: [box],
+        devicePixelContentBoxSize: [box],
+      };
+      this.notify([entry], this as ResizeObserver);
     }
     unobserve() {}
     disconnect() {}
