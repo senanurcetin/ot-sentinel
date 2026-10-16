@@ -53,12 +53,26 @@ export class RecordedTelemetrySource implements TelemetrySource {
         throw new RangeError('Replay timestamps must increase strictly without duplicates');
       }
       previous = millis;
+      // A recording row is only a timestamp plus the three supported sensor values.
+      // Reject extra fields rather than carrying unverified metadata into scored evidence.
+      if (Object.keys(row).some((key) => key !== 'timestamp' && key !== 'metrics')) {
+        throw new RangeError('Replay row contains unsupported fields');
+      }
+      if (!row.metrics || typeof row.metrics !== 'object' || Array.isArray(row.metrics) ||
+          Object.keys(row.metrics).length !== SENSOR_NAMES.length ||
+          Object.keys(row.metrics).some((key) => !SENSOR_NAMES.includes(key as typeof SENSOR_NAMES[number]))) {
+        throw new RangeError('Replay metrics must contain exactly temp, pressure and vibration');
+      }
       for (const sensor of SENSOR_NAMES) {
         if (!row.metrics || !Number.isFinite(row.metrics[sensor])) {
           throw new RangeError(`Invalid recorded ${sensor} at row ${index}`);
         }
       }
-      const metrics = { ...row.metrics };
+      const metrics: SensorReadings = {
+        temp: row.metrics.temp,
+        pressure: row.metrics.pressure,
+        vibration: row.metrics.vibration,
+      };
       const result = scoreMetrics(metrics);
       return {
         timestamp: row.timestamp,

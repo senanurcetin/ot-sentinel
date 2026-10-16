@@ -71,6 +71,22 @@ describe('bounded offline three-sensor replay', () => {
     },
   );
 
+  it('rejects extra sensor and row fields instead of treating them as supported evidence', () => {
+    const unknownSensor = row('2026-10-16T10:00:00Z');
+    (unknownSensor.metrics as unknown as Record<string, unknown>).device_id = 'unverified';
+    expect(() => new RecordedTelemetrySource([unknownSensor])).toThrow('exactly temp');
+
+    const unknownRow = row('2026-10-16T10:00:00Z');
+    (unknownRow as unknown as Record<string, unknown>).source = 'claimed-PLC';
+    expect(() => new RecordedTelemetrySource([unknownRow])).toThrow('unsupported fields');
+  });
+
+  it('rejects an incomplete metrics object rather than silently treating it as normal', () => {
+    const missingSensor = row('2026-10-16T10:00:00Z');
+    delete (missingSensor.metrics as unknown as Record<string, unknown>).temp;
+    expect(() => new RecordedTelemetrySource([missingSensor])).toThrow('exactly temp');
+  });
+
   it('keeps replay logic free from file, network and PLC control side effects', () => {
     const sample = new RecordedTelemetrySource([row('2026-10-16T10:00:00Z')]).next('normal');
     expect(sample.log_entry).toMatch(/Network traffic not measured/);
