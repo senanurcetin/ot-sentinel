@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import {
-  CartesianGrid, Line, LineChart, ReferenceArea, XAxis, YAxis,
+  CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, XAxis, YAxis,
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import {
   HISTORICAL_SIGNAL_GROUPS, getHistoricalSource, historicalAttackPoints,
-  historicalSignalOptions, signalGroup, signalUnit, type HistoricalDataset,
+  historicalDetectorEvidence, historicalDetectorOptions, historicalSignalOptions,
+  signalGroup, signalUnit, type HistoricalDataset,
   type HistoricalSignalGroup,
 } from '@/lib/batadal-history';
 
@@ -22,8 +23,12 @@ export function BatadalHistoricalWorkbench({ dataset = 'dataset04' }: { dataset?
   const [attackId, setAttackId] = useState(isTest ? 8 : 1);
   const [group, setGroup] = useState<HistoricalSignalGroup>('all');
   const [signal, setSignal] = useState(isTest ? 'L_T3' : 'L_T7');
+  const [detector, setDetector] = useState('zscore_max');
   const options = historicalSignalOptions(group);
   const selectedSignal = options.includes(signal) ? signal : options[0];
+  const availableDetectors = historicalDetectorOptions(dataset);
+  const selectedDetector = availableDetectors.some(x => x.key === detector) ? detector : 'zscore_max';
+  const evidence = historicalDetectorEvidence(dataset, attackId, selectedDetector);
   const interval = source.attack_intervals.find(a => a.id === attackId)!;
   const rows = historicalAttackPoints(attackId, selectedSignal, dataset);
   const attackRows = rows.filter(r => r.publishedAttackInterval);
@@ -64,7 +69,7 @@ export function BatadalHistoricalWorkbench({ dataset = 'dataset04' }: { dataset?
           simulated C-Town network, not a live water plant.
         </p>
       </section>
-      <section aria-label="Historical chart controls" className="grid gap-4 rounded-xl border border-border bg-card p-4 md:grid-cols-3">
+      <section aria-label="Historical chart controls" className="grid gap-4 rounded-xl border border-border bg-card p-4 md:grid-cols-4">
         <label className="space-y-2 text-sm font-medium">
           <span>Published attack interval</span>
           <select aria-label="Published attack interval" value={attackId}
@@ -83,6 +88,16 @@ export function BatadalHistoricalWorkbench({ dataset = 'dataset04' }: { dataset?
             {HISTORICAL_SIGNAL_GROUPS.map(g =>
               <option key={g.value} value={g.value}>{g.label}</option>
             )}
+          </select>
+        </label>
+        <label className="space-y-2 text-sm font-medium">
+          <span>Retrospective detector</span>
+          <select aria-label="Retrospective detector" value={selectedDetector}
+            onChange={e => setDetector(e.target.value)}
+            className="w-full rounded-md border border-border bg-background p-2">
+            {availableDetectors.map(option => (
+              <option key={option.key} value={option.key}>{option.label}</option>
+            ))}
           </select>
         </label>
         <label className="space-y-2 text-sm font-medium">
@@ -119,6 +134,10 @@ export function BatadalHistoricalWorkbench({ dataset = 'dataset04' }: { dataset?
                 domain={isState ? [-0.1, 1.1] : ['auto', 'auto']}/>
               <ReferenceArea x1={interval.start} x2={interval.end}
                 fill="hsl(var(--chart-1))" fillOpacity={0.12} strokeOpacity={0} />
+              {evidence?.firstAlarmSourceLocal && (
+                <ReferenceLine x={evidence.firstAlarmSourceLocal}
+                  stroke="hsl(var(--chart-4))" strokeDasharray="5 3" />
+              )}
               <ChartTooltip content={<ChartTooltipContent indicator="line"/>}/>
               <Line dataKey="value" type="linear" dot={false}
                 stroke="var(--color-value)" strokeWidth={2}
@@ -144,6 +163,44 @@ export function BatadalHistoricalWorkbench({ dataset = 'dataset04' }: { dataset?
           An attack annotation is ground-truth metadata, not a detector prediction.
           Any apparent signal behavior must be interpreted alongside false alarms
           and source documentation.
+        </p>
+      </section>
+      <section className="space-y-3 rounded-xl border border-border bg-card p-4"
+        aria-label="Retrospective model evidence">
+        <h2 className="text-lg font-semibold">Published detector result (retrospective)</h2>
+        <p className="text-sm text-muted-foreground">
+          The selected benchmark model&apos;s **historical first alarm** is shown as a
+          dashed line; this comes from the independently evaluated summary,
+          not from fitting or recomputing a risk score using the displayed sensors.
+        </p>
+        {evidence && (
+          <div className="grid gap-3 text-sm sm:grid-cols-3">
+            <div className="rounded-md border border-border p-3">
+              <p className="text-xs text-muted-foreground">First benchmark alarm</p>
+              <p className="font-semibold">{evidence.firstAlarmDelayHours === null
+                ? 'Not detected in published interval'
+                : `${evidence.firstAlarmDelayHours} h after published attack start`}</p>
+              {evidence.firstAlarmSourceLocal && (
+                <p className="mt-1 font-mono text-xs">{evidence.firstAlarmSourceLocal} (source-local)</p>
+              )}
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <p className="text-xs text-muted-foreground">False alarms per day</p>
+              <p className="font-semibold">{evidence.falseAlarmsPerDay === null
+                ? 'Not reported' : evidence.falseAlarmsPerDay.toFixed(3)}</p>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <p className="text-xs text-muted-foreground">Events expected by false alarms alone</p>
+              <p className="font-semibold">{evidence.expectedEventsFromFalseAlarms === null
+                ? 'Not reported' : evidence.expectedEventsFromFalseAlarms.toFixed(2)}</p>
+            </div>
+          </div>
+        )}
+        <p className="text-xs leading-5 text-muted-foreground">
+          The reported first-alarm delay is descriptive and retrospective; the source
+          contains no hourly detector-score trace. Detection of a long attack can
+          occur by chance from false alarms. No alarm is treated as validated
+          physical-plant cyber intrusion.
         </p>
       </section>
       <section className="space-y-2 rounded-xl border border-border bg-card p-4"
