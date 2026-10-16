@@ -217,6 +217,18 @@ export default function CaseStudyPage() {
         </Link>
       </div>
 
+      <div className="rounded-xl border border-border bg-card p-4 text-sm">
+        <p className="font-semibold">Original BATADAL 2016 measured sensor history</p>
+        <p className="mt-1 text-muted-foreground">
+          Separately inspect genuine publisher-checksummed 2016 hourly values
+          across 43 signals and all seven attack windows, without substituting
+          synthetic or 2017 test curves.
+        </p>
+        <Link href="/batadal-history" className="mt-3 inline-block font-semibold text-cyan-600 hover:underline">
+          Open verified 2016 hourly history →
+        </Link>
+      </div>
+
       <Card role="note" aria-label="How to read these results">
         <CardHeader>
           <h2 className="text-base font-semibold leading-none tracking-tight">Read this first</h2>
