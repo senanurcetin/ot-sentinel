@@ -70,6 +70,28 @@ describe('published BATADAL 2016 hourly window contract', () => {
     expect(() => validateHistoricalExport(inflated)).toThrow(/chronology/);
   });
 
+  it('rejects cross-attack overlaps even when each individual hourly window is self-consistent', () => {
+    const overlapping = clone();
+    const earlier = overlapping.attack_intervals[0];
+    const later = overlapping.attack_intervals[1];
+    const window = overlapping.windows[1];
+    // Move all timestamps for attack 2 together: the individual interval
+    // duration, 12-hour padding and per-hour continuity still pass.
+    const delta = Date.parse(earlier.end + 'Z') - Date.parse(later.start + 'Z');
+    const shift = (source: string): string =>
+      new Date(Date.parse(source + 'Z') + delta).toISOString().slice(0, 19);
+
+    later.start = shift(later.start);
+    later.end = shift(later.end);
+    window.window_start = shift(window.window_start);
+    window.window_end = shift(window.window_end);
+    window.rows.forEach((row: { timestamp: string }) => {
+      row.timestamp = shift(row.timestamp);
+    });
+
+    expect(() => validateHistoricalExport(overlapping)).toThrow(/overlaps or precedes/);
+  });
+
   it('rejects missing/duplicated/out-of-order hours and mismatched published attack ids', () => {
     const gap = clone();
     gap.windows[0].rows[2].timestamp = gap.windows[0].rows[3].timestamp;
