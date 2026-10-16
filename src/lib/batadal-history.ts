@@ -2,6 +2,7 @@ import { z } from 'zod';
 import normalHistory from '@/data/batadal-case-study/verified-hourly-dataset04.json';
 import unseenHistory from '@/data/batadal-case-study/verified-hourly-test.json';
 import reference from '@/data/batadal-case-study/results.json';
+import attackTable from '../../analysis/batadal_attacks.json';
 import { results, DETECTOR_LABELS } from '@/lib/case-study';
 
 export type HistoricalDataset = 'dataset04' | 'test';
@@ -75,15 +76,28 @@ export function validateHistoricalExport(input: unknown, expected: HistoricalDat
       new Set(data.feature_names).size !== 43) {
     throw new Error('BATADAL official source hash, dataset or 43-signal inventory mismatch');
   }
+  // Interval boundaries must match the separately transcribed published
+  // attack table, not just self-consistent windows with unchanged durations.
+  const published = attackTable.attacks.filter(a => a.dataset === pin.evaluation);
+  if (published.length !== 7) {
+    throw new Error('BATADAL published attack table is incomplete');
+  }
   let previousAttackEnd = -Infinity;
   for (let i = 0; i < 7; i++) {
     const attack = data.attack_intervals[i];
-    // Every window can be internally valid while the source attack table
-    // still has overlapping intervals. Keep intervals mutually exclusive.
+    // Check ordering before pin validation so overlap failures have a
+    // specific diagnostic rather than being masked by the source-table check.
     if (hour(attack.start) <= previousAttackEnd) {
       throw new Error(`BATADAL ${pin.year} attack #${attack.id} overlaps or precedes the previous interval`);
     }
     previousAttackEnd = hour(attack.end);
+    const original = published[i];
+    if (attack.id !== original.id ||
+        attack.start !== `${original.start}:00:00` ||
+        attack.end !== `${original.end}:00:00` ||
+        attack.duration_hours !== original.duration_hours) {
+      throw new Error(`BATADAL source chronology: attack #${attack.id} differs from the published interval table`);
+    }
     const window = data.windows[i];
     if (attack.id !== pin.firstAttack + i || window.attack_id !== attack.id ||
         !attack.start.startsWith(pin.year) || !window.window_start.startsWith(pin.year) ||

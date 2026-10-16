@@ -92,6 +92,23 @@ describe('published BATADAL 2016 hourly window contract', () => {
     expect(() => validateHistoricalExport(overlapping)).toThrow(/overlaps or precedes/);
   });
 
+  it('rejects shifted attack windows even if every row and interval duration remains coherent', () => {
+    const shifted = clone();
+    const first = shifted.attack_intervals[0];
+    const window = shifted.windows[0];
+    const oneDay = 24 * 3600_000;
+    const shift = (stamp: string): string =>
+      new Date(Date.parse(stamp + 'Z') + oneDay).toISOString().slice(0, 19);
+    first.start = shift(first.start);
+    first.end = shift(first.end);
+    window.window_start = shift(window.window_start);
+    window.window_end = shift(window.window_end);
+    window.rows.forEach((row: { timestamp: string }) => {
+      row.timestamp = shift(row.timestamp);
+    });
+    expect(() => validateHistoricalExport(shifted)).toThrow(/published interval table/);
+  });
+
   it('rejects missing/duplicated/out-of-order hours and mismatched published attack ids', () => {
     const gap = clone();
     gap.windows[0].rows[2].timestamp = gap.windows[0].rows[3].timestamp;
