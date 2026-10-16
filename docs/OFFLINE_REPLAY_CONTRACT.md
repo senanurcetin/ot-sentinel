@@ -63,6 +63,13 @@ send them to a server endpoint, Gemini, or an OT network. It lets operators
 step through recorded samples (never inferring an ongoing live safety status).
 There is no public upload endpoint or live dashboard replay source.
 
+The workbench also charts **only the samples actually stepped through**, showing
+recorded UTC temperature and the demo detector's computed risk score. Display
+history is capped to the most recent 120 reviewed samples (not a full-recording
+metric); the chart never interpolates missing intervals or plots a synthetic
+network trace. Restart clears the reviewed history; EOF does not convert an
+old historical SECURE verdict into a current security state.
+
 The UI requires a *separately sourced* 64-character lowercase SHA-256 digest.
 Copying the hash from the submitted manifest alone does not establish trust.
 The label of the recording remains unverified metadata; the three-sensor
