@@ -136,7 +136,7 @@ def main() -> None:
     source = fetch_pinned_zip()
     result = build_verified_test_artifact(source)
     text = json.dumps(result, separators=(",", ":"), ensure_ascii=True)
-    print("SOURCE_ZIP_SHA256_VALIDATED", PINN)
+    print("SOURCE_ZIP_SHA256_VALIDATED", PINNED)
     print("RECORDS", sum(len(window["rows"]) for window in result["windows"]))
     if args.check:
         dest = ROOT.parent / "src/data/batadal-case-study/verified-hourly-test.json"
