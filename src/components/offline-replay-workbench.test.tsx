@@ -28,7 +28,7 @@ function makeReplay() {
 async function verifySyntheticRecording() {
   const raw = new File(['[]'], 'offline-recording.json', { type: 'application/json' });
   Object.defineProperty(raw, 'arrayBuffer', {
-    value: async () => new TextEncoder().encode('[]').buffer,
+    value: async () => new Uint8Array([91, 93]).buffer,
   });
   const manifest = new File([JSON.stringify(recordingManifest)], 'manifest.json', { type: 'application/json' });
   Object.defineProperty(manifest, 'text', { value: async () => JSON.stringify(recordingManifest) });
@@ -42,7 +42,7 @@ async function verifySyntheticRecording() {
 import OfflineReplayWorkbench from '@/components/offline-replay-workbench';
 
 describe('OfflineReplayWorkbench', () => {
-  afterEach(() => jest.clearAllMocks());
+  afterEach(() => jest.resetAllMocks());
 
   it('starts with no trustworthy status and makes the privacy boundary explicit', () => {
     render(<OfflineReplayWorkbench />);
