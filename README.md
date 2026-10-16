@@ -85,6 +85,14 @@ interpolated, and there is **no new model inference**. Re-check with
 `python3 analysis/export_official_test_hourly.py --check`.
 
 
+The 2016 and 2017 historical graph pages also offer a **retrospective
+detector selector**. A dashed marker identifies the first alarm time
+already reported by the offline benchmark evaluation; it does not create
+an hourly risk-score curve or perform test-set inference. For honest
+interpretation, the display shows false alarms/day and expected event
+hits from chance alongside the marker. The supervised reference is
+unavailable when viewing the 2016 training period.
+
 ## BATADAL evidence explorer
 
 Open [`/batadal-explorer`](docs/BATADAL_EVIDENCE_EXPLORER.md) through the
