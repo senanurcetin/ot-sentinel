@@ -34,12 +34,12 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('ForensicReportDialog', () => {
-  it('summarises totals, critical events and the most frequent attacker IP', async () => {
+  it('summarises totals, critical events and the most frequent critical source IP', async () => {
     render(<ForensicReportDialog open onOpenChange={jest.fn()} logs={logs} />);
     const card = (title: string) => screen.getByText(title).parentElement!.parentElement!;
     expect(within(card('Total Events')).getByText('4')).toBeInTheDocument();
     expect(within(card('Critical Events')).getByText('3')).toBeInTheDocument();
-    expect(within(card('Top Attacker IP')).getByText('203.0.113.45')).toBeInTheDocument();
+    expect(within(card('Top Critical Source IP')).getByText('203.0.113.45')).toBeInTheDocument();
     await screen.findByText('Operator verdicts are unavailable.');
   });
 

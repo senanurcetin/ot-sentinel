@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import type { LogEntry } from '@/lib/types';
 import { buildForensicCsv, forensicCsvFilename } from '@/lib/forensic-csv';
+import { mostFrequentCriticalSource } from '@/lib/forensic-source-summary';
 import { forensicStatusColor } from '@/lib/forensic-status-colors';
 import OperatorVerdicts from '@/components/operator-verdicts';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
@@ -29,21 +30,15 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
         totalEvents: 0,
         criticalEvents: 0,
         secureEvents: 0,
-        attackerIps: {},
         pieData: [],
-        topAttacker: 'N/A',
+        topCriticalSource: 'N/A',
       };
     }
 
     const criticalEvents = logs.filter((log) => log.status === 'CRITICAL');
     const secureEvents = logs.length - criticalEvents.length;
 
-    const attackerIps = criticalEvents.reduce((acc, log) => {
-      acc[log.sourceIp] = (acc[log.sourceIp] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const topAttacker = Object.entries(attackerIps).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A';
+    const topCriticalSource = mostFrequentCriticalSource(logs);
 
     const pieData = [
       { name: 'Critical', value: criticalEvents.length },
@@ -54,9 +49,8 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
       totalEvents: logs.length,
       criticalEvents: criticalEvents.length,
       secureEvents: secureEvents,
-      attackerIps,
       pieData,
-      topAttacker,
+      topCriticalSource,
     };
   }, [logs]);
 
@@ -128,12 +122,12 @@ export default function ForensicReportDialog({ open, onOpenChange, logs }: Foren
             </Card>
              <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Top Attacker IP</CardTitle>
+                <CardTitle className="text-sm font-medium">Top Critical Source IP</CardTitle>
                 <AlertCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold font-code">{analysis.topAttacker}</div>
-                <p className="text-xs text-muted-foreground">Most frequent critical source</p>
+                <div className="text-xl font-bold font-code">{analysis.topCriticalSource}</div>
+                <p className="text-xs text-muted-foreground">Most frequent source among critical events; identity not verified</p>
               </CardContent>
             </Card>
           </div>
