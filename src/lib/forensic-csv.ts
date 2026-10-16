@@ -9,7 +9,9 @@ const HEADERS = ['Timestamp', 'Status', 'Source IP', 'Payload'] as const;
  */
 // Some spreadsheet importers skip leading whitespace / invisible characters
 // before evaluating a formula, so check the first non-whitespace character.
-const FORMULA_PREFIX = /^[\s\u200B-\u200D\u2060]*[=+\-@]/u;
+// Treat control, zero-width and bidi formatting marks as potentially ignored
+// prefixes. An importer may interpret the next character as a formula.
+const FORMULA_PREFIX = /^[\s\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060\u2066-\u2069]*[=+\-@]/u;
 const CONTROL_PREFIX = /^[\t\r\n]/;
 
 function escapeCell(value: unknown): string {
