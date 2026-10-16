@@ -34,12 +34,13 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('ForensicReportDialog', () => {
-  it('summarises totals, critical events and the most frequent attacker IP', () => {
+  it('summarises totals, critical events and the most frequent attacker IP', async () => {
     render(<ForensicReportDialog open onOpenChange={jest.fn()} logs={logs} />);
     const card = (title: string) => screen.getByText(title).parentElement!.parentElement!;
     expect(within(card('Total Events')).getByText('4')).toBeInTheDocument();
     expect(within(card('Critical Events')).getByText('3')).toBeInTheDocument();
     expect(within(card('Top Attacker IP')).getByText('203.0.113.45')).toBeInTheDocument();
+    await screen.findByText('Operator verdicts are unavailable.');
   });
 
   it('downloads a CSV named for the report with a safe, quoted body', async () => {
@@ -67,16 +68,18 @@ describe('ForensicReportDialog', () => {
     expect(lines[0]).toBe('Timestamp,Status,Source IP,Payload');
     expect(lines).toHaveLength(5);
     expect(text).toContain(`"'=HYPERLINK(""x"")"`); // formula neutralised, quotes escaped
+    await screen.findByText('Operator verdicts are unavailable.');
   });
 
-  it('does not download anything when there are no logs', () => {
+  it('does not download anything when there are no logs', async () => {
     URL.createObjectURL = jest.fn();
     render(<ForensicReportDialog open onOpenChange={jest.fn()} logs={[]} />);
     fireEvent.click(screen.getByRole('button', { name: /Download Report/ }));
     expect(URL.createObjectURL).not.toHaveBeenCalled();
+    await screen.findByText('Operator verdicts are unavailable.');
   });
 
-  it('calls onOpenChange(false) from Close', () => {
+  it('calls onOpenChange(false) from Close', async () => {
     const onOpenChange = jest.fn();
     render(<ForensicReportDialog open onOpenChange={onOpenChange} logs={logs} />);
     // The dialog has an icon-only close (sr-only label) and a footer Close button; use the footer one.
@@ -85,5 +88,6 @@ describe('ForensicReportDialog', () => {
       .find((b) => !b.querySelector('.sr-only'))!;
     fireEvent.click(footerClose);
     expect(onOpenChange).toHaveBeenCalledWith(false);
+    await screen.findByText('Operator verdicts are unavailable.');
   });
 });
