@@ -41,6 +41,13 @@ export interface FeedbackStore {
 export const MEMORY_LIMIT = 200;
 export const SQLITE_LIMIT = 10_000;
 
+/** SQLite interprets LIMIT -1 as unlimited; refuse invalid retention sizes. */
+function validateRetentionLimit(limit: number, max: number): void {
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > max) {
+    throw new RangeError(`Feedback retention must be an integer from 1 to ${max}`);
+  }
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function countVerdicts(rows: StoredFeedback[]): VerdictCounts {
@@ -83,7 +90,9 @@ export class MemoryFeedbackStore implements FeedbackStore {
   readonly kind = 'memory' as const;
   private rows: StoredFeedback[] = [];
 
-  constructor(private readonly limit = MEMORY_LIMIT) {}
+  constructor(private readonly limit = MEMORY_LIMIT) {
+    validateRetentionLimit(limit, MEMORY_LIMIT);
+  }
 
   add(entry: StoredFeedback): void {
     this.rows.push(entry);
@@ -104,6 +113,7 @@ export class SqliteFeedbackStore implements FeedbackStore {
     private readonly db: SqliteDatabase,
     private readonly limit = SQLITE_LIMIT
   ) {
+    validateRetentionLimit(limit, SQLITE_LIMIT);
     db.exec(`CREATE TABLE IF NOT EXISTS feedback (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp TEXT NOT NULL,
