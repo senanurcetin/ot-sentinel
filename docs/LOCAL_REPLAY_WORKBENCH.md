@@ -12,7 +12,12 @@ context (HTTPS or localhost) and makes **no file uploads** or Gemini requests.
 3. Obtain the expected **SHA-256 of the original raw recording bytes from an
    independently reviewed source**. Paste the 64-character lowercase digest
    into the verification field; do not copy it solely from the untrusted manifest.
-4. Select **Verify and open replay**, then step through the recorded samples.
+4. Select **Verify and open replay**, then advance one sample, or use
+   **Review next 10 samples** / **Review next 100 samples** to process all
+   intervening recorded rows in a bounded synchronous batch. This is not a
+   random seek or a skip: each row contributes to the inspected count, and the
+   buttons stop at EOF. The chart still retains only the last 120 reviewed
+   rows.
    **Restart** rechecks the original raw bytes and the independent checksum.
 5. After reviewing at least one sample, use **Download reviewed JSON report** to
    save a local `ot-sentinel-reviewed-window.json` file. This file records the

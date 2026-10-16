@@ -69,6 +69,9 @@ history is capped to the most recent 120 reviewed samples (not a full-recording
 metric); the chart never interpolates missing intervals or plots a synthetic
 network trace. Restart clears the reviewed history; EOF does not convert an
 old historical SECURE verdict into a current security state.
+One-click 10- and 100-row advance controls synchronously score every recorded
+row in the batch, never skip intervening evidence, clamp at EOF and retain the
+same bounded displayed history.
 
 A local JSON review export is available after at least one inspected sample.
 Its schema is `ot-sentinel/local-reviewed-window/v1`. Only the current
