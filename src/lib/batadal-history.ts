@@ -2,6 +2,7 @@ import { z } from 'zod';
 import normalHistory from '@/data/batadal-case-study/verified-hourly-dataset04.json';
 import unseenHistory from '@/data/batadal-case-study/verified-hourly-test.json';
 import reference from '@/data/batadal-case-study/results.json';
+import { results, DETECTOR_LABELS } from '@/lib/case-study';
 
 export type HistoricalDataset = 'dataset04' | 'test';
 const Time = z.string().regex(/^201[67]-\d\d-\d\dT\d\d:00:00$/);
@@ -138,4 +139,46 @@ export function historicalAttackPoints(
 
 export function historicalSignalOptions(group: HistoricalSignalGroup) {
   return HISTORICAL_SOURCE.feature_names.filter(code => group === 'all' || signalGroup(code) === group);
+}
+
+/**
+ * Retrospective, already-published benchmark summary; NEVER new inference,
+ * sample-by-sample risk or evidence from the historical sensor values.
+ */
+export function historicalDetectorOptions(dataset: HistoricalDataset) {
+  const evaluation = results.evaluations[dataset === 'test' ? 'test' : 'train'];
+  return Object.keys(evaluation.detectors).map(key => ({
+    key, label: DETECTOR_LABELS[key] ?? key,
+  }));
+}
+
+export function historicalDetectorEvidence(
+  dataset: HistoricalDataset, attackId: number, detectorKey: string
+) {
+  const source = getHistoricalSource(dataset);
+  const evaluation = results.evaluations[dataset === 'test' ? 'test' : 'train'];
+  const detector = evaluation.detectors[detectorKey];
+  const interval = source.attack_intervals.find(x => x.id === attackId);
+  if (!detector || !interval) return null;
+  const report = detector.per_attack.find(x => x.attack === attackId);
+  if (!report || report.duration_hours !== interval.duration_hours) {
+    throw new Error('BATADAL detector report does not agree with verified attack period');
+  }
+  const delay = report.detected ? report.hours_to_detect : null;
+  if (delay !== null && (delay < 0 || delay >= interval.duration_hours || !Number.isFinite(delay))) {
+    throw new Error('BATADAL retrospective delay is outside published attack period');
+  }
+  // Source-local calendar arithmetic only; the original BATADAL timestamps
+  // have no declared timezone. Do not present these as UTC instants.
+  const firstAlarmLocal = delay === null ? null
+    : new Date(hour(interval.start) + delay * 3_600_000).toISOString().slice(0, 19);
+  return {
+    attackId,
+    detectorKey,
+    detected: report.detected,
+    firstAlarmDelayHours: delay,
+    firstAlarmSourceLocal: firstAlarmLocal,
+    falseAlarmsPerDay: detector.event.false_alarms_per_day,
+    expectedEventsFromFalseAlarms: detector.event.expected_events_detected_by_chance,
+  };
 }

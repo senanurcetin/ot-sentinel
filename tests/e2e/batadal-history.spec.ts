@@ -7,6 +7,10 @@ test('source verified 2016 hourly BATADAL shows genuine attacker windows and all
   await expect(page.getByText(/source-local, not asserted UTC/i)).toBeVisible();
   const chart = page.getByRole('region', { name: 'Real historical measurement chart' });
   await expect(chart.getByText('50 / 74 in published attack interval')).toBeVisible();
+  const retro = page.getByRole('region', { name: 'Retrospective model evidence' });
+  await expect(retro.getByText(/0 h after published attack start/)).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Retrospective detector' })
+    .locator('option[value="hist_gradient_boosting"]')).toHaveCount(0);
   await expect(chart.locator('svg.recharts-surface')).toHaveCount(1);
   await page.getByRole('combobox', { name: 'Measurement category' }).selectOption('pressures');
   await expect(page.getByRole('combobox', { name: 'Recorded measurement' })).toHaveValue('P_J280');
