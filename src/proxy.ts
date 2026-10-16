@@ -22,13 +22,13 @@ function deny(status: number, message: string, headers: Record<string, string> =
  * Do not interpret this as a replacement for HTTPS, deployment SSO/WAF,
  * user-level authorization, or trusted OT identity.
  */
-export async function proxy(request: NextRequest) {
+export async function evaluateDemoProxy(request: NextRequest, gate: DemoFailureGate) {
   const config = parseDemoAuthConfig(process.env.DEMO_BASIC_AUTH);
   if (config.mode === 'open') return NextResponse.next();
   if (config.mode === 'misconfigured') {
     return deny(503, 'Demo access configuration invalid.');
   }
-  if (demoFailureGate.isBlocked()) {
+  if (gate.isBlocked()) {
     return deny(429, 'Demo sign-in temporarily limited.', { 'Retry-After': '60' });
   }
   const credentials = decodeDemoBasicAuth(request.headers.get('authorization'));
@@ -36,8 +36,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
   // Only malformed/present credentials count; first browser challenge does not.
-  if (request.headers.has('authorization')) demoFailureGate.recordFailure();
+  if (request.headers.has('authorization')) gate.recordFailure();
   return deny(401, 'Demo authentication required.', CHALLENGE);
+}
+
+export function proxy(request: NextRequest) {
+  return evaluateDemoProxy(request, demoFailureGate);
 }
 
 // Keep health checks and static runtime assets accessible. Protect every
