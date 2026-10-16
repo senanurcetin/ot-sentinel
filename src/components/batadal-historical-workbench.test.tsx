@@ -27,6 +27,11 @@ describe('published BATADAL 2016 historical graph', () => {
     expect(screen.getByText(/verified 2017 original test measurements/i)).toBeInTheDocument();
     const region = screen.getByRole('region', { name: 'Real historical measurement chart' });
     expect(within(region).getByText(/50 \/ 74 in published attack interval/i)).toBeInTheDocument();
+    const retrospective = screen.getByRole('region', { name: 'Retrospective model evidence' });
+    expect(within(retrospective).getByText(/0 h after published attack start/)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Retrospective detector' })).toHaveValue('zscore_max');
+    expect(within(screen.getByRole('combobox', { name: 'Retrospective detector' }))
+      .queryByRole('option', { name: /Gradient boosting/i })).not.toBeInTheDocument();
     expect(within(region).getByText(/Source measurements: L_T7/i)).toBeInTheDocument();
   });
 
