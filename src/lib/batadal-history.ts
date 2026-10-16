@@ -96,7 +96,7 @@ export function validateHistoricalExport(input: unknown, expected: HistoricalDat
         attack.start !== `${original.start}:00:00` ||
         attack.end !== `${original.end}:00:00` ||
         attack.duration_hours !== original.duration_hours) {
-      throw new Error(`BATADAL attack #${attack.id} differs from the published interval table`);
+      throw new Error(`BATADAL source chronology: attack #${attack.id} differs from the published interval table`);
     }
     const window = data.windows[i];
     if (attack.id !== pin.firstAttack + i || window.attack_id !== attack.id ||
