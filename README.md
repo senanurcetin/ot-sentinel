@@ -57,6 +57,19 @@ and auditable, make the reason for every alert visible, and use an LLM only to e
 |---|---|
 | ![Alert](docs/assets/alert-rule-based.png) | ![Attack mode](docs/assets/dashboard-attack.png) |
 
+## BATADAL evidence explorer
+
+Open [`/batadal-explorer`](docs/BATADAL_EVIDENCE_EXPLORER.md) through the
+case-study page. This independent research view lets reviewers select the
+2017 unseen test or 2016 secondary evaluation, compare evaluated detectors,
+inspect attack descriptions and measured outcomes, and browse the **actual
+43-signal feature inventory** and published top drift features.
+
+It displays **committed offline summary results**, not raw hourly curves:
+no plant measurements, PLC traffic, or live model inference are simulated
+or asserted by this view. The existing three-sensor dashboard remains
+separate and synthetic.
+
 ## Architecture
 
 Next.js App Router (React 19, TypeScript), Genkit + Gemini 2.5 Flash, Tailwind + shadcn/ui,
