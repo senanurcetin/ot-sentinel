@@ -24,13 +24,18 @@ test('local verified replay steps through historical samples without uploading f
   await expect(page.getByText('LOCAL HASH VERIFIED')).toBeVisible();
   await page.getByRole('button', { name: 'Next recorded sample' }).click();
   await expect(page.getByText('Historical detector verdict: SECURE')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '03 / Historical sample trends' })).toBeVisible();
+  await expect(page.getByText('1 samples in view')).toBeVisible();
   await page.getByRole('button', { name: 'Next recorded sample' }).click();
   await expect(page.getByText('Historical detector verdict: CRITICAL')).toBeVisible();
+  await expect(page.getByText('2 samples in view')).toBeVisible();
+  await expect(page.getByText('1 / 2')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Why this historical score?' })).toBeVisible();
   await expect(page.getByText('End of verified recording.', { exact: false })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Next recorded sample' })).toBeDisabled();
 
   await page.getByRole('button', { name: 'Restart from first sample' }).click();
   await expect(page.getByText('Verified and ready.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '03 / Historical sample trends' })).toHaveCount(0);
   expect(uploads).toEqual([]);
 });

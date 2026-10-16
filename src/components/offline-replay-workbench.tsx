@@ -7,6 +7,7 @@ import type { OfflineReplayManifest } from '@/lib/offline-replay-contract';
 import { loadVerifiedOfflineReplayInBrowser } from '@/lib/offline-replay-browser';
 import type { RecordedTelemetrySource } from '@/lib/recorded-telemetry';
 import type { Metrics } from '@/lib/types';
+import OfflineReplayTrends, { MAX_OFFLINE_TREND_SAMPLES } from '@/components/offline-replay-trends';
 
 type VerifiedInput = { raw: Uint8Array; manifest: OfflineReplayManifest; checksum: string };
 
@@ -16,6 +17,7 @@ export default function OfflineReplayWorkbench() {
   const [trustedSha256, setTrustedSha256] = useState('');
   const [manifest, setManifest] = useState<OfflineReplayManifest | null>(null);
   const [current, setCurrent] = useState<Metrics | null>(null);
+  const [trendSamples, setTrendSamples] = useState<Metrics[]>([]);
   const [cursor, setCursor] = useState(0);
   const [error, setError] = useState('');
   const [verifying, setVerifying] = useState(false);
@@ -27,6 +29,7 @@ export default function OfflineReplayWorkbench() {
     verifiedInputRef.current = null;
     setManifest(null);
     setCurrent(null);
+    setTrendSamples([]);
     setCursor(0);
     setError('');
   };
@@ -68,6 +71,7 @@ export default function OfflineReplayWorkbench() {
       // The mode cannot alter saved evidence. No polling or network calls.
       const sample = sourceRef.current.next('normal');
       setCurrent(sample);
+      setTrendSamples((previous) => [...previous, sample].slice(-MAX_OFFLINE_TREND_SAMPLES));
       setCursor((previous) => previous + 1);
     } catch {
       sourceRef.current = null;
@@ -85,6 +89,7 @@ export default function OfflineReplayWorkbench() {
         session.raw, session.manifest, session.checksum
       );
       setCurrent(null);
+      setTrendSamples([]);
       setCursor(0);
     } catch (cause) {
       clearSession();
@@ -246,6 +251,7 @@ export default function OfflineReplayWorkbench() {
                   </p>
                 </div>
               ) : <p className="text-sm text-muted-foreground">Verified and ready. Select “Next recorded sample” to start.</p>}
+              {trendSamples.length > 0 && <OfflineReplayTrends samples={trendSamples} />}
             </div>
           ) : <p className="text-sm text-muted-foreground">
             Select both files and paste an independently sourced SHA-256 to unlock read-only historical playback.
