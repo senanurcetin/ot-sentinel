@@ -165,6 +165,16 @@ export function BatadalHistoricalWorkbench() {
           </table>
         </div>
       </section>
+      <p className="text-xs leading-6 text-muted-foreground">
+        Source: BATADAL / Taormina et al. (2018), C-Town simulation.
+        Licensed under{' '}
+        <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer"
+          className="text-cyan-600 hover:underline">CC BY 4.0</a>.
+        Adapted by selecting seven attack windows with 12 hours of original
+        surrounding measurements and reformatting source-local timestamps.
+        <a href="https://github.com/scy-phy/www.batadal.net/blob/master/data/BATADAL_dataset04.csv"
+          rel="noreferrer" className="ml-1 text-cyan-600 hover:underline">Publisher source</a>.
+      </p>
       <aside role="note" aria-label="Limitations of verified history"
         className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
         These are **2016 secondary/training-period measurements**, not the untouched
