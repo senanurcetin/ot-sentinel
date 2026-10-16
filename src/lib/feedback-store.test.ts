@@ -85,6 +85,20 @@ describe('bounded storage', () => {
     expect(store.summary()).toMatchObject({ total: 2, false_alarm: 2 });
   });
 
+  it('sqlite atomically rolls back an insertion when retention fails', () => {
+    const db = new DatabaseSync(':memory:');
+    const store = new SqliteFeedbackStore(db, 1);
+    store.add(entry('confirmed_threat'));
+    // Force the second insertion's retention delete to fail. The transaction
+    // must roll back the inserted false alarm rather than leaking an extra row.
+    db.exec(`CREATE TRIGGER reject_prune BEFORE DELETE ON feedback
+      BEGIN SELECT RAISE(ABORT, 'cannot prune'); END;`);
+    expect(() => store.add(entry('false_alarm'))).toThrow('cannot prune');
+    expect(store.summary()).toMatchObject({
+      total: 1, confirmed_threat: 1, false_alarm: 0,
+    });
+  });
+
   it('sqlite rejects a verdict outside the schema even if validation were bypassed', () => {
     const store = new SqliteFeedbackStore(new DatabaseSync(':memory:'));
     expect(() => store.add({ ...entry('false_alarm'), verdict: 'maybe' as never })).toThrow();

@@ -116,25 +116,33 @@ export class SqliteFeedbackStore implements FeedbackStore {
   }
 
   add(entry: StoredFeedback): void {
-    this.db
-      .prepare(
-        `INSERT INTO feedback (timestamp, verdict, note, risk_score, top_sensor, received_at)
-         VALUES (?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        entry.timestamp,
-        entry.verdict,
-        entry.note ?? null,
-        entry.risk_score ?? null,
-        entry.top_sensor ?? null,
-        entry.received_at
-      );
-    // Keep only the newest `limit` rows.
-    this.db
-      .prepare(
-        'DELETE FROM feedback WHERE id NOT IN (SELECT id FROM feedback ORDER BY id DESC LIMIT ?)'
-      )
-      .run(this.limit);
+    // Persist a verdict and apply retention as one atomic operation. A
+    // failure during pruning must not leave a partially committed verdict.
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      this.db
+        .prepare(
+          `INSERT INTO feedback (timestamp, verdict, note, risk_score, top_sensor, received_at)
+           VALUES (?, ?, ?, ?, ?, ?)`
+        )
+        .run(
+          entry.timestamp,
+          entry.verdict,
+          entry.note ?? null,
+          entry.risk_score ?? null,
+          entry.top_sensor ?? null,
+          entry.received_at
+        );
+      this.db
+        .prepare(
+          'DELETE FROM feedback WHERE id NOT IN (SELECT id FROM feedback ORDER BY id DESC LIMIT ?)'
+        )
+        .run(this.limit);
+      this.db.exec('COMMIT');
+    } catch (error) {
+      this.db.exec('ROLLBACK');
+      throw error;
+    }
   }
 
   summary(): FeedbackSummary {
