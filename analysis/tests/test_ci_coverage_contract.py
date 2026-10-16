@@ -36,10 +36,10 @@ def test_github_security_keeps_automatic_and_scheduled_coverage():
 
 def test_duplicate_github_quality_jobs_are_manual_but_docker_is_automatic():
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    assert "\\n  pull_request:" in ci
-    assert "\\n  push:" in ci
+    assert "\n  pull_request:" in ci
+    assert "\n  push:" in ci
     assert ci.count("if: github.event_name == 'workflow_dispatch'") == 2
-    assert "\\n  docker:" in ci
+    assert "\n  docker:" in ci
     assert "name: Docker image builds" in ci
     assert "needs: web" not in ci
 
@@ -47,6 +47,6 @@ def test_duplicate_github_quality_jobs_are_manual_but_docker_is_automatic():
         encoding="utf-8"
     )
     # The Chromium test is automatically enforced by CircleCI browser-e2e.
-    assert "\\n  workflow_dispatch:" in e2e
-    assert "\\n  pull_request:" not in e2e
-    assert "\\n  push:" not in e2e
+    assert "\n  workflow_dispatch:" in e2e
+    assert "\n  pull_request:" not in e2e
+    assert "\n  push:" not in e2e
