@@ -24,11 +24,29 @@ def test_github_security_keeps_automatic_and_scheduled_coverage():
         encoding="utf-8"
     )
     # Changes that drop these must explicitly update the release model.
-    assert "\n  pull_request:" in security
-    assert "\n  push:" in security
-    assert "\n  schedule:" in security
+    assert "  pull_request:" in security.splitlines()
+    assert "  push:" in security.splitlines()
+    assert "  schedule:" in security.splitlines()
     for job in ("npm-audit:", "pip-audit:", "codeql:", "secret-scan:"):
         assert f"  {job}" in security
     assert "github/codeql-action/analyze@" in security
     assert "pip-audit -r analysis/requirements.txt" in security
     assert "gitleaks/gitleaks-action@" in security
+
+
+def test_duplicate_github_quality_jobs_are_manual_but_docker_is_automatic():
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert "  pull_request:" in ci.splitlines()
+    assert "  push:" in ci.splitlines()
+    assert ci.count("if: github.event_name == 'workflow_dispatch'") == 2
+    assert "  docker:" in ci.splitlines()
+    assert "name: Docker image builds" in ci
+    assert "needs: web" not in ci
+
+    e2e = (ROOT / ".github" / "workflows" / "e2e-tests.yml").read_text(
+        encoding="utf-8"
+    )
+    # The Chromium test is automatically enforced by CircleCI browser-e2e.
+    assert "  workflow_dispatch:" in e2e.splitlines()
+    assert "  pull_request:" not in e2e.splitlines()
+    assert "  push:" not in e2e.splitlines()
