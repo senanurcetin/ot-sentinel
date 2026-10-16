@@ -57,6 +57,20 @@ and auditable, make the reason for every alert visible, and use an LLM only to e
 |---|---|
 | ![Alert](docs/assets/alert-rule-based.png) | ![Attack mode](docs/assets/dashboard-attack.png) |
 
+## Genuine publisher-verified BATADAL hourly history
+
+The separate [`/batadal-history`](docs/BATADAL_VERIFIED_HOURLY.md) route
+uses a compact derived artifact of **660 authentic hourly recorded rows** from
+the official 2016 BATADAL dataset04, covering seven attacks with 12 actual
+hours of context on either side. All 43 original signal values are preserved
+for those windows and the original CSV's SHA-256 matched the independently
+pinned analysis source digest. Source timestamp timezone is unspecified;
+timestamps are not declared UTC. This is offline simulated water-network
+research data, **not** live PLC readings, model predictions or 2017 test replay.
+
+Regenerate/verify using `analysis/export_verified_hourly.py` with your
+own original matching BATADAL_dataset04.csv; no raw original CSV is stored.
+
 ## BATADAL evidence explorer
 
 Open [`/batadal-explorer`](docs/BATADAL_EVIDENCE_EXPLORER.md) through the
