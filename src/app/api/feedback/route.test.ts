@@ -83,6 +83,7 @@ describe('feedback storage and summary', () => {
       storage: 'memory',
       total: 2,
       false_alarm: 1,
+      recent_24h: { total: 2, false_alarm: 1, confirmed_threat: 1, false_alarm_share: 0.5 },
       by_top_sensor: [
         { sensor: 'temp', total: 1, false_alarm: 1 },
         { sensor: 'vibration', total: 1, false_alarm: 0 },
