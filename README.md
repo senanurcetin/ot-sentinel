@@ -1,5 +1,7 @@
 # OT-Sentinel
 
+<p align="right"><img src="docs/assets/nexus-official-midnight.svg" alt="NEXUS Official Midnight brand" width="220"></p>
+
 [![CI](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml)
 [![E2E](https://github.com/senanurcetin/ot-sentinel/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/e2e-tests.yml)
 [![Security checks](https://github.com/senanurcetin/ot-sentinel/actions/workflows/security-checks.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/security-checks.yml)
