@@ -79,6 +79,21 @@ describe('bounded storage', () => {
   });
 
 
+  it('memory stores an immutable snapshot of submitted verdict fields', () => {
+    const store = new MemoryFeedbackStore(2);
+    const submitted = entry('false_alarm', { top_sensor: 'temp' });
+    store.add(submitted);
+    submitted.verdict = 'confirmed_threat';
+    submitted.top_sensor = 'pressure';
+    submitted.received_at = 'not-a-real-time';
+    expect(store.summary()).toMatchObject({
+      total: 1,
+      confirmed_threat: 0,
+      false_alarm: 1,
+      by_top_sensor: [{ sensor: 'temp', total: 1, false_alarm: 1 }],
+    });
+  });
+
   it('memory keeps only the newest entries', () => {
     const store = new MemoryFeedbackStore(2);
     store.add(entry('confirmed_threat'));
@@ -137,6 +152,23 @@ describe('openFeedbackStore', () => {
 
 describe('getFeedbackStore', () => {
   afterEach(() => resetFeedbackStore());
+
+  it('retries a failed SQLite initialization after its configuration is corrected', async () => {
+    const previous = process.env.FEEDBACK_DB_PATH;
+    const dir = mkdtempSync(join(tmpdir(), 'ot-failed-feedback-'));
+    try {
+      resetFeedbackStore();
+      process.env.FEEDBACK_DB_PATH = join(dir, 'missing-dir', 'feedback.db');
+      await expect(getFeedbackStore()).rejects.toThrow();
+      delete process.env.FEEDBACK_DB_PATH;
+      expect((await getFeedbackStore()).kind).toBe('memory');
+    } finally {
+      resetFeedbackStore();
+      if (previous === undefined) delete process.env.FEEDBACK_DB_PATH;
+      else process.env.FEEDBACK_DB_PATH = previous;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 
   it('returns one process-wide store until reset', async () => {
     const a = await getFeedbackStore();
