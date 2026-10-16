@@ -66,17 +66,23 @@ export default function OfflineReplayWorkbench() {
     }
   };
 
-  const nextSample = () => {
-    if (!sourceRef.current || !manifest || cursor >= manifest.row_count) return;
+  const reviewNextSamples = (requested: 1 | 10 | 100) => {
+    if (!sourceRef.current || !manifest || verifying || cursor >= manifest.row_count) return;
+    // Process every intervening recorded row; these are not skipped or
+    // interpolated samples. At most 100 are scored per synchronous action.
+    const count = Math.min(requested, manifest.row_count - cursor);
+    const reviewed: Metrics[] = [];
     try {
-      // The mode cannot alter saved evidence. No polling or network calls.
-      const sample = sourceRef.current.next('normal');
-      setCurrent(sample);
-      setTrendSamples((previous) => [...previous, sample].slice(-MAX_OFFLINE_TREND_SAMPLES));
-      setCursor((previous) => previous + 1);
+      for (let i = 0; i < count; i++) {
+        reviewed.push(sourceRef.current.next('normal'));
+      }
+      setCurrent(reviewed[reviewed.length - 1]);
+      setTrendSamples((previous) => [...previous, ...reviewed].slice(-MAX_OFFLINE_TREND_SAMPLES));
+      setCursor((previous) => previous + reviewed.length);
     } catch {
+      // Never leave a partially read source available after an error.
       sourceRef.current = null;
-      setError('Recording stopped; no further validated sample is available.');
+      setError('Recording stopped: failed to validate a historical sample.');
     }
   };
 
@@ -229,9 +235,17 @@ export default function OfflineReplayWorkbench() {
                 <div className="h-full bg-primary transition-all" style={{ width: `${100 * cursor / manifest.row_count}%` }} />
               </div>
               <div className="flex flex-wrap gap-3">
-                <button type="button" onClick={nextSample} disabled={finished || verifying}
+                <button type="button" onClick={() => reviewNextSamples(1)} disabled={finished || verifying}
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">
                   Next recorded sample
+                </button>
+                <button type="button" onClick={() => reviewNextSamples(10)} disabled={finished || verifying}
+                  className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-50">
+                  Review next 10 samples
+                </button>
+                <button type="button" onClick={() => reviewNextSamples(100)} disabled={finished || verifying}
+                  className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-50">
+                  Review next 100 samples
                 </button>
                 <button type="button" onClick={restart} disabled={verifying}
                   className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-50">
@@ -285,7 +299,7 @@ export default function OfflineReplayWorkbench() {
               {trendSamples.length > 0 && (
                 <p className="text-xs leading-5 text-muted-foreground">
                   Report includes only the last {trendSamples.length} inspected samples out of {cursor}
-                  {' '}reviewed since restart, never unseen recording rows. It records checksum agreement,
+                  {' '}reviewed since restart, including every sample processed by a batch action. It records checksum agreement,
                   not authenticated device origin. JSON stays local.
                 </p>
               )}
