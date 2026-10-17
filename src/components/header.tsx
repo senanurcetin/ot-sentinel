@@ -18,7 +18,7 @@ export default function Header({ isAttackMode, onAttackModeChange, onShowReport 
       <div className="flex items-center gap-3">
         <span className="nexus-logo-x" role="img" aria-label="NEXUS X mark" />
         <div className="flex flex-col gap-1">
-          <span className="nexus-logo-wordmark" role="img" aria-label="NEXUS" />
+          <span className="nexus-logo-wordmark" role="img" aria-label="NEXUS"><span className="sr-only">NEXUS</span></span>
           <h1 className="nexus-product text-lg leading-none text-foreground sm:text-xl">OT-Sentinel</h1>
           <span className="nexus-demo-disclaimer">Synthetic telemetry · no live PLC connection</span>
         </div>
