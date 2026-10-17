@@ -7,7 +7,13 @@ const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] }
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
   await page.goto('http://127.0.0.1:9002/', { waitUntil: 'domcontentloaded' });
-  await page.getByText('DEMO TELEMETRY CONNECTED').waitFor({ state: 'visible', timeout: 30000 });
+  try {
+    await page.getByText('DEMO TELEMETRY CONNECTED').waitFor({ state: 'visible', timeout: 15000 });
+  } catch (error) {
+    console.error('OT UI failure: status/body:', await page.locator('body').innerText().catch(() => 'NO BODY'));
+    console.error('Current URL:', page.url());
+    throw error;
+  }
   await page.getByRole('heading', { name: 'OT-Sentinel' }).waitFor({ state: 'visible' });
   await page.screenshot({ path: dir + '/nexus-dashboard-normal.png', animations: 'disabled' });
   await page.getByRole('switch', { name: 'Simulate Attack' }).click();
