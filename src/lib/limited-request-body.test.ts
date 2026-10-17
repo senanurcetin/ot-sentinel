@@ -62,7 +62,7 @@ describe('readTextWithinLimit', () => {
         controller.close();
       },
     });
-    await expect(readTextWithinLimit({ body: stream } as Request, 100)).rejects.toThrow(TypeError);
+    await expect(readTextWithinLimit({ body: stream } as Request, 100)).rejects.toMatchObject({ name: 'TypeError' });
   });
 
 });
