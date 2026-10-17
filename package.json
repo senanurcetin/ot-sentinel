@@ -15,7 +15,9 @@
     "test:coverage": "jest --coverage",
     "case-study:refresh": "python3 analysis/run_batadal_case_study.py && python3 analysis/results_report.py",
     "analysis:test": "cd analysis && python3 -m pytest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:deployment-smoke": "node --test scripts/deployment-smoke.test.mjs",
+    "smoke:deployment": "node scripts/deployment-smoke.mjs"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
