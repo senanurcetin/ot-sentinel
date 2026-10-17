@@ -16,9 +16,18 @@ operator-friendly triage; a deterministic fallback keeps the guidance useful whe
 unavailable. The live demo runs on simulated telemetry; the detector method is evaluated on the
 public BATADAL attack benchmark (see [Evaluation](#evaluation)).
 
-![Dashboard in normal operation](docs/assets/dashboard-normal.png)
+![NEXUS OT-Sentinel dashboard in normal simulated operation (Chromium 1440 × 960)](docs/assets/nexus-dashboard-normal.png)
+<sub>Actual local Chromium captures of the synthetic OT stream. They do not show live PLCs, a production plant, or a validated active attack.</sub>
 
-Walkthrough video: [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel-demo.webm) (about 35 s: normal operation → simulated attack → alert → forensic report). It was recorded without a Gemini key, so the alert shows the rule-based guidance, not an AI answer.
+<details><summary>Mobile NEXUS dashboard · 390 × 844</summary>
+
+<img src="docs/assets/nexus-dashboard-mobile.png" alt="NEXUS OT-Sentinel simulated telemetry mobile dashboard" width="390">
+
+</details>
+
+![NEXUS OT-Sentinel forensic report](docs/assets/nexus-forensic-report.png)
+
+Earlier walkthrough video (archival recording made before the current NEXUS screenshots): [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel-demo.webm) (about 35 s: normal operation → simulated attack → alert → forensic report). It was recorded without a Gemini key, so the alert shows the rule-based guidance, not an AI answer.
 
 Reviewing this project? Start with the [case study](docs/case-study.md) and the [reviewer summary](docs/hiring-summary.md).
 
@@ -69,7 +78,7 @@ and auditable, make the reason for every alert visible, and use an LLM only to e
 
 | Alert with rule-based guidance | Why this score? |
 |---|---|
-| ![Alert](docs/assets/alert-rule-based.png) | ![Attack mode](docs/assets/dashboard-attack.png) |
+| ![NEXUS OT-Sentinel rule-based alert in simulation](docs/assets/nexus-alert.png) | ![NEXUS OT-Sentinel dashboard during simulated attack](docs/assets/nexus-dashboard-attack.png) |
 
 ## Genuine publisher-verified BATADAL hourly history
 
