@@ -4,8 +4,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'OT-Sentinel',
-  description: 'Industrial Cyber Security Dashboard',
+  title: 'OT-Sentinel | NEXUS',
+  description: 'NEXUS OT-Sentinel: explainable synthetic industrial anomaly demo and independently evaluated offline BATADAL evidence.',
+  icons: { icon: '/nexus-x.svg' },
 };
 
 export default function RootLayout({
