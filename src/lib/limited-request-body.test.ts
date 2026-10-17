@@ -53,4 +53,16 @@ describe('readTextWithinLimit', () => {
     await expect(readTextWithinLimit(request('a'), -1)).rejects.toThrow(RangeError);
     await expect(readTextWithinLimit(request('a'), Number.POSITIVE_INFINITY)).rejects.toThrow(RangeError);
   });
+  it('rejects malformed UTF-8 instead of silently changing forensic feedback text', async () => {
+    const invalidJsonBytes = new Uint8Array([0x7b, 0x22, 0x78, 0x22, 0x3a, 0x22, 0xc3, 0x28, 0x22, 0x7d]);
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(invalidJsonBytes.subarray(0, 7));
+        controller.enqueue(invalidJsonBytes.subarray(7));
+        controller.close();
+      },
+    });
+    await expect(readTextWithinLimit({ body: stream } as Request, 100)).rejects.toThrow(TypeError);
+  });
+
 });
