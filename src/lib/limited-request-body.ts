@@ -32,7 +32,9 @@ export async function readTextWithinLimit(request: Request, maxBytes: number): P
       bytes.set(chunk, offset);
       offset += chunk.byteLength;
     }
-    return new TextDecoder().decode(bytes);
+    // Never silently rewrite malformed bytes to U+FFFD in forensic feedback.
+    // The caller maps decoder failures to HTTP 400 without persisting a verdict.
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } finally {
     reader.releaseLock();
   }
