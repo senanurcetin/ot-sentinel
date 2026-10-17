@@ -30,6 +30,9 @@ jobs:
           # npm ci above disables implicit audits, so this is the only audit.
           command: npm audit --omit=dev --audit-level=critical
       - run:
+          name: Offline deployment smoke contract tests
+          command: npm run test:deployment-smoke
+      - run:
           name: Lint
           command: npm run lint
       - run:
