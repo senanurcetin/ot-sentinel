@@ -22,6 +22,18 @@ Walkthrough video: [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel
 
 Reviewing this project? Start with the [case study](docs/case-study.md) and the [reviewer summary](docs/hiring-summary.md).
 
+## Protected preview release acceptance
+
+With SSO-protected hosting, `READY` alone is not proof of an authenticated application route. The repository provides an opt-in, **read-only** route and JSON health checker:
+
+```bash
+DEPLOYMENT_SMOKE_URL=https://your-exact-preview.vercel.app npm run smoke:deployment
+```
+
+Run after obtaining legitimate access through the hosting provider. Optionally supply an authorized cookie in `DEPLOYMENT_SMOKE_COOKIE` or an explicitly approved preview bypass token in `DEPLOYMENT_SMOKE_BYPASS`; neither value is written to output. The script never follows redirects, rejects SSO login HTML even when HTTP 200, and checks `/`, `/offline-replay`, `/batadal-explorer`, `/batadal-history`, `/batadal-test-history`, `/case-study`, and `/api/health` on the same origin. A login challenge or an unavailable route is a **release blocker**, not a green result. `npm run test:deployment-smoke` tests the checker offline and runs in CI.
+
+Route and health success do not replace authenticated browser visual/accessibility checks, origin authorization, API write protection or rollback rehearsal; do not promote the preview until those are independently evidenced.
+
 ## Status
 
 | Part | State |

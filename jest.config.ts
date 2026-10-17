@@ -27,7 +27,9 @@ const config: Config = {
     global: { statements: 95, lines: 95, branches: 90, functions: 85 },
   },
   // Playwright specs live in tests/e2e and run with `npm run test:e2e`.
-  testPathIgnorePatterns: ['/node_modules/', '/tests/e2e/'],
+  // Node's built-in test runner owns deployment-smoke.test.mjs; Jest 30
+  // can discover .mjs tests and would report "no Jest tests found" instead.
+  testPathIgnorePatterns: ['/node_modules/', '/tests/e2e/', '/scripts/deployment-smoke.test.mjs'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     // Handle module aliases
