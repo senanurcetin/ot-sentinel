@@ -13,10 +13,15 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? 'e2e-placeholder';
 
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: true,
+  // CI tests share a single Next.js server and in-memory feedback ledger.
+  // Avoid cross-test races; local development may still use parallel browsers.
+  fullyParallel: !inCI,
+  workers: inCI ? 1 : undefined,
   forbidOnly: inCI,
   retries: inCI ? 1 : 0,
-  reporter: inCI ? [['github'], ['html', { open: 'never' }]] : 'list',
+  reporter: inCI
+    ? [['github'], ['junit', { outputFile: 'test-results/e2e-junit.xml' }], ['html', { open: 'never' }]]
+    : 'list',
   use: {
     baseURL: remoteBaseURL ?? `http://localhost:${PORT}`,
     trace: 'on-first-retry',
