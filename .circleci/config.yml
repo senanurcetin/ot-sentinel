@@ -72,6 +72,11 @@ jobs:
           name: Browser E2E against a locally started production build
           command: npm run test:e2e
           no_output_timeout: 20m
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: playwright-test-results
       - store_artifacts:
           path: playwright-report
           destination: playwright-report
