@@ -1,0 +1,55 @@
+name: NEXUS README visual capture
+
+on:
+  push:
+    branches:
+      - docs/nexus-readme-20261017
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    if: github.repository == 'senanurcetin/ot-sentinel' && github.ref == 'refs/heads/docs/nexus-readme-20261017'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      GEMINI_API_KEY: ci-placeholder
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Start local synthetic-telemetry dashboard
+        run: |
+          npm run dev > /tmp/nexus-ot-next.log 2>&1 &
+          echo $! > /tmp/nexus-ot-next.pid
+          node -e 'let n=0;const poll=async()=>{try{const r=await fetch("http://127.0.0.1:9002/api/health");if(r.ok)return process.exit(0)}catch{}if(++n>=150)process.exit(1);setTimeout(poll,1000)};poll()'
+      - name: Capture real simulated-OT Chromium UI and update README
+        run: node scripts/capture-readme.mjs
+      - name: Verify screenshots
+        run: |
+          for f in docs/assets/nexus-dashboard-normal.png docs/assets/nexus-dashboard-mobile.png docs/assets/nexus-dashboard-attack.png docs/assets/nexus-alert.png docs/assets/nexus-forensic-report.png; do
+            test $(stat -c%s "$f") -gt 10000
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexus-ot-sentinel-readme-screenshots
+          path: docs/assets/nexus-*.png
+          retention-days: 30
+      - name: Commit verified screenshot evidence and README
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/assets/nexus-*.png
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: capture real NEXUS OT-Sentinel simulation screenshots"
+            git push origin HEAD:docs/nexus-readme-20261017
+          fi
