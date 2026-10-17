@@ -6,7 +6,7 @@ await mkdir(dir, { recursive: true });
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
-  await page.goto('http://127.0.0.1:9002/', { waitUntil: 'domcontentloaded' });
+  await page.goto('http://localhost:9002/', { waitUntil: 'domcontentloaded' });
   try {
     await page.getByText('DEMO TELEMETRY CONNECTED').waitFor({ state: 'visible', timeout: 15000 });
   } catch (error) {
@@ -28,7 +28,7 @@ try {
   await page.close();
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
-  await mobile.goto('http://127.0.0.1:9002/', { waitUntil: 'domcontentloaded' });
+  await mobile.goto('http://localhost:9002/', { waitUntil: 'domcontentloaded' });
   await mobile.getByText('DEMO TELEMETRY CONNECTED').waitFor({ state: 'visible', timeout: 30000 });
   await mobile.screenshot({ path: dir + '/nexus-dashboard-mobile.png', animations: 'disabled' });
   await mobile.close();
