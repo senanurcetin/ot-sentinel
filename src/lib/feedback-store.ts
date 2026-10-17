@@ -95,7 +95,9 @@ export class MemoryFeedbackStore implements FeedbackStore {
   }
 
   add(entry: StoredFeedback): void {
-    this.rows.push(entry);
+    // Persist a snapshot, not the caller's mutable reference. Otherwise a
+    // later mutation could silently rewrite a previously submitted verdict.
+    this.rows.push({ ...entry });
     if (this.rows.length > this.limit) this.rows.shift();
   }
 
@@ -192,7 +194,15 @@ type GlobalWithStore = typeof globalThis & { [GLOBAL_KEY]?: Promise<FeedbackStor
  */
 export function getFeedbackStore(): Promise<FeedbackStore> {
   const g = globalThis as GlobalWithStore;
-  g[GLOBAL_KEY] ??= openFeedbackStore();
+  if (!g[GLOBAL_KEY]) {
+    const pending = openFeedbackStore();
+    g[GLOBAL_KEY] = pending;
+    // A transient invalid/missing SQLite path must not poison the shared
+    // store forever. Preserve the failed response, but allow future retries.
+    void pending.catch(() => {
+      if (g[GLOBAL_KEY] === pending) delete g[GLOBAL_KEY];
+    });
+  }
   return g[GLOBAL_KEY];
 }
 
