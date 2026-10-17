@@ -20,10 +20,22 @@ function escapeCell(value: unknown): string {
   return `"${text.replace(/"/g, '""')}"`;
 }
 
+// Preserve malformed source timestamps as labelled evidence; never invent a date or
+// throw away the whole forensic report because a log row is malformed.
+const EXPLICIT_ZONE_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+function reportTimestamp(raw: string): string {
+  const timestamp = typeof raw === 'string' ? raw : String(raw ?? '');
+  const parsed = new Date(timestamp);
+  if (!EXPLICIT_ZONE_TIMESTAMP.test(timestamp) || Number.isNaN(parsed.getTime())) {
+    return `Invalid timestamp: ${timestamp}`;
+  }
+  return parsed.toISOString();
+}
+
 /** Build the forensic report CSV: a header row followed by one fully quoted row per log entry. */
 export function buildForensicCsv(logs: LogEntry[]): string {
   const rows = logs.map((log) =>
-    [new Date(log.timestamp).toISOString(), log.status, log.sourceIp, log.payload]
+    [reportTimestamp(log.timestamp), log.status, log.sourceIp, log.payload]
       .map(escapeCell)
       .join(',')
   );

@@ -20,6 +20,21 @@ describe('buildForensicCsv', () => {
     expect(row).toBe('"2026-01-02T03:04:05.000Z","SECURE","10.0.0.5","Status check OK"');
   });
 
+  it('preserves malformed timestamps as labelled evidence instead of crashing the report', () => {
+    const csv = buildForensicCsv([
+      entry({ timestamp: 'not-a-date', payload: 'review this record' }),
+      entry({ timestamp: '2026-01-02T03:04:05.000Z', payload: 'next record' }),
+    ]);
+    expect(csv).toContain('"Invalid timestamp: not-a-date"');
+    expect(csv).toContain('"2026-01-02T03:04:05.000Z"');
+    expect(csv).toContain('"next record"');
+  });
+
+  it('refuses timezone-less timestamps rather than silently inventing local time', () => {
+    const csv = buildForensicCsv([entry({ timestamp: '2026-01-02T03:04:05' })]);
+    expect(csv).toContain('"Invalid timestamp: 2026-01-02T03:04:05"');
+  });
+
   it('escapes embedded quotes and keeps commas and newlines inside one quoted cell', () => {
     const csv = buildForensicCsv([entry({ payload: 'said "stop", then\nleft' })]);
     expect(csv).toContain('"said ""stop"", then\nleft"');
