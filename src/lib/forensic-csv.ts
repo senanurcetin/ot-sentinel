@@ -22,7 +22,7 @@ function escapeCell(value: unknown): string {
 
 // Preserve malformed source timestamps as labelled evidence; never invent a date or
 // throw away the whole forensic report because a log row is malformed.
-const EXPLICIT_ZONE_TIMESTAMP = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$/;
+const EXPLICIT_ZONE_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 function reportTimestamp(raw: string): string {
   const timestamp = typeof raw === 'string' ? raw : String(raw ?? '');
   const parsed = new Date(timestamp);
