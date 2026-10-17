@@ -18,6 +18,9 @@ try {
   await page.screenshot({ path: dir + '/nexus-dashboard-normal.png', animations: 'disabled' });
   await page.getByRole('switch', { name: 'Simulate Attack' }).click();
   await page.getByText('CRITICAL THREAT DETECTED').waitFor({ state: 'visible', timeout: 20000 });
+  // This is a real fallback assessment, not the transient AI-loading skeleton.
+  await page.getByText(/rule-based assessment/i).waitFor({ state: 'visible', timeout: 30000 });
+  await page.waitForTimeout(4000); // allow the transient attack-mode toast to clear
   await page.screenshot({ path: dir + '/nexus-alert.png', animations: 'disabled' });
   await page.getByRole('button', { name: 'Mark as false alarm' }).click();
   await page.getByText('CRITICAL THREAT DETECTED').waitFor({ state: 'hidden' });
