@@ -26,7 +26,7 @@ export function validateDeploymentOrigin(input) {
  * Redirects never count as success; callers must not forward credentials
  * to an unrelated origin. API health must return its actual JSON contract.
  */
-export function classifyDeploymentResponse(route, response) {
+export function classifyDeploymentResponse(route, response, expectedSha = null) {
   const status = response.status;
   if (status !== 200) {
     return { ok: false, reason: (status >= 300 && status < 400)
@@ -43,9 +43,19 @@ export function classifyDeploymentResponse(route, response) {
     }
     let parsed;
     try { parsed = JSON.parse(body); } catch { return { ok: false, reason: 'invalid health JSON' }; }
-    return parsed?.status === 'ok' && typeof parsed.version === 'string'
-      ? { ok: true, reason: 'health contract verified' }
-      : { ok: false, reason: 'unexpected health contract' };
+    if (parsed?.status !== 'ok' || typeof parsed.version !== 'string') {
+      return { ok: false, reason: 'unexpected health contract' };
+    }
+    if (expectedSha !== null) {
+      if (!/^[0-9a-f]{40}$/.test(expectedSha)) {
+        return { ok: false, reason: 'invalid expected deployment SHA' };
+      }
+      if (parsed.commit !== expectedSha) {
+        return { ok: false, reason: 'deployed SHA missing or differs from expected release' };
+      }
+      return { ok: true, reason: 'health contract and exact deployment SHA verified' };
+    }
+    return { ok: true, reason: 'health contract verified' };
   }
   if (!contentType.includes('text/html') || !/<html[\s>]/i.test(body)) {
     return { ok: false, reason: 'expected HTML application page' };

@@ -38,3 +38,22 @@ test('accepts real HTML route and JSON health contracts only', () => {
     assert.equal(classify('/api/health', { status: 200, contentType: 'application/json', body }).ok, false);
   }
 });
+
+test('refuses stale deployment SHA, missing commit or a forged partial revision', () => {
+  const sha = 'a'.repeat(40);
+  const health = (commit) => ({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ status: 'ok', version: '0.3.0', commit }),
+  });
+  assert.deepEqual(classify('/api/health', health(sha), sha), {
+    ok: true, reason: 'health contract and exact deployment SHA verified',
+  });
+  for (const commit of [null, undefined, 'b'.repeat(40), sha.slice(0, 8)]) {
+    const response = classify('/api/health', health(commit), sha);
+    assert.equal(response.ok, false);
+    assert.match(response.reason, /SHA/);
+  }
+  assert.equal(classify('/api/health', health(sha), 'short').ok, false);
+  assert.equal(classify('/api/health', health(sha), null).ok, true);
+});

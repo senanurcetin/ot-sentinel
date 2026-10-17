@@ -8,6 +8,10 @@ if (!raw) {
 } else {
   try {
     const origin = validateDeploymentOrigin(raw);
+    const expectedSha = process.env.DEPLOYMENT_SMOKE_EXPECTED_SHA;
+    if (!expectedSha || !/^[0-9a-f]{40}$/.test(expectedSha)) {
+      throw new Error('DEPLOYMENT_SMOKE_EXPECTED_SHA must be the full 40-character commit SHA.');
+    }
     const headers = { Accept: 'text/html,application/json' };
     // Explicit opt-in only. Never echo secrets, and disable HTTP redirects so
     // they cannot be forwarded to an SSO or other off-origin service.
@@ -35,7 +39,7 @@ if (!raw) {
           status: response.status,
           contentType: response.headers.get('content-type'),
           body,
-        });
+        }, expectedSha);
         console.log((verdict.ok ? 'PASS ' : 'FAIL ') + route + ': ' + verdict.reason);
         if (!verdict.ok) failed += 1;
       } catch {
@@ -50,7 +54,7 @@ if (!raw) {
       : 'Route/health smoke PASS. Browser, SSO authorization and production checks remain separate.');
     if (failed) process.exitCode = 1;
   } catch (error) {
-    console.error('Invalid DEPLOYMENT_SMOKE_URL: ' + (error instanceof Error ? error.message : 'unknown input'));
+    console.error('Invalid deployment smoke configuration: ' + (error instanceof Error ? error.message : 'unknown input'));
     process.exitCode = 2;
   }
 }
