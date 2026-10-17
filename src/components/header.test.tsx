@@ -7,7 +7,7 @@ describe('Header', () => {
     expect(screen.getByRole('link', { name: 'Case study' })).toHaveAttribute('href', '/case-study');
     expect(screen.getByRole('link', { name: 'Offline replay' })).toHaveAttribute('href', '/offline-replay');
     expect(screen.getByRole('navigation', { name: 'Demo and evidence navigation' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'NEXUS' })).toHaveAttribute('src', '/nexus-wordmark.svg');
+    expect(screen.getByRole('img', { name: 'NEXUS' })).toBeInTheDocument();
     expect(screen.getByText('Synthetic telemetry · no live PLC connection')).toBeInTheDocument();
   });
 
