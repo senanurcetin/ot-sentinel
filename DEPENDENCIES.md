@@ -36,6 +36,10 @@ together with the packages only they used: 14 `@radix-ui/*` packages, `react-hoo
 
 ## Known advisories
 
+**26 October 2026 verification:** The Next.js production vulnerability gate detected a critical advisory affecting the previous locked `next@16.4.0`. This maintenance branch updates the `next` and `eslint-config-next` constraints to `^16.4.2` and resolves both to **16.4.3** in the reviewed lockfile. [Security checks](https://github.com/senanurcetin/ot-sentinel/actions/workflows/security-checks.yml) must pass on the final commit before merge. Existing Genkit/OpenTelemetry and build-tool advisories remain subject to independent triage; a passing critical-severity gate does not prove the full dependency tree is free of risk.
+
+**Historical October 7 baseline:**
+
 Last checked on 2026-10-07 with `npm audit --omit=dev` (Next.js 16.4, Genkit 1.42):
 0 critical, 12 high, 57 moderate (13 high / 59 moderate on Next.js 15.5 before the unused packages were removed). A critical
 advisory in `proxy-addr` (transitive, via Genkit's Express dependency) appeared on 2026-10-06 and was cleared with

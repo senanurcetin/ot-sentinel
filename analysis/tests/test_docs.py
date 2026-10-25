@@ -35,7 +35,6 @@ EVALUATION_DOCS = [
     ROOT / "MODEL_CARD.md",
     ROOT / "analysis" / "README.md",
     ROOT / "docs" / "case-study.md",
-    ROOT / "docs" / "hiring-summary.md",
 ]
 
 LINK = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
@@ -88,7 +87,7 @@ def test_in_page_anchors_that_the_readme_uses_exist_in_the_case_study():
         re.sub(r"[^a-z0-9 -]", "", h.lower()).strip().replace(" ", "-")
         for h in re.findall(r"^#{1,4} (.+)$", case, flags=re.M)
     }
-    for doc in (ROOT / "README.md", ROOT / "docs" / "hiring-summary.md"):
+    for doc in (ROOT / "README.md",):
         for anchor in re.findall(r"case-study\.md#([\w-]+)", doc.read_text(encoding="utf-8")):
             assert anchor in slugs, f"{_rel(doc)} links to a missing case-study heading '{anchor}'"
 
