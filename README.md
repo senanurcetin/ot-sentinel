@@ -28,7 +28,7 @@ public BATADAL attack benchmark (see [Evaluation](#evaluation)).
 
 Earlier walkthrough (archival, captured before the current NEXUS screenshots): [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel-demo.webm) (about 35 s: normal operation → simulated attack → alert → forensic report). It was recorded without a Gemini key, so the alert shows the rule-based guidance, not an AI answer.
 
-Reviewing this project? Start with the [case study](docs/case-study.md) and the [reviewer summary](docs/hiring-summary.md).
+**Technical evidence:** [BATADAL evaluation](docs/case-study.md) · [Model card](MODEL_CARD.md) · [Threat model](docs/threat-model.md).
 
 ## Protected preview release acceptance
 
@@ -276,7 +276,7 @@ ICS mapping: [`docs/threat-model.md`](docs/threat-model.md). Report issues via [
 | `src/components/` | dashboard UI |
 | `analysis/` | evaluation pipeline, model-constants export, Python tests |
 | `tests/e2e/` | Playwright tests |
-| `docs/` | [architecture](docs/architecture.md), [threat model](docs/threat-model.md), [case study](docs/case-study.md), [reviewer summary](docs/hiring-summary.md), [archived original spec](docs/archive/blueprint.md) |
+| `docs/` | [architecture](docs/architecture.md), [threat model](docs/threat-model.md), [case study](docs/case-study.md), [archived original spec](docs/archive/blueprint.md) |
 
 ## Related work
 
