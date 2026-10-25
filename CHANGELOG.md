@@ -18,7 +18,7 @@ All notable changes to this project are documented here.
   worse; the EWMA is better on the 2016 file only), and the z-score's explanations point at the attacked equipment
   roughly three times as often as chance, except under replay concealment
 - `/case-study` page: interval column, v3 decision and explanation-accuracy sections; README, case study, model
-  card and reviewer summary updated, with every new prose claim encoded as a test
+  card and technical case study updated, with every new prose claim encoded as a test
 
 ## [0.3.0] - 2026-10-07
 
@@ -84,7 +84,7 @@ All notable changes to this project are documented here.
 
 - Presentation layer: rewritten README (status table, screenshots, 35 s walkthrough video), `MODEL_CARD.md`
   (parameter table generated from `scorer-params.json`), `docs/architecture.md` (mermaid diagrams),
-  `docs/case-study.md`, `docs/hiring-summary.md`; the original Firebase Studio spec moved to `docs/archive/`
+  `docs/case-study.md`; the original Firebase Studio spec moved to `docs/archive/`
 - `analysis/tests/test_docs.py`: relative links must resolve; metric values may only appear in generated blocks
 
 - **BATADAL evaluation run on the real data** (protocol v2): published attack intervals as ground truth
