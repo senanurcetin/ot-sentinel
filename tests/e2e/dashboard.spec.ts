@@ -14,6 +14,9 @@ test.describe('OT-Sentinel dashboard', () => {
       const page = await context.newPage();
       await page.goto('/');
       await expect(page.getByRole('heading', { name: 'Industrial Security Overview' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Case study', exact: true })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Offline replay', exact: true })).toBeVisible();
+      await expect(page.getByText('Synthetic telemetry · no live PLC connection')).toBeVisible();
       const caseStudy = page.getByRole('link', { name: 'VIEW CASE STUDY →' });
       await expect(caseStudy).toBeVisible();
       await expect(caseStudy).toHaveAttribute('href', '/case-study');

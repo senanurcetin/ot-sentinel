@@ -21,13 +21,14 @@ export default function Header({ isAttackMode, onAttackModeChange, onShowReport 
         <div className="flex flex-col gap-1">
           <span className="nexus-wordmark">NEXUS</span>
           <h1 className="nexus-product text-lg leading-none text-foreground sm:text-xl">OT-Sentinel</h1>
+          <span className="text-xs text-muted-foreground">Synthetic telemetry · no live PLC connection</span>
         </div>
       </div>
-      <div className="flex items-center gap-2 sm:gap-4">
-        <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+        <Button asChild variant="ghost" size="sm" className="inline-flex">
           <Link href="/case-study">Case study</Link>
         </Button>
-        <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+        <Button asChild variant="ghost" size="sm" className="inline-flex">
           <Link href="/offline-replay">Offline replay</Link>
         </Button>
         <Button variant="outline" size="sm" onClick={onShowReport}>
