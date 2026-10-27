@@ -112,15 +112,20 @@ def load_dataset(path: Path) -> pd.DataFrame:
     frame.columns = [str(c).strip() for c in frame.columns]
     validate_schema(frame, path.name)
 
-    index = pd.to_datetime(frame[TIME_COLUMN].astype(str).str.strip(), format=TIME_FORMAT)
+    try:
+        index = pd.to_datetime(frame[TIME_COLUMN].astype(str).str.strip(), format=TIME_FORMAT)
+    except (ValueError, TypeError) as exc:
+        raise SchemaError(f"{path.name}: invalid source timestamps") from exc
+    # Do not repair broken input chronology by sorting source records.
+    if not index.is_monotonic_increasing or not index.is_unique:
+        raise SchemaError(f"{path.name}: source timestamps must be strictly ordered and unique")
+    if len(index) > 1 and not (index.diff().iloc[1:] == pd.Timedelta(hours=1)).all():
+        raise SchemaError(f"{path.name}: source timestamps must be consecutive hourly readings")
     out = frame.drop(columns=[TIME_COLUMN]).copy()
     out.index = pd.DatetimeIndex(index, name="time")
     if LABEL_COLUMN in out.columns:
         raw = pd.to_numeric(out.pop(LABEL_COLUMN), errors="coerce")
         out["flag"] = raw.where(raw.isin([0, 1])).astype("Int8")
-    out = out.sort_index()
-    if not out.index.is_unique:
-        raise SchemaError(f"{path.name}: duplicate timestamps")
     return out
 
 
@@ -135,6 +140,8 @@ def validate_schema(frame: pd.DataFrame, name: str = "<frame>") -> None:
         raise SchemaError(f"{name}: non-numeric sensor columns {non_numeric[:5]}")
     if frame[sensors].isna().any().any():
         raise SchemaError(f"{name}: unexpected missing sensor values")
+    if not np.isfinite(frame[sensors].to_numpy(dtype=float)).all():
+        raise SchemaError(f"{name}: non-finite sensor values")
 
 
 def feature_columns(reference: pd.DataFrame) -> list[str]:

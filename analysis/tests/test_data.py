@@ -97,6 +97,31 @@ def test_missing_time_column_non_numeric_and_nan_raise(tmp_path):
         bd.load_dataset(bad)
 
 
+def test_nonfinite_sensor_values_are_rejected(tmp_path):
+    bad = tmp_path / "nonfinite.csv"
+    pd.DataFrame({"DATETIME": ["06/01/14 00", "06/01/14 01"], "S": [1.0, float("inf")]}).to_csv(
+        bad, index=False
+    )
+    with pytest.raises(bd.SchemaError, match="non-finite"):
+        bd.load_dataset(bad)
+
+
+@pytest.mark.parametrize(
+    ("timestamps", "error"),
+    [
+        (["06/01/14 01", "06/01/14 00"], "strictly ordered"),
+        (["06/01/14 00", "06/01/14 00"], "unique"),
+        (["06/01/14 00", "06/01/14 02"], "consecutive hourly"),
+        (["06/01/14 00", "invalid"], "invalid source timestamps"),
+    ],
+)
+def test_loader_rejects_corrupted_source_chronology(tmp_path, timestamps, error):
+    bad = tmp_path / "chronology.csv"
+    pd.DataFrame({"DATETIME": timestamps, "S": [1.0, 2.0]}).to_csv(bad, index=False)
+    with pytest.raises(bd.SchemaError, match=error):
+        bd.load_dataset(bad)
+
+
 def test_zip_must_contain_exactly_one_csv(tmp_path):
     import zipfile
 
