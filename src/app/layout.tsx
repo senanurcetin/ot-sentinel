@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'OT-Sentinel | NEXUS',
-  description: 'NEXUS OT-Sentinel: explainable synthetic industrial anomaly demo and independently evaluated offline BATADAL evidence.',
+  description: 'NEXUS OT-Sentinel: explainable industrial anomaly detection using synthetic telemetry and independently labelled offline BATADAL research.',
   icons: { icon: '/nexus-x.svg' },
 };
 
