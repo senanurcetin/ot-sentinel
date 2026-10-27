@@ -20,6 +20,12 @@ export type VerdictCounts = {
 };
 
 export type FeedbackSummary = {
+  /** Trust boundary: self-reported demo labels are not ground truth or model evaluation. */
+  provenance: {
+    source: 'self_reported_demo_verdicts';
+    independently_verified: false;
+    detector_performance_metric: false;
+  };
   storage: 'sqlite' | 'memory';
   total: number;
   confirmed_threat: number;
@@ -77,6 +83,11 @@ function summarize(kind: FeedbackSummary['storage'], rows: StoredFeedback[]): Fe
     bySensor.set(r.top_sensor, s);
   }
   return {
+    provenance: {
+      source: 'self_reported_demo_verdicts',
+      independently_verified: false,
+      detector_performance_metric: false,
+    },
     storage: kind,
     ...countVerdicts(rows),
     recent_24h: countVerdicts(recent),
