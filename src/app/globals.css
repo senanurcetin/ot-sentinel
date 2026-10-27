@@ -157,28 +157,3 @@
 .nexus-chart-count[data-state="active"] {
  border-color:rgba(67,201,157,.39);color:#9aefce;
 }
-
-/* NEXUS 2.0: approved local brand marks and always-reachable demo navigation. */
-.nexus-header-mark {
-  border:1px solid rgba(143,155,255,.36);
-  background:linear-gradient(145deg,rgba(0,224,255,.13),rgba(110,85,198,.17));
-}
-.nexus-evidence-nav { border:1px solid rgba(78,168,255,.15);border-radius:10px;padding:2px; }
-.nexus-demo-disclaimer { font-size:.62rem;line-height:1.25;color:#b9c5ce;letter-spacing:.025em; }
-.nexus-evidence-nav a:focus-visible,.nexus-masthead button:focus-visible { outline:2px solid #00E0FF;outline-offset:3px; }
-@media (max-width:520px) {
-  .nexus-masthead { align-items:flex-start; }
-  .nexus-evidence-nav { flex-wrap:wrap; }
-  .nexus-evidence-nav a { font-size:.76rem;padding-inline:.5rem; }
-  .nexus-demo-disclaimer { max-width:230px; }
-}
-
-/* Paint official local NEXUS SVGs without coupling the header to Next Image in unit tests. */
-.nexus-logo-x {
-  display:block;flex:0 0 40px;width:40px;height:40px;border:1px solid rgba(143,155,255,.35);
-  border-radius:12px;background:rgba(0,224,255,.075) url('/nexus-x.svg') center / 34px 34px no-repeat;
-}
-.nexus-logo-wordmark {
-  display:block;width:106px;height:24px;
-  background:url('/nexus-wordmark.svg') left center / contain no-repeat;
-}
