@@ -35,9 +35,9 @@ export default function OperatorVerdicts() {
   return (
     <div className="space-y-1 text-sm" aria-label="Operator verdicts">
       <p>
-        <span className="font-medium">Operator verdicts:</span> {summary.confirmed_threat} confirmed
-        threat{summary.confirmed_threat === 1 ? '' : 's'}, {summary.false_alarm} false alarm
-        {summary.false_alarm === 1 ? '' : 's'}
+        <span className="font-medium">Self-reported demo verdicts:</span>{' '}
+        {summary.confirmed_threat} marked confirmed threat{summary.confirmed_threat === 1 ? '' : 's'}, {' '}
+        {summary.false_alarm} marked false alarm{summary.false_alarm === 1 ? '' : 's'}
         {summary.false_alarm_share !== null && ` (${percent(summary.false_alarm_share)} of submitted verdicts marked false alarm)`};{' '}
         <span className="text-muted-foreground">{storage}.</span>
       </p>

@@ -7,6 +7,11 @@ const respond = (body: unknown, ok = true) => {
 };
 
 const summary = (over: Partial<FeedbackSummary> = {}): FeedbackSummary => ({
+  provenance: {
+    source: 'self_reported_demo_verdicts',
+    independently_verified: false,
+    detector_performance_metric: false,
+  },
   storage: 'memory',
   total: 3,
   confirmed_threat: 1,
@@ -21,7 +26,8 @@ describe('OperatorVerdicts', () => {
   it('shows the counts, the false-alarm share, where they are stored and the per-sensor breakdown', async () => {
     respond(summary());
     render(<OperatorVerdicts />);
-    expect(await screen.findByText(/1 confirmed\s+threat, 2 false alarms/)).toBeInTheDocument();
+    expect(await screen.findByText(/1 marked confirmed threat, 2 marked false alarms/)).toBeInTheDocument();
+    expect(screen.getByText(/Self-reported demo verdicts:/)).toBeInTheDocument();
     expect(screen.getByText(/67 % of submitted verdicts marked false alarm/)).toBeInTheDocument();
     expect(screen.getByText(/2 submissions, 1 marked false alarm \(50 %\)/)).toBeInTheDocument();
     expect(screen.getByText(/not detector precision or measured false-positive rates/)).toBeInTheDocument();

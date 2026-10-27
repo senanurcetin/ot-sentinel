@@ -57,6 +57,18 @@ describe.each([
     });
   });
 
+  it('always identifies self-reported feedback as unverified, never ground truth', () => {
+    const store = make();
+    expect(store.summary().provenance).toEqual({
+      source: 'self_reported_demo_verdicts',
+      independently_verified: false,
+      detector_performance_metric: false,
+    });
+    store.add(entry('confirmed_threat'));
+    expect(store.summary().provenance.independently_verified).toBe(false);
+    expect(store.summary().provenance.detector_performance_metric).toBe(false);
+  });
+
   it('has no false-alarm share before the first verdict', () => {
     expect(make().summary()).toMatchObject({ total: 0, false_alarm_share: null, by_top_sensor: [] });
   });

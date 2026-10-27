@@ -80,6 +80,11 @@ describe('feedback storage and summary', () => {
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     const body = await res.json();
     expect(body).toMatchObject({
+      provenance: {
+        source: 'self_reported_demo_verdicts',
+        independently_verified: false,
+        detector_performance_metric: false,
+      },
       storage: 'memory',
       total: 2,
       false_alarm: 1,
