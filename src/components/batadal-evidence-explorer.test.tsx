@@ -7,7 +7,11 @@ describe('interactive BATADAL evidence explorer', () => {
     expect(screen.getByRole('heading', { name: 'BATADAL signal evidence explorer' })).toBeInTheDocument();
     expect(screen.getByText('43 of 43 signals shown')).toBeInTheDocument();
     expect(screen.getByText(/not a live SCADA feed/i)).toBeInTheDocument();
-    expect(screen.getByText(/not bundled/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '2016 verified hourly history' }))
+      .toHaveAttribute('href', '/batadal-history');
+    expect(screen.getByRole('link', { name: '2017 verified holdout history' }))
+      .toHaveAttribute('href', '/batadal-test-history');
+    expect(screen.getByText(/not complete\s+dataset timelines/i)).toBeInTheDocument();
     const attackSection = screen.getByRole('region', { name: 'Published attack descriptions' });
     const rows = within(attackSection).getAllByRole('row');
     expect(rows).toHaveLength(8); // table heading plus seven measured attacks
