@@ -28,7 +28,9 @@ public BATADAL attack benchmark (see [Evaluation](#evaluation)).
 
 Earlier walkthrough (archival, captured before the current NEXUS screenshots): [`docs/assets/ot-sentinel-demo.webm`](docs/assets/ot-sentinel-demo.webm) (about 35 s: normal operation → simulated attack → alert → forensic report). It was recorded without a Gemini key, so the alert shows the rule-based guidance, not an AI answer.
 
-**Technical evidence:** [BATADAL evaluation](docs/case-study.md) · [Model card](MODEL_CARD.md) · [Threat model](docs/threat-model.md).
+**Technical evidence:** [BATADAL evaluation](docs/case-study.md) · [Model card](MODEL_CARD.md) · [Threat model](docs/threat-model.md) · [Documentation guide](docs/README.md).
+
+**CI badges:** The GitHub web/analysis and browser workflow jobs are manual fallbacks; the automatic PR quality jobs run in CircleCI (`web-quality`, `analysis-quality`, `browser-e2e`). GitHub security and Docker checks remain automatic. See [CI coverage](docs/ci-coverage-contract.md); a skipped GitHub job or a green badge alone is not release acceptance.
 
 ## Protected preview release acceptance
 
@@ -44,6 +46,8 @@ Run after obtaining legitimate access through the hosting provider. Optionally s
 
 Route and health success do not replace authenticated browser visual/accessibility checks, origin authorization, API write protection or rollback rehearsal; do not promote the preview until those are independently evidenced.
 
+**Release state (28 October 2026):** The `main` branch reports `protected: true`; this does not by itself prove that every intended check is required. [Issue #72](https://github.com/senanurcetin/ot-sentinel/issues/72) tracks exact-commit protected Preview route/browser/identity checks, rollback, and any public release. Successful CI and a `READY` Preview deployment do **not** establish that release acceptance has passed. Production promotion and an operational OT deployment are **not claimed**.
+
 ## Status
 
 | Part | State |
@@ -51,8 +55,10 @@ Route and health success do not replace authenticated browser visual/accessibili
 | Dashboard, detector, explanation, fallback, operator feedback | working, tested |
 | Live demo telemetry | **synthetic**; the BATADAL evaluation is offline: its results are shown on the app's `/case-study` page, the live scorer does not use it |
 | Detector comparison on BATADAL (14 real-benchmark attacks) | run, results below; honest reading: modest, see caveats |
-| Operator verdict storage | SQLite when `FEEDBACK_DB_PATH` is set (default in the Docker image), memory otherwise |
+| Operator verdict storage | SQLite when `FEEDBACK_DB_PATH` is set (default in the Docker image), memory otherwise; summaries are **unverified, self-reported demo labels**, not measured detector performance ([contract](docs/operator-feedback-analytics.md)) |
 | Demo access | optional shared-password gate; disabled unless explicitly configured; not SSO or OT authorization |
+| Historical offline research pages | `/batadal-history` and `/batadal-test-history` show independently hash-verified 43-channel **attack-window excerpts**; no full-horizon replay, live sensor feed, or new model inference |
+| Protected Preview and production release | Exact-SHA authenticated browser/ingress/accessibility and rollback acceptance still tracked in [#72](https://github.com/senanurcetin/ot-sentinel/issues/72); not represented as complete |
 | Real protocol adapters | not implemented |
 
 Portfolio role: `OT-security case study`.
@@ -68,9 +74,9 @@ and auditable, make the reason for every alert visible, and use an LLM only to e
 - Streams (simulated) temperature, pressure, vibration and traffic readings once a second.
 - Scores every sample against an attack-free baseline and shows **why**: per-sensor z-score and each sensor's share of the risk score.
 - On a CRITICAL sample, opens an alert with a summary and suggested actions. Gemini writes it when available; otherwise a rule-based fallback does, and the dialog says which one you are reading.
-- Lets the operator mark each alert as a confirmed threat or a false alarm (`POST /api/feedback`). Each verdict keeps the
-  risk score and the sensor that drove the alert; the forensic report shows the false-alarm share per sensor
-  (`GET /api/feedback/summary`, aggregates only). Stored in SQLite when `FEEDBACK_DB_PATH` is set, in memory otherwise.
+- Lets a demo user **mark** an alert as a confirmed threat or false alarm (`POST /api/feedback`); this is a self-reported, **unverified label**, not established attack ground truth. Each submission keeps the
+  risk score and the reported driving sensor; the forensic report shows the share **marked false alarm** per sensor
+  (`GET /api/feedback/summary`, aggregates only). Its machine-readable `provenance` states `independently_verified: false` and `detector_performance_metric: false` ([contract](docs/operator-feedback-analytics.md)). Stored in SQLite when `FEEDBACK_DB_PATH` is set, in memory otherwise.
 - Simulates an attack on demand, and exports a forensic report as CSV (spreadsheet-formula safe).
 - Includes a [local browser-only offline replay workbench](https://github.com/senanurcetin/ot-sentinel/blob/main/docs/LOCAL_REPLAY_WORKBENCH.md) (`/offline-replay` in the running app) for independently checksummed three-sensor JSON recordings; it never uploads a file or connects to an OT network, and is separate from the BATADAL 43-signal evaluation.
   The workbench can also export a local **reviewed-window-only JSON report** of historical demo scores and recording checksum provenance, not a signed forensic record.
