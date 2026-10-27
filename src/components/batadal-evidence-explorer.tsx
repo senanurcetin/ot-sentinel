@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   BATADAL_GROUPS, BATADAL_PROVENANCE, attackEvidence, benchmarkDetectorOptions,
   detectorOverview, featureGroup, signalInventory, type BatadalGroup, type BatadalSet,
@@ -35,8 +36,8 @@ export function BatadalEvidenceExplorer() {
           Explore the published 43-signal inventory, documented attack targets,
           detector outcomes and measured benchmark drift. This is a <strong>read-only
           view of offline evaluation results</strong>, not a live SCADA feed or a
-          replay of hourly raw measurements. A separately verified 2016 history
-          viewer at /batadal-history contains measured hourly attack windows.
+          replay of hourly raw measurements. Separate verified 2016 and 2017
+          history workbenches show genuine attack-window excerpts, not full datasets.
         </p>
       </header>
       <section className="grid gap-3 sm:grid-cols-3" aria-label="Benchmark provenance">
@@ -180,13 +181,16 @@ export function BatadalEvidenceExplorer() {
         aria-label="Evidence limitations">
         <h2 className="font-semibold">Evidence and deployment boundaries</h2>
         <p className="mt-2 text-muted-foreground">
-          This display reads committed BATADAL evaluation aggregates and the
-          published attack-to-signal annotations. It cannot render raw hourly
-          43-signal curves because that data is <strong>not bundled</strong>.
-          It does not execute new model inference in the browser. Actual
-          per-hour historical replay needs a separately checked, read-only CSV
-          adapter and strict provenance verification. No PLC, actuator, network
-          telemetry or physical security status is shown here.
+          This aggregate display reads committed BATADAL evaluation results and
+          published attack-to-signal annotations; it does not draw hourly curves.
+          The <Link className="underline underline-offset-2" href="/batadal-history">
+          2016 verified hourly history</Link> and{' '}
+          <Link className="underline underline-offset-2" href="/batadal-test-history">
+          2017 verified holdout history</Link> show original 43-channel
+          source-hash-checked attack-window excerpts. They are not complete
+          dataset timelines or hourly detector-score traces. This view does
+          not perform new browser inference. No PLC, actuator, network telemetry
+          or physical security status is shown here.
         </p>
       </aside>
     </div>
