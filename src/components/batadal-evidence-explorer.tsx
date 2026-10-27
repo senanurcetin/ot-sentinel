@@ -189,7 +189,7 @@ export function BatadalEvidenceExplorer() {
           2017 verified holdout history</Link> show original 43-channel
           source-hash-checked attack-window excerpts. They are not complete
           dataset timelines or hourly detector-score traces. This view does
-          not perform new browser inference. No PLC, actuator, network telemetry
+          not execute new model inference in the browser. No PLC, actuator, network telemetry
           or physical security status is shown here.
         </p>
       </aside>
