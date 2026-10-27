@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -16,11 +17,11 @@ export default function Header({ isAttackMode, onAttackModeChange, onShowReport 
   return (
     <header className="nexus-masthead sticky top-0 z-10 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 shadow-sm sm:px-6 lg:px-8">
       <div className="flex items-center gap-3">
-        <span className="nexus-logo-x" role="img" aria-label="NEXUS X mark" />
+        <Image src="/nexus-x.svg" width={32} height={32} alt="" aria-hidden="true" unoptimized className="h-8 w-8 shrink-0 object-contain" />
         <div className="flex flex-col gap-1">
-          <span className="nexus-logo-wordmark" role="img" aria-label="NEXUS"><span className="sr-only">NEXUS</span></span>
+          <span className="nexus-wordmark">NEXUS</span>
           <h1 className="nexus-product text-lg leading-none text-foreground sm:text-xl">OT-Sentinel</h1>
-          <span className="nexus-demo-disclaimer">Synthetic telemetry · no live PLC connection</span>
+          <span className="text-xs text-muted-foreground">Synthetic telemetry · no live PLC connection</span>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2 sm:gap-4">
