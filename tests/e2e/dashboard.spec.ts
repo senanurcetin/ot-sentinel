@@ -131,7 +131,8 @@ test.describe('OT-Sentinel dashboard', () => {
 
     await page.getByRole('button', { name: /View Report/i }).click();
     const verdicts = page.getByLabel('Operator verdicts');
-    await expect(verdicts).toContainText(/\d+ false alarms?/);
+    await expect(verdicts).toContainText(/\d+ marked false alarms?/);
+    await expect(verdicts).toContainText('Unverified, self-reported demo feedback.');
     // The server keeps verdicts in memory unless FEEDBACK_DB_PATH is set; the page says which.
     await expect(verdicts).toContainText(/kept in memory|stored in SQLite/);
   });
