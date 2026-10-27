@@ -58,6 +58,5 @@ levels, pump flows and states, valve flows and states, junction pressures.
   missing drift semantics, and clear demonstration-vs-benchmark boundaries.
 - Exact-head CircleCI web-quality, analysis-quality, Chromium browser-e2e,
   plus GitHub Docker/security gates all pass before merge.
-- Raw 43-signal historical time-series replay is a **separate future phase**
-  requiring verified, read-only access to source CSVs, temporal validation
-  and independent provenance. A full temporal chart must never be fabricated.
+- **Existing historical views** `/batadal-history` (2016) and `/batadal-test-history` (2017) already display **publisher-hash-verified, bounded, original 43-signal attack-window excerpts**. The explorer itself remains an aggregate view; historical pages do not score the raw samples with a new model.
+- **Future Phase 2** in [issue #70](https://github.com/senanurcetin/ot-sentinel/issues/70) concerns the **full original 2016/2017 time horizons**, selectable channels and source-separated detector scores. These are **not** delivered by the committed attack-window excerpts. Full temporal traces and model scores must not be fabricated from summary statistics.
