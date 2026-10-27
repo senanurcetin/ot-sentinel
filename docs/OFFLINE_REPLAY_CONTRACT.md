@@ -1,8 +1,8 @@
-# Offline three-sensor replay contract (not yet a live dashboard feature)
+# Offline three-sensor replay contract — browser-only, not live `/api/metrics`
 
 A source-controlled, **read-only**, deterministic replay building block is implemented in [`src/lib/recorded-telemetry.ts`](../src/lib/recorded-telemetry.ts). This is a pure in-memory TypeScript interface: it never opens a socket, reads a PLC, queries a historian, invokes Gemini, or writes to an OT network.
 
-**Current scope:** three demonstration sensors (`temp`, `pressure`, `vibration`) only. This **does not load BATADAL's 43-signal benchmark** and does not replace the BATADAL offline study in `analysis/`. The running `GET /api/metrics` route is **still synthetic**; no replay switch or new public endpoint has been exposed.
+**Current scope:** three demonstration sensors (`temp`, `pressure`, `vibration`) only. The `/offline-replay` browser workbench is an implemented, separate user-facing route; **no replay switch has been added to `GET /api/metrics`**, which stays synthetic. Browser-local recordings are not the BATADAL 43-signal benchmark and do not replace the offline study in `analysis/`. There is no server upload endpoint or live OT feed.
 
 ## Example for unit tests and authorized offline processing
 
