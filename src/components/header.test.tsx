@@ -17,6 +17,23 @@ describe('Header', () => {
     expect(screen.getByRole('link', { name: 'Offline replay' })).toHaveAttribute('href', '/offline-replay');
   });
 
+  it('keeps case-study and offline replay links visible at mobile breakpoints', () => {
+    const { container } = render(
+      <Header isAttackMode={false} onAttackModeChange={jest.fn()} onShowReport={jest.fn()} />
+    );
+    for (const name of ['Case study', 'Offline replay']) {
+      const link = screen.getByRole('link', { name });
+      expect(link).toHaveClass('inline-flex');
+      expect(link).not.toHaveClass('hidden');
+    }
+    expect(container.querySelector('header > div:last-child')).toHaveClass('flex-wrap');
+  });
+
+  it('identifies dashboard telemetry as synthetic', () => {
+    render(<Header isAttackMode={false} onAttackModeChange={jest.fn()} onShowReport={jest.fn()} />);
+    expect(screen.getByText('Synthetic telemetry · no live PLC connection')).toBeInTheDocument();
+  });
+
   it('keeps the attack switch and report button working', () => {
     const onAttackModeChange = jest.fn();
     const onShowReport = jest.fn();
