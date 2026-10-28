@@ -1,7 +1,7 @@
 # CI and security coverage contract
 
 The repository uses GitHub `main` as its canonical code history and accepts a
-release only after **exact-head** checks pass. GitHub Actions and CircleCI are
+release only after **exact-head** checks pass. On 28 October 2026 the `main` branch reports `protected: true`; administrators must still verify the **actual required-check and review rules** before treating protection as established. A successful PR merge is not automatic production/OT deployment acceptance. GitHub Actions and CircleCI are
 complementary, not interchangeable substitutes.
 
 | Gate | GitHub automatic PR/main | CircleCI automatic PR/main |

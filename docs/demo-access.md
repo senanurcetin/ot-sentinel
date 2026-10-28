@@ -7,9 +7,8 @@ authorization, a production incident or certified industrial safety.
 ## Two supported demonstration modes
 
 **Open portfolio mode (default):** omit the `DEMO_BASIC_AUTH` environment
-variable entirely. A published site is reachable without a password and anyone
-can submit synthetic operator feedback; do not put private or actual plant
-information on it.
+variable entirely. **If the hosting platform also permits anonymous access**, the app is reachable without an application password and anyone can submit synthetic operator feedback; do not put private or actual plant
+information on it. Platform Preview SSO or other ingress protection can still challenge or deny access independently of this application-level setting.
 
 **Shared-password demo mode:** set a unique random value of the form
 `DEMO_BASIC_AUTH=user:at-least-16-character-secret` in a runtime secret store
@@ -34,7 +33,7 @@ Only `/api/health` and framework static assets are intentionally unauthenticated
   defense. Place a rate-limiting WAF and trusted platform SSO / VPN ahead of
   public deployments.
 - A shared password cannot distinguish which person submitted operator
-  feedback; it is not account management, audit identity, RBAC or OT security.
+  feedback; it is not account management, audit identity, RBAC or OT security. The feedback summary explicitly reports `provenance.source: self_reported_demo_verdicts`, `independently_verified: false` and `detector_performance_metric: false`; stored 'confirmed threat' labels are **user assertions**, not incident confirmation ([feedback contract](operator-feedback-analytics.md)).
 - Pre-existing API and AI cost-brake rate limits still trust forwarded headers
   and remain best-effort. They must not be presented as strong WAF policies.
 - Never configure `DEMO_BASIC_AUTH` or real Gemini keys in Git history.
@@ -49,9 +48,8 @@ Only `/api/health` and framework static assets are intentionally unauthenticated
   replay, APIs, feedback and health probe. This does not prove public ingress.
 - Verify HTTPS/TLS redirect, browser-access boundaries, deployment provider's
   WAF/SSO, secret storage and reverse-proxy behavior on the published URL.
-- Protect `main` with required checks in GitHub repository settings. The app
-  integration currently lacks branch-protection administration; checks must
-  remain a manual merge gate until settings are established.
+- For an SSO-protected Preview use the [exact-commit, read-only deployment smoke](../README.md#protected-preview-release-acceptance) with **authorized** credentials only, then perform real browser/mobile accessibility and rollback acceptance. A `READY` build or an SSO login page is not a passed application smoke. Track outstanding evidence in [issue #72](https://github.com/senanurcetin/ot-sentinel/issues/72).
+- As of 28 October 2026, GitHub's branch API reports `main` as **protected**. Repository administrators must still confirm which exact CI/status contexts and review rules are *required*; `protected: true` alone does not prove required-check enforcement. Do not bypass an unresolved protection gate.
 - Never attach PLCs or grant a network route from the demo to a control network.
 
 A deployed site requiring organizational identity needs a real identity

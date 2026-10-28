@@ -11,6 +11,7 @@ Reproducible comparison of attack detectors on the public **BATADAL** water-dist
 | Run on the real BATADAL files | **done**; results in `src/data/batadal-case-study/results.json` |
 | Tables in the README and the case study | generated from that file by `results_report.py`; a test fails if they are stale |
 | Wiring the result into the live dashboard | not done (the dashboard uses a 3-signal demo scorer) |
+| Historical visualization | publisher-verified 43-channel **attack-window excerpts**, not full 2016/2017 time horizons, on `/batadal-history` and `/batadal-test-history`; see [2016 provenance](../docs/BATADAL_VERIFIED_HOURLY.md) and [2017 provenance](../docs/BATADAL_VERIFIED_TEST_HOURLY.md) |
 
 The results and how to read them (they are modest) are in [`docs/case-study.md`](../docs/case-study.md).
 No number is repeated in this file on purpose.
@@ -28,9 +29,7 @@ python run_batadal_case_study.py                # writes src/data/batadal-case-s
 python results_report.py                        # regenerates the tables in README.md and docs/case-study.md
 ```
 
-`batadal_data.py` pins the SHA-256 of the files the study was run on and refuses others. There is no
-automatic download: the dataset host was not reachable from the authoring environment, so a downloader could
-not be verified and was removed. Get the three files from <https://www.batadal.net/data.html> by hand.
+`batadal_data.py` pins the SHA-256 of the original files used by the study and refuses others. The **benchmark evaluation** does not automatically acquire raw data; place independently verified originals in the git-ignored directory shown above. The original publication is <https://www.batadal.net/data.html>. Separately, `export_official_test_hourly.py --check` does download the **publisher's pinned 2017 ZIP** with a strict hash and size limit solely to verify the checked-in **575-row excerpt**. The 2016 dataset04 exporter requires a manually supplied matching original CSV. These verification paths do not publish raw data or create a live OT feed.
 `--synthetic` runs the pipeline on generated data as a smoke test: its output is labelled `NOT BATADAL`, goes to
 `analysis/artifacts/synthetic-smoke/` and must never be quoted.
 

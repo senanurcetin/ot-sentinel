@@ -85,12 +85,9 @@ sequenceDiagram
 - **The detector decides, the LLM explains.** The model is told the verdict is final, and the UI
   labels fallback guidance so a missing key never looks like an AI answer.
 - **One source for constants.** Scorer parameters are generated, not typed twice.
-- **Narrow telemetry boundary.** `TelemetrySource` is the only thing the route knows about; replay
-  and read-only protocol adapters are *planned* and must stay read-only
-  ([threat model](threat-model.md#telemetry-adapter-boundary)).
+- **Narrow telemetry boundary.** `TelemetrySource` is the interface used by the live `/api/metrics` route, which still uses synthetic data. The separate `/offline-replay` page already replays independently checksummed **three-sensor local files exclusively in browser memory**. The `/batadal-history` and `/batadal-test-history` pages display original-source-verified **43-channel attack-window excerpts**, not full benchmark runs or new predictions. Integrating a replay or read-only protocol adapter into live `/api/metrics` remains *planned*, must fail closed on bad/missing data, and must not add PLC write access ([threat model](threat-model.md#telemetry-adapter-boundary)).
 - **Small, bounded state.** Operator verdicts go to SQLite through Node's built-in `node:sqlite` when
-  `FEEDBACK_DB_PATH` is set (the Docker image sets it), otherwise to a capped in-memory buffer. Both are capped
-  because the demo has no authentication ([`src/lib/feedback-store.ts`](../src/lib/feedback-store.ts)).
+  `FEEDBACK_DB_PATH` is set (the Docker image sets it), otherwise to a capped in-memory buffer. Both have retention caps; the default demo has no individual identity. API summaries emit a server-set provenance marker saying `self_reported_demo_verdicts`, `independently_verified: false`, and `detector_performance_metric: false`; these observations never alter detector thresholds ([feedback contract](operator-feedback-analytics.md), [`src/lib/feedback-store.ts`](../src/lib/feedback-store.ts)).
 
 See also: [threat model](threat-model.md) · [model card](../MODEL_CARD.md) ·
 [analysis pipeline](../analysis/README.md) · [original spec (archived)](archive/blueprint.md)
