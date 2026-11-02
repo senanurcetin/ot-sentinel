@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { criticalRoutes, validateDeploymentOrigin, classifyDeploymentResponse } from './deployment-smoke-core.mjs';
+import { criticalRoutes, validateDeploymentOrigin, classifyDeploymentResponse, readLimitedResponseText } from './deployment-smoke-core.mjs';
 
 const raw = process.env.DEPLOYMENT_SMOKE_URL;
 if (!raw) {
@@ -34,7 +34,7 @@ if (!raw) {
           cache: 'no-store',
           signal: controller.signal,
         });
-        const body = (await response.text()).slice(0, 120000);
+        const body = await readLimitedResponseText(response);
         const verdict = classifyDeploymentResponse(route, {
           status: response.status,
           contentType: response.headers.get('content-type'),
