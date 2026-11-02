@@ -3,6 +3,22 @@ import { NextRequest } from 'next/server';
 import { clientKey, enforceRateLimit, RateLimiter } from '@/lib/rate-limit';
 
 describe('fixed-window rate limit boundary regressions', () => {
+  it('rejects invalid limiter configuration that could disable enforcement', () => {
+    const invalid = [0, -1, 1.5, Number.NaN, Infinity, Number.MAX_SAFE_INTEGER + 1];
+    for (const value of invalid) {
+      expect(() => new RateLimiter(value, 1_000, () => 0)).toThrow(RangeError);
+      expect(() => new RateLimiter(1, value, () => 0)).toThrow(RangeError);
+      expect(() => new RateLimiter(1, 1_000, () => 0, value)).toThrow(RangeError);
+    }
+    expect(() => new RateLimiter(1, 1_000, null as unknown as () => number)).toThrow(TypeError);
+  });
+
+  it('enforces a real limit for a valid configuration', () => {
+    const limiter = new RateLimiter(1, 1_000, () => 0, 1);
+    expect(limiter.check('client').allowed).toBe(true);
+    expect(limiter.check('client').allowed).toBe(false);
+  });
+
   it('does not reset a window a millisecond before expiry', () => {
     let now = 10_000;
     const limiter = new RateLimiter(1, 1_000, () => now);

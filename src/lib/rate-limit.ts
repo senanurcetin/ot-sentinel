@@ -19,7 +19,22 @@ export class RateLimiter {
     private readonly windowMs: number,
     private readonly now: () => number = Date.now,
     private readonly maxKeys = 10_000
-  ) {}
+  ) {
+    // A zero/negative/nonfinite window silently resets on every check,
+    // effectively disabling enforcement. Reject invalid configuration.
+    for (const [name, value] of [
+      ['limit', limit],
+      ['windowMs', windowMs],
+      ['maxKeys', maxKeys],
+    ] as const) {
+      if (!Number.isSafeInteger(value) || value < 1) {
+        throw new RangeError(name + ' must be a positive safe integer');
+      }
+    }
+    if (typeof now !== 'function') {
+      throw new TypeError('now must be a function');
+    }
+  }
 
   check(key: string): RateLimitResult {
     const t = this.now();
