@@ -1,6 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { criticalRoutes, validateDeploymentOrigin, classifyDeploymentResponse as classify } from './deployment-smoke-core.mjs';
+import { criticalRoutes, validateDeploymentOrigin, classifyDeploymentResponse as classify, readLimitedResponseText } from './deployment-smoke-core.mjs';
+
+test('smoke response reader bounds untrusted bodies and cancels oversized streams', async () => {
+  let cancelled = false;
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode('0123456789'));
+    },
+    cancel() { cancelled = true; },
+  });
+  assert.equal(await readLimitedResponseText(new Response(stream), 4), '0123');
+  assert.equal(cancelled, true);
+  await assert.rejects(readLimitedResponseText(new Response('ok'), 0), /limit/);
+});
+
+test('smoke response reader preserves UTF-8 split across stream chunks', async () => {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array([0xe2, 0x82]));
+      controller.enqueue(new Uint8Array([0xac, 0x20, 0x41]));
+      controller.close();
+    },
+  });
+  assert.equal(await readLimitedResponseText(new Response(stream), 4), '€ ');
+});
 
 test('release smoke covers exactly the product routes plus health', () => {
   assert.deepEqual([...criticalRoutes], [
