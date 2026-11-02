@@ -30,6 +30,24 @@ describe('buildForensicCsv', () => {
     expect(csv).toContain('"next record"');
   });
 
+  it.each([
+    '2026-02-29T03:04:05Z',
+    '2026-04-31T03:04:05Z',
+    '2026-01-02T24:00:00Z',
+  ])('retains impossible calendar timestamps as invalid evidence (%s)', (timestamp) => {
+    const csv = buildForensicCsv([entry({ timestamp })]);
+    expect(csv).toContain('"Invalid timestamp: ' + timestamp + '"');
+  });
+
+  it('accepts valid leap days and explicit timezone offsets', () => {
+    const csv = buildForensicCsv([
+      entry({ timestamp: '2024-02-29T23:59:59Z' }),
+      entry({ timestamp: '2024-02-29T23:59:59+02:00' }),
+    ]);
+    expect(csv).toContain('"2024-02-29T23:59:59.000Z"');
+    expect(csv).toContain('"2024-02-29T21:59:59.000Z"');
+  });
+
   it('refuses timezone-less timestamps rather than silently inventing local time', () => {
     const csv = buildForensicCsv([entry({ timestamp: '2026-01-02T03:04:05' })]);
     expect(csv).toContain('"Invalid timestamp: 2026-01-02T03:04:05"');
