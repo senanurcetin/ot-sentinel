@@ -43,7 +43,17 @@ export class RateLimiter {
       if (this.windows.size >= this.maxKeys) this.evictExpired(t);
       // Still full of live windows: refuse to track more keys instead of growing without bound.
       if (this.windows.size >= this.maxKeys) {
-        return { allowed: false, remaining: 0, retryAfterSeconds: Math.ceil(this.windowMs / 1000) };
+        // A new client can enter when the *first* tracked key expires.
+        // Returning a whole new window would overstate Retry-After.
+        let firstExpiry = Infinity;
+        for (const existing of this.windows.values()) {
+          if (existing.resetAt < firstExpiry) firstExpiry = existing.resetAt;
+        }
+        return {
+          allowed: false,
+          remaining: 0,
+          retryAfterSeconds: Math.max(1, Math.ceil((firstExpiry - t) / 1000)),
+        };
       }
       w = { count: 0, resetAt: t + this.windowMs };
       this.windows.set(key, w);

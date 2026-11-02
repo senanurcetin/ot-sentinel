@@ -68,6 +68,23 @@ describe('fixed-window rate limit boundary regressions', () => {
     expect(limiter.check('source-b')).toMatchObject({ allowed: true, remaining: 1 });
   });
 
+  it('reports the actual earliest admission retry when the key table is full', () => {
+    let now = 0;
+    const limiter = new RateLimiter(2, 10_000, () => now, 2);
+    expect(limiter.check('earliest').allowed).toBe(true);
+    now = 9_500;
+    expect(limiter.check('later').allowed).toBe(true);
+
+    // The earliest active window expires in 500ms, not ten seconds.
+    expect(limiter.check('new')).toEqual({
+      allowed: false, remaining: 0, retryAfterSeconds: 1,
+    });
+    now = 10_000;
+    expect(limiter.check('new').allowed).toBe(true);
+    // Later windows retain their own quotas during admission.
+    expect(limiter.check('later').allowed).toBe(true);
+  });
+
   it('maintains separate counters for keys with similar prefixes', () => {
     const limiter = new RateLimiter(1, 60_000, () => 0);
     expect(limiter.check('10.0.0.1').allowed).toBe(true);
