@@ -1,5 +1,10 @@
 # OT-Sentinel
 
+> **Technical evidence map · 2 November 2026:** [BATADAL measured evaluation](docs/case-study.md) · [protocol](docs/protocol-v3.md) · [model card](MODEL_CARD.md) · [threat model](docs/threat-model.md) · [offline replay contract](docs/OFFLINE_REPLAY_CONTRACT.md) · [local run](#quick-start). Separate statistical **detection** from an LLM's optional **explanation**; the LLM is not the detector or a control-system decision maker.
+>
+> **Scope:** public BATADAL labels support offline benchmark evaluation. The dashboard uses **synthetic** live telemetry; it is not connected to a PLC, DCS, an operational security incident-response system, or a safety-rated process. Historical PR/CI results do not automatically verify the latest release.
+
+
 <p align="right"><img src="docs/assets/nexus-official-midnight.svg" alt="NEXUS Official Midnight brand" width="220"></p>
 
 [![CI](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ot-sentinel/actions/workflows/ci.yml)
