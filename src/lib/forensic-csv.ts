@@ -22,13 +22,24 @@ function escapeCell(value: unknown): string {
 
 // Preserve malformed source timestamps as labelled evidence; never invent a date or
 // throw away the whole forensic report because a log row is malformed.
-const EXPLICIT_ZONE_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const EXPLICIT_ZONE_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 function reportTimestamp(raw: string): string {
   const timestamp = typeof raw === 'string' ? raw : String(raw ?? '');
-  const parsed = new Date(timestamp);
-  if (!EXPLICIT_ZONE_TIMESTAMP.test(timestamp) || Number.isNaN(parsed.getTime())) {
+  const parts = EXPLICIT_ZONE_TIMESTAMP.exec(timestamp);
+  if (!parts) return `Invalid timestamp: ${timestamp}`;
+
+  // Date.parse normalizes impossible dates (Feb 29 in non-leap years,
+  // Apr 31, 24:00) into different instants. Preserve the original evidence.
+  const [year, month, day, hour, minute, second] = parts.slice(1, 7).map(Number);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const monthLengths = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (month < 1 || month > 12 || day < 1 ||
+      day > monthLengths[month - 1] || hour > 23 || minute > 59 || second > 59) {
     return `Invalid timestamp: ${timestamp}`;
   }
+
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) return `Invalid timestamp: ${timestamp}`;
   return parsed.toISOString();
 }
 
