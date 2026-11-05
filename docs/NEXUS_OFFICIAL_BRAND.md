@@ -10,4 +10,8 @@ The NEXUS X brand asset at `public/nexus-x.svg` is copied without redrawing or r
 
 Use the X SVG for the application favicon and compact navigation identity. The primary brand mark is decorative when immediately adjacent to visible NEXUS text; keep the product name visible as accessible text. This graphic never represents live telemetry, a vendor certification, or an industrial safety approval. Avoid any unauthenticated plant-control affordance.
 
-Verification: run the existing CI checks before merging, then inspect the browser on mobile and desktop. A CI pass is not visual acceptance.
+## Verification and screenshot provenance
+
+The [README gallery](../README.md) contains captured views of the synthetic dashboard. [Capture PR #97](https://github.com/senanurcetin/ot-sentinel/pull/97) records the gallery revision. The later [mobile-navigation fix](https://github.com/senanurcetin/ot-sentinel/pull/102) has its own regression coverage in [the header test](../src/components/header.test.tsx).
+
+Run the existing CI checks before merging. Browser acceptance for a new visual revision covers mobile navigation, desktop header layout and visible focus states.
