@@ -1,8 +1,7 @@
 name: OT-Sentinel CI
 
-# CircleCI runs web and Python quality automatically. Keep GitHub's automatic
-# Docker build as an independent integration gate; web/Python remain manually
-# invokable for investigations without duplicating their runner minutes.
+# GitHub-hosted runners are free for public repositories, so web, analysis and
+# Docker checks all run on every PR and on main. CircleCI remains configured.
 
 on:
   push:
@@ -21,7 +20,6 @@ permissions:
 jobs:
   web:
     name: Lint, typecheck, test, build
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -50,7 +48,6 @@ jobs:
 
   analysis:
     name: Analysis (ruff, pytest)
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:

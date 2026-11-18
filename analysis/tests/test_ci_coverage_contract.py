@@ -34,11 +34,14 @@ def test_github_security_keeps_automatic_and_scheduled_coverage():
     assert "gitleaks/gitleaks-action@" in security
 
 
-def test_duplicate_github_quality_jobs_are_manual_but_docker_is_automatic():
+def test_github_quality_and_docker_jobs_run_automatically():
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert "  pull_request:" in ci.splitlines()
     assert "  push:" in ci.splitlines()
-    assert ci.count("if: github.event_name == 'workflow_dispatch'") == 2
+    # Web and analysis run on every PR; they must not be dispatch-only again.
+    assert "if: github.event_name == 'workflow_dispatch'" not in ci
+    for job in ("  web:", "  analysis:", "  docker:"):
+        assert job in ci.splitlines()
     assert "  docker:" in ci.splitlines()
     assert "name: Docker image builds" in ci
     assert "needs: web" not in ci
