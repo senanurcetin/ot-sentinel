@@ -1,4 +1,4 @@
-"""Guard basic CI trigger parity during the CircleCI migration.
+"""Guard that GitHub Actions runs every check CircleCI used to run.
 
 This is a narrow text-level regression guard, not a security audit or a YAML
 interpreter. Actual per-commit status checks remain the release gate.
@@ -9,14 +9,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_circleci_checks_real_browser_as_well_as_web_and_analysis():
-    workflow = (ROOT / ".circleci" / "config.yml").read_text(encoding="utf-8")
-    assert "browser-e2e:" in workflow
-    assert "command: npm run test:e2e" in workflow
-    assert "command: npx playwright install --with-deps chromium" in workflow
-    assert "command: npm run test:coverage -- --runInBand" in workflow
-    assert "command: cd analysis && python -m pytest -q" in workflow
-    assert "      - browser-e2e" in workflow
+def test_github_runs_real_browser_e2e_on_prs_and_main():
+    e2e = (ROOT / ".github" / "workflows" / "e2e-tests.yml").read_text(
+        encoding="utf-8"
+    )
+    lines = e2e.splitlines()
+    assert "  pull_request:" in lines
+    assert "  push:" in lines
+    assert "npx playwright install --with-deps chromium" in e2e
+    assert "run: npm run test:e2e" in e2e
 
 
 def test_github_security_keeps_automatic_and_scheduled_coverage():
@@ -46,10 +47,5 @@ def test_github_quality_and_docker_jobs_run_automatically():
     assert "name: Docker image builds" in ci
     assert "needs: web" not in ci
 
-    e2e = (ROOT / ".github" / "workflows" / "e2e-tests.yml").read_text(
-        encoding="utf-8"
-    )
-    # The Chromium test is automatically enforced by CircleCI browser-e2e.
-    assert "  workflow_dispatch:" in e2e.splitlines()
-    assert "  pull_request:" not in e2e.splitlines()
-    assert "  push:" not in e2e.splitlines()
+    # Formerly CircleCI-only: the offline deployment smoke checker tests.
+    assert "run: npm run test:deployment-smoke" in ci
